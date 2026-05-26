@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -163,84 +164,34 @@ export default async function HomePage() {
           </div>
 
           {/* Right: visual */}
-          <div className="relative mx-auto hidden h-[480px] w-full max-w-[560px] lg:block">
-            {/* Background blob */}
-            <div className="absolute inset-x-8 inset-y-4 rounded-[3rem] bg-linear-to-br from-primary/80 via-primary to-primary/60 shadow-2xl shadow-primary/30" />
-            <div className="absolute inset-x-8 inset-y-4 overflow-hidden rounded-[3rem]">
+          <div className="relative mx-auto hidden h-[520px] w-full max-w-[580px] lg:block">
+            {/* Backdrop blob */}
+            <div
+              aria-hidden="true"
+              className="absolute inset-x-6 inset-y-2 rounded-[3rem] bg-linear-to-br from-primary/85 via-primary to-primary/60 shadow-2xl shadow-primary/30"
+            />
+            <div
+              aria-hidden="true"
+              className="absolute inset-x-6 inset-y-2 overflow-hidden rounded-[3rem]"
+            >
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.35),transparent_40%),radial-gradient(circle_at_80%_70%,rgba(255,255,255,0.15),transparent_45%)]" />
+            </div>
+
+            {/* Professional team photo */}
+            <div className="absolute inset-x-6 inset-y-2 overflow-hidden rounded-[3rem]">
+              <Image
+                src="https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1200&q=80"
+                alt="Diverse team of smiling professionals"
+                fill
+                priority
+                sizes="(min-width: 1024px) 560px, 100vw"
+                className="object-cover object-[center_30%]"
+              />
+              {/* Soft green tint to blend with brand */}
               <div
                 aria-hidden="true"
-                className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.35),transparent_40%),radial-gradient(circle_at_80%_70%,rgba(255,255,255,0.2),transparent_45%)]"
+                className="absolute inset-0 bg-linear-to-t from-primary/40 via-transparent to-transparent mix-blend-multiply"
               />
-              {/* SVG team illustration */}
-              <svg
-                viewBox="0 0 400 480"
-                className="absolute inset-x-0 bottom-0 w-full"
-                role="img"
-                aria-label="Team illustration"
-              >
-                <title>Team illustration</title>
-                <defs>
-                  <linearGradient id="skin" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor="#f5d4b5" />
-                    <stop offset="100%" stopColor="#e2b48a" />
-                  </linearGradient>
-                </defs>
-                {/* back person */}
-                <circle cx="120" cy="220" r="32" fill="url(#skin)" />
-                <rect
-                  x="80"
-                  y="250"
-                  width="80"
-                  height="140"
-                  rx="14"
-                  fill="#1f2937"
-                />
-                {/* center person */}
-                <circle cx="200" cy="200" r="38" fill="url(#skin)" />
-                <rect
-                  x="155"
-                  y="235"
-                  width="90"
-                  height="180"
-                  rx="14"
-                  fill="#374151"
-                />
-                <rect
-                  x="178"
-                  y="260"
-                  width="44"
-                  height="80"
-                  rx="6"
-                  fill="#9ca3af"
-                />
-                {/* front person */}
-                <circle cx="290" cy="225" r="34" fill="url(#skin)" />
-                <rect
-                  x="250"
-                  y="255"
-                  width="80"
-                  height="160"
-                  rx="14"
-                  fill="#475569"
-                />
-                {/* tablet */}
-                <rect
-                  x="270"
-                  y="305"
-                  width="60"
-                  height="42"
-                  rx="4"
-                  fill="#e5e7eb"
-                />
-                <rect
-                  x="276"
-                  y="312"
-                  width="48"
-                  height="28"
-                  rx="2"
-                  fill="#34d399"
-                />
-              </svg>
             </div>
 
             {/* Floating stat: Companies (top-left) */}
@@ -456,76 +407,47 @@ export default async function HomePage() {
       <section className="container mx-auto px-4 py-20">
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
           {/* Visual */}
-          <div className="relative mx-auto h-[420px] w-full max-w-md">
-            <div className="absolute inset-0 rounded-[2.5rem] bg-linear-to-br from-amber-50 via-orange-50 to-rose-50" />
-            <div className="absolute inset-0 overflow-hidden rounded-[2.5rem]">
-              <svg
-                viewBox="0 0 320 420"
-                className="absolute inset-x-0 bottom-0 w-full"
-                role="img"
-                aria-label="Person at desk illustration"
-              >
-                <title>Person at desk illustration</title>
-                <defs>
-                  <linearGradient id="skin2" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor="#f5d4b5" />
-                    <stop offset="100%" stopColor="#dca77c" />
-                  </linearGradient>
-                </defs>
-                <rect
-                  x="30"
-                  y="280"
-                  width="260"
-                  height="130"
-                  rx="10"
-                  fill="#a16207"
-                  opacity="0.15"
-                />
-                <rect
-                  x="60"
-                  y="250"
-                  width="200"
-                  height="20"
-                  rx="4"
-                  fill="#92400e"
-                />
-                <circle cx="160" cy="170" r="42" fill="url(#skin2)" />
-                <rect
-                  x="110"
-                  y="208"
-                  width="100"
-                  height="160"
-                  rx="14"
-                  fill="#0f766e"
-                />
-                <rect
-                  x="125"
-                  y="232"
-                  width="70"
-                  height="50"
-                  rx="6"
-                  fill="#1f2937"
-                />
-                <rect
-                  x="140"
-                  y="244"
-                  width="40"
-                  height="26"
-                  rx="3"
-                  fill="#34d399"
-                />
-              </svg>
+          <div className="relative mx-auto h-[460px] w-full max-w-md">
+            <div
+              aria-hidden="true"
+              className="absolute -left-6 -top-6 size-32 rounded-3xl bg-amber-100/70 blur-2xl"
+            />
+            <div
+              aria-hidden="true"
+              className="absolute -bottom-6 -right-6 size-40 rounded-3xl bg-primary/20 blur-2xl"
+            />
+            <div className="relative h-full w-full overflow-hidden rounded-[2.5rem] shadow-2xl shadow-black/10">
+              <Image
+                src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=900&q=80"
+                alt="Professional working at her desk"
+                fill
+                sizes="(min-width: 1024px) 448px, 100vw"
+                className="object-cover"
+              />
             </div>
 
-            {/* Floating stat */}
-            <div className="absolute -left-3 bottom-12 flex items-center gap-3 rounded-2xl border bg-background p-3 pr-5 shadow-xl">
+            {/* Floating stat: views */}
+            <div className="absolute -left-4 bottom-10 flex items-center gap-3 rounded-2xl border bg-background p-3 pr-5 shadow-xl">
               <span className="flex size-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
                 <TrendingUp className="size-5" />
               </span>
               <div>
                 <p className="text-base font-bold leading-none">12,567</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Views <span className="text-emerald-600">+50%</span>
+                  Views <span className="font-medium text-emerald-600">+50%</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Floating stat: hires */}
+            <div className="absolute -right-3 top-10 flex items-center gap-3 rounded-2xl border bg-background p-3 pr-5 shadow-xl">
+              <span className="flex size-10 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                <CheckCircle2 className="size-5" />
+              </span>
+              <div>
+                <p className="text-base font-bold leading-none">98%</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Successful hires
                 </p>
               </div>
             </div>

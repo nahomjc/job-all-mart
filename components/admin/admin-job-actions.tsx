@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useActionState } from "react";
+import { Rocket, Send } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,8 @@ import {
   featureJobAction,
   verifyPaymentAction,
   rejectPaymentAction,
+  republishJobAction,
+  markJobPostedAction,
   type AdminActionState,
 } from "@/server/actions/admin";
 
@@ -55,6 +58,33 @@ export function AdminJobActions(props: AdminJobActionsProps) {
     });
   };
 
+  const runRepublish = () => {
+    startTransition(async () => {
+      const r = await republishJobAction(props.jobId);
+      if (r.ok) {
+        toast.success("Re-published to Telegram");
+        router.refresh();
+      } else {
+        toast.error(r.error ?? "Failed");
+      }
+    });
+  };
+
+  const runMarkPosted = () => {
+    startTransition(async () => {
+      const r = await markJobPostedAction(props.jobId);
+      if (r.ok) {
+        toast.success("Marked as posted — visible on the public site");
+        router.refresh();
+      } else {
+        toast.error(r.error ?? "Failed");
+      }
+    });
+  };
+
+  const isStuckAtApproved =
+    props.jobStatus === "approved" || props.jobStatus === "scheduled";
+
   return (
     <div className="space-y-4">
       {props.paymentId && props.paymentStatus !== "verified" && (
@@ -72,6 +102,43 @@ export function AdminJobActions(props: AdminJobActionsProps) {
               Verify payment
             </Button>
             <RejectPaymentDialog paymentId={props.paymentId} />
+          </div>
+        </div>
+      )}
+
+      {/* Recovery / local-dev panel: visible whenever the job is stuck at
+          'approved' (e.g. Telegram publish failed) so the admin can either
+          retry the publish or force-mark it as posted. */}
+      {isStuckAtApproved && (
+        <div className="rounded-md border border-primary/30 bg-primary/5 p-3 text-sm">
+          <p className="font-medium text-primary">
+            This job is <span className="font-mono">{props.jobStatus}</span> but
+            not posted yet.
+          </p>
+          <p className="mt-1 text-muted-foreground">
+            Retry the Telegram publish, or skip it and mark the job as posted
+            so it shows on the public site (useful when Telegram isn&apos;t
+            configured locally).
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              variant="success"
+              onClick={runRepublish}
+              disabled={pending}
+            >
+              <Send className="size-3.5" />
+              Retry Telegram publish
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={runMarkPosted}
+              disabled={pending}
+            >
+              <Rocket className="size-3.5" />
+              Mark as posted (skip Telegram)
+            </Button>
           </div>
         </div>
       )}

@@ -65,6 +65,88 @@ export async function approveJobAction(
   revalidatePath("/admin/jobs");
   revalidatePath(`/admin/jobs/${jobId}`);
   revalidatePath("/jobs");
+  revalidatePath("/");
+  return okState();
+}
+
+/* ──────────────────────────────────────────────
+ * Re-run the Telegram publish step.
+ * Useful when the original `approveJobAction` failed mid-flow and left the
+ * job at `approved` (status never advanced to `posted`).
+ * ────────────────────────────────────────────── */
+export async function republishJobAction(
+  jobId: string,
+): Promise<AdminActionState> {
+  const admin = await requireAdmin();
+  const job = await jobRepo.byId(jobId);
+  if (!job) return failState("Job not found");
+  if (job.status !== "approved" && job.status !== "scheduled") {
+    return failState(`Cannot republish: job is in status '${job.status}'`);
+  }
+
+  try {
+    await publishJobToTelegram(jobId);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return failState(`Telegram publish failed: ${message}`);
+  }
+
+  await auditLogRepo.log({
+    actorId: admin.id,
+    action: "job.post",
+    targetType: "job",
+    targetId: jobId,
+    metadata: { note: "Republished via admin retry button." },
+    ip: null,
+    userAgent: null,
+  });
+
+  revalidatePath("/admin/jobs");
+  revalidatePath(`/admin/jobs/${jobId}`);
+  revalidatePath("/jobs");
+  revalidatePath("/");
+  return okState();
+}
+
+/* ──────────────────────────────────────────────
+ * Local-dev escape hatch: mark a job as posted WITHOUT sending to Telegram.
+ * Use when Telegram isn't configured / reachable but you still want the job
+ * to show up on the public site for UI testing.
+ * ────────────────────────────────────────────── */
+export async function markJobPostedAction(
+  jobId: string,
+): Promise<AdminActionState> {
+  const admin = await requireAdmin();
+  const job = await jobRepo.byId(jobId);
+  if (!job) return failState("Job not found");
+  if (job.status === "posted") return okState();
+  if (job.status === "rejected" || job.status === "expired") {
+    return failState(
+      `Refusing to mark a '${job.status}' job as posted. Re-approve it first.`,
+    );
+  }
+
+  await jobRepo.update(jobId, {
+    status: "posted",
+    postedAt: new Date(),
+    expiresAt:
+      job.expiresAt ?? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+  });
+
+  await auditLogRepo.log({
+    actorId: admin.id,
+    action: "job.post",
+    targetType: "job",
+    targetId: jobId,
+    metadata: { note: "Marked posted manually; Telegram step skipped." },
+    ip: null,
+    userAgent: null,
+  });
+
+  revalidatePath("/admin/jobs");
+  revalidatePath(`/admin/jobs/${jobId}`);
+  revalidatePath("/jobs");
+  revalidatePath("/");
   return okState();
 }
 

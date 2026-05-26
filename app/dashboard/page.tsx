@@ -1,5 +1,14 @@
 import Link from "next/link";
-import { Plus, Briefcase, Clock, CheckCircle2, XCircle } from "lucide-react";
+import {
+  ArrowRight,
+  Briefcase,
+  CheckCircle2,
+  Clock,
+  Plus,
+  XCircle,
+} from "lucide-react";
+import { PageHeader } from "@/components/page-header";
+import { StatCard } from "@/components/stat-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,55 +31,99 @@ export default async function DashboardPage() {
     rejected: rows.filter((r) => r.job.status === "rejected").length,
   };
 
+  const recent = rows.slice(0, 6);
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-end justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Welcome back</h1>
-          <p className="text-sm text-muted-foreground">
-            {user.displayName ?? user.email}
-          </p>
-        </div>
-        <Button asChild>
-          <Link href="/dashboard/jobs/new">
-            <Plus className="size-4" />
-            New job post
-          </Link>
-        </Button>
-      </div>
+    <div className="space-y-8">
+      <PageHeader
+        eyebrow="Dashboard"
+        title={`Welcome back${user.displayName ? `, ${user.displayName.split(/\s+/)[0]}` : ""}`}
+        description="Track your job posts, payments, and Telegram reach all in one place."
+        actions={
+          <Button asChild>
+            <Link href="/dashboard/jobs/new">
+              <Plus className="size-4" />
+              New job post
+            </Link>
+          </Button>
+        }
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={<Briefcase className="size-4" />} label="Total" value={stats.total} />
-        <StatCard icon={<Clock className="size-4" />} label="In progress" value={stats.pending} accent="warning" />
-        <StatCard icon={<CheckCircle2 className="size-4" />} label="Posted" value={stats.posted} accent="success" />
-        <StatCard icon={<XCircle className="size-4" />} label="Rejected" value={stats.rejected} accent="destructive" />
+        <StatCard
+          label="Total posts"
+          value={stats.total}
+          icon={Briefcase}
+          tone="primary"
+        />
+        <StatCard
+          label="In progress"
+          value={stats.pending}
+          icon={Clock}
+          tone="warning"
+        />
+        <StatCard
+          label="Posted"
+          value={stats.posted}
+          icon={CheckCircle2}
+          tone="success"
+        />
+        <StatCard
+          label="Rejected"
+          value={stats.rejected}
+          icon={XCircle}
+          tone="destructive"
+        />
       </div>
 
       <Card>
         <CardContent className="p-0">
-          <div className="border-b p-4">
-            <h2 className="font-semibold">Recent posts</h2>
+          <div className="flex items-center justify-between border-b px-5 py-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+                Recent activity
+              </p>
+              <h2 className="mt-0.5 font-semibold">Your latest posts</h2>
+            </div>
+            {rows.length > 0 && (
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/dashboard/jobs">
+                  See all <ArrowRight className="size-3.5" />
+                </Link>
+              </Button>
+            )}
           </div>
-          {rows.length === 0 ? (
-            <div className="p-10 text-center text-sm text-muted-foreground">
-              You haven&apos;t submitted any jobs yet.{" "}
-              <Link href="/dashboard/jobs/new" className="text-primary">
-                Start your first post →
-              </Link>
+          {recent.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-3 p-12 text-center">
+              <span className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <Briefcase className="size-6" />
+              </span>
+              <p className="text-sm text-muted-foreground">
+                You haven&apos;t submitted any jobs yet.
+              </p>
+              <Button asChild size="sm">
+                <Link href="/dashboard/jobs/new">
+                  <Plus className="size-4" /> Start your first post
+                </Link>
+              </Button>
             </div>
           ) : (
             <ul className="divide-y">
-              {rows.slice(0, 6).map(({ job, category }) => (
-                <li key={job.id} className="flex items-center justify-between p-4">
-                  <div>
+              {recent.map(({ job, category }) => (
+                <li
+                  key={job.id}
+                  className="flex items-center justify-between gap-4 px-5 py-3.5 transition-colors hover:bg-muted/40"
+                >
+                  <div className="min-w-0">
                     <Link
                       href={`/dashboard/jobs/${job.id}`}
-                      className="font-medium hover:text-primary"
+                      className="line-clamp-1 font-medium hover:text-primary"
                     >
                       {job.title}
                     </Link>
-                    <p className="text-xs text-muted-foreground">
-                      {category?.name ?? "Uncategorized"} · {formatRelativeTime(job.createdAt)}
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {category?.name ?? "Uncategorized"} ·{" "}
+                      {formatRelativeTime(job.createdAt)}
                     </p>
                   </div>
                   <Badge variant={statusBadgeVariant(job.status)}>
@@ -83,42 +136,6 @@ export default async function DashboardPage() {
         </CardContent>
       </Card>
     </div>
-  );
-}
-
-function StatCard({
-  icon,
-  label,
-  value,
-  accent,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: number;
-  accent?: "warning" | "success" | "destructive";
-}) {
-  return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          {icon}
-          {label}
-        </div>
-        <p
-          className={`mt-2 text-3xl font-bold ${
-            accent === "warning"
-              ? "text-amber-500"
-              : accent === "success"
-              ? "text-emerald-600"
-              : accent === "destructive"
-              ? "text-destructive"
-              : ""
-          }`}
-        >
-          {value}
-        </p>
-      </CardContent>
-    </Card>
   );
 }
 

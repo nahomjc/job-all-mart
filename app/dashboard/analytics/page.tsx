@@ -1,4 +1,11 @@
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Briefcase,
+  CheckCircle2,
+  Eye,
+  MousePointerClick,
+} from "lucide-react";
+import { PageHeader } from "@/components/page-header";
+import { StatCard } from "@/components/stat-card";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/server/db/client";
 import { jobs, jobViews, telegramPosts } from "@/server/db/schema";
@@ -38,25 +45,39 @@ export default async function AnalyticsPage() {
     .where(eq(jobs.userId, user.id));
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-bold">Analytics</h1>
+    <div className="space-y-8">
+      <PageHeader
+        eyebrow="Analytics"
+        title="Reach &amp; engagement"
+        description="See how your posts are performing on the web and on Telegram."
+      />
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="Total jobs" value={Number(totals?.totalJobs ?? 0)} />
-        <Stat label="Posted" value={Number(totals?.posted ?? 0)} />
-        <Stat label="Total views" value={totalViews} />
-        <Stat label="Telegram clicks" value={Number(tgClickRows[0]?.total ?? 0)} />
+        <StatCard
+          label="Total jobs"
+          value={Number(totals?.totalJobs ?? 0)}
+          icon={Briefcase}
+          tone="primary"
+        />
+        <StatCard
+          label="Posted"
+          value={Number(totals?.posted ?? 0)}
+          icon={CheckCircle2}
+          tone="success"
+        />
+        <StatCard
+          label="Total views"
+          value={totalViews.toLocaleString()}
+          icon={Eye}
+          tone="violet"
+        />
+        <StatCard
+          label="Telegram clicks"
+          value={Number(tgClickRows[0]?.total ?? 0).toLocaleString()}
+          icon={MousePointerClick}
+          tone="info"
+        />
       </div>
     </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: number }) {
-  return (
-    <Card>
-      <CardContent className="p-4">
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <p className="mt-2 text-3xl font-bold">{value}</p>
-      </CardContent>
-    </Card>
   );
 }

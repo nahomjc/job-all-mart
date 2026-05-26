@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { UserMenu } from "@/components/user-menu";
 import { getCurrentUser } from "@/lib/auth";
 
 export async function Navbar() {
@@ -33,9 +34,11 @@ export async function Navbar() {
         <div className="flex items-center gap-2">
           <ThemeToggle />
           {user ? (
-            <Button asChild size="sm">
-              <Link href="/dashboard">Dashboard</Link>
-            </Button>
+            <UserMenu
+              name={user.displayName ?? user.email ?? "User"}
+              email={user.email}
+              role={user.role}
+            />
           ) : (
             <>
               <Button asChild variant="ghost" size="sm">

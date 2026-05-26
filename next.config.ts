@@ -8,6 +8,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "*.r2.cloudflarestorage.com" },
       { protocol: "https", hostname: "*.r2.dev" },
       { protocol: "https", hostname: "*.supabase.co" },
+      { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "plus.unsplash.com" },
       // Public R2 custom domain (configure via env when ready)
       ...(process.env.R2_PUBLIC_HOSTNAME
         ? [{ protocol: "https" as const, hostname: process.env.R2_PUBLIC_HOSTNAME }]
