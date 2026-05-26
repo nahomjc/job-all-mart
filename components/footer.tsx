@@ -1,0 +1,44 @@
+import Link from "next/link";
+
+export function Footer() {
+  return (
+    <footer className="mt-24 border-t bg-muted/30">
+      <div className="container mx-auto grid gap-8 px-4 py-12 md:grid-cols-4">
+        <div>
+          <h3 className="mb-2 font-semibold">
+            {process.env.NEXT_PUBLIC_APP_NAME ?? "JobPost"}
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Reach thousands of job seekers on Telegram and the web.
+          </p>
+        </div>
+        <div>
+          <h4 className="mb-2 text-sm font-semibold">Product</h4>
+          <ul className="space-y-1 text-sm text-muted-foreground">
+            <li><Link href="/jobs" className="hover:text-foreground">Browse jobs</Link></li>
+            <li><Link href="/pricing" className="hover:text-foreground">Pricing</Link></li>
+            <li><Link href="/login?mode=signup" className="hover:text-foreground">Post a job</Link></li>
+          </ul>
+        </div>
+        <div>
+          <h4 className="mb-2 text-sm font-semibold">Telegram</h4>
+          <ul className="space-y-1 text-sm text-muted-foreground">
+            <li>Use our bot to post jobs directly from Telegram.</li>
+            <li>No account required — start with /start.</li>
+          </ul>
+        </div>
+        <div>
+          <h4 className="mb-2 text-sm font-semibold">Legal</h4>
+          <ul className="space-y-1 text-sm text-muted-foreground">
+            <li><Link href="/terms" className="hover:text-foreground">Terms</Link></li>
+            <li><Link href="/privacy" className="hover:text-foreground">Privacy</Link></li>
+          </ul>
+        </div>
+      </div>
+      <div className="border-t py-4 text-center text-xs text-muted-foreground">
+        © {new Date().getFullYear()}{" "}
+        {process.env.NEXT_PUBLIC_APP_NAME ?? "JobPost"}. All rights reserved.
+      </div>
+    </footer>
+  );
+}
