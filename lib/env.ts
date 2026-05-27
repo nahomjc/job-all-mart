@@ -127,4 +127,11 @@ export const env = {
 			process.env.LEUL_VERIFY_BASE_URL ?? "https://verifyapi.leulzenebe.pro"
 		);
 	},
+	get LEUL_VERIFY_TIMEOUT_MS() {
+		const raw = process.env.LEUL_VERIFY_TIMEOUT_MS;
+		if (!raw) return 30000;
+		const parsed = Number(raw);
+		if (!Number.isFinite(parsed) || parsed < 5000) return 30000;
+		return Math.trunc(parsed);
+	},
 } as const;

@@ -152,7 +152,8 @@ export async function verifyPaymentWithLeul(
 		resolved === "auto" ? "/verify" : ENDPOINT_BY_METHOD[resolved];
 	const baseUrl = env.LEUL_VERIFY_BASE_URL.replace(/\/$/, "");
 	const controller = new AbortController();
-	const timeout = setTimeout(() => controller.abort(), 15000);
+	const timeoutMs = env.LEUL_VERIFY_TIMEOUT_MS;
+	const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
 	let res: Response;
 	try {
@@ -167,12 +168,17 @@ export async function verifyPaymentWithLeul(
 		});
 	} catch (err) {
 		clearTimeout(timeout);
+		const isAbort =
+			err instanceof Error &&
+			(err.name === "AbortError" || err.message.includes("aborted"));
 		const message = err instanceof Error ? err.message : String(err);
 		return {
 			ok: false,
 			httpStatus: 0,
 			verified: false,
-			error: `Verifier request failed: ${message}`,
+			error: isAbort
+				? `Verifier timed out after ${timeoutMs}ms. Retry in a moment. If this persists on Vercel, host verification in Ethiopia or enable a local fallback proxy as recommended by the provider docs.`
+				: `Verifier request failed: ${message}`,
 		};
 	}
 	clearTimeout(timeout);
