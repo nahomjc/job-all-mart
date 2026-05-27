@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { Search } from "lucide-react";
+import { CheckCircle2, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,12 +20,20 @@ import {
 	methodNeedsPhoneNumber,
 	type PaymentVerifyMethod,
 } from "@/lib/payment-methods";
+import { cn } from "@/lib/utils";
 import {
 	verifyPaymentReferenceAction,
 	type AdminActionState,
 } from "@/server/actions/admin";
 
 const initial: AdminActionState = { ok: false };
+
+type VerificationResult = {
+	provider?: string | null;
+	status?: string;
+	transactionId?: string | null;
+	amount?: number | null;
+};
 
 interface VerifyPaymentReferenceProps {
 	paymentId: string;
@@ -52,23 +60,20 @@ export function VerifyPaymentReference({
 		? (defaultMethod as PaymentVerifyMethod)
 		: "telebirr";
 	const [method, setMethod] = useState<PaymentVerifyMethod>(initialMethod);
+	const [verified, setVerified] = useState<VerificationResult | null>(null);
+
+	const clearVerification = () => setVerified(null);
 
 	useEffect(() => {
 		if (!state.ok && !state.error) return;
 		if (state.ok) {
-			const d = state.data as
-				| {
-						provider?: string | null;
-						status?: string;
-						transactionId?: string | null;
-						amount?: number | null;
-				  }
-				| undefined;
+			const d = (state.data ?? {}) as VerificationResult;
+			setVerified(d);
 			const parts = [
-				d?.provider ? `Provider: ${d.provider}` : null,
-				d?.status ? `Status: ${d.status}` : null,
-				d?.transactionId ? `Txn: ${d.transactionId}` : null,
-				d?.amount != null ? `Amount: ${d.amount}` : null,
+				d.provider ? `Provider: ${d.provider}` : null,
+				d.status ? `Status: ${d.status}` : null,
+				d.transactionId ? `Txn: ${d.transactionId}` : null,
+				d.amount != null ? `Amount: ${d.amount}` : null,
 			].filter(Boolean);
 			toast.success(
 				parts.length > 0
@@ -76,6 +81,7 @@ export function VerifyPaymentReference({
 					: "Reference verified",
 			);
 		} else if (state.error) {
+			setVerified(null);
 			toast.error(state.error);
 		}
 	}, [state]);
@@ -85,31 +91,50 @@ export function VerifyPaymentReference({
 	const requiredSuffixLength = methodAccountSuffixLength(method);
 
 	return (
-		<form action={action} className="space-y-3 rounded-xl border bg-muted/20 p-4">
+		<form
+			action={action}
+			className={cn(
+				"space-y-3 rounded-xl border p-4 transition-colors duration-300",
+				verified
+					? "border-emerald-500/50 bg-emerald-50/80 shadow-sm shadow-emerald-500/10 dark:bg-emerald-950/25"
+					: "bg-muted/20",
+			)}
+		>
 			<input type="hidden" name="paymentId" value={paymentId} />
 			<input type="hidden" name="method" value={method} />
 
-			<div>
-				<p className="text-sm font-semibold">Check reference</p>
-				<p className="text-xs text-muted-foreground">
-					Verify against{" "}
-					<a
-						href="https://verify.leul.et/docs"
-						target="_blank"
-						rel="noopener noreferrer"
-						className="text-primary underline-offset-2 hover:underline"
-					>
-						Leul verifier
-					</a>{" "}
-					(CBE, Telebirr, Dashen, and others).
-				</p>
+			<div className="flex items-start justify-between gap-3">
+				<div>
+					<p className="text-sm font-semibold">Check reference</p>
+					<p className="text-xs text-muted-foreground">
+						Verify against{" "}
+						<a
+							href="https://verify.leul.et/docs"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="text-primary underline-offset-2 hover:underline"
+						>
+							Leul verifier
+						</a>{" "}
+						(CBE, Telebirr, Dashen, and others).
+					</p>
+				</div>
+				{verified && (
+					<span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+						<CheckCircle2 className="size-3.5" />
+						Verified
+					</span>
+				)}
 			</div>
 
 			<div className="space-y-1.5">
 				<Label htmlFor={`verify-method-${paymentId}`}>Method</Label>
 				<Select
 					value={method}
-					onValueChange={(v) => setMethod(v as PaymentVerifyMethod)}
+					onValueChange={(v) => {
+						setMethod(v as PaymentVerifyMethod);
+						clearVerification();
+					}}
 				>
 					<SelectTrigger id={`verify-method-${paymentId}`}>
 						<SelectValue />
@@ -137,6 +162,7 @@ export function VerifyPaymentReference({
 					maxLength={64}
 					className="font-mono text-sm"
 					autoComplete="off"
+					onChange={clearVerification}
 				/>
 			</div>
 
@@ -160,6 +186,7 @@ export function VerifyPaymentReference({
 						inputMode="numeric"
 						maxLength={32}
 						autoComplete="off"
+						onChange={clearVerification}
 					/>
 					<p className="text-xs text-muted-foreground">
 						You can paste the full account number. We automatically use the
@@ -181,13 +208,36 @@ export function VerifyPaymentReference({
 						placeholder="09xxxxxxxx"
 						maxLength={20}
 						autoComplete="tel"
+						onChange={clearVerification}
 					/>
 				</div>
 			)}
 
-			<Button type="submit" size="sm" className="w-full" disabled={pending}>
+			{verified && (
+				<div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-800 dark:text-emerald-200">
+					<p className="font-medium">Reference verified successfully</p>
+					{(verified.status || verified.amount != null) && (
+						<p className="mt-0.5 text-xs text-emerald-700/90 dark:text-emerald-300/90">
+							{[
+								verified.status,
+								verified.amount != null ? `Amount: ${verified.amount}` : null,
+							]
+								.filter(Boolean)
+								.join(" · ")}
+						</p>
+					)}
+				</div>
+			)}
+
+			<Button
+				type="submit"
+				size="sm"
+				className="w-full"
+				variant={verified ? "secondary" : "default"}
+				disabled={pending}
+			>
 				<Search className="size-3.5" />
-				{pending ? "Checking…" : "Check reference"}
+				{pending ? "Checking…" : verified ? "Check again" : "Check reference"}
 			</Button>
 		</form>
 	);

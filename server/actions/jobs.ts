@@ -3,11 +3,19 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
+import { verifyPaymentWithLeul } from "@/lib/leul-verify";
+import {
+  methodAccountSuffixLength,
+  methodNeedsAccountSuffix,
+  methodNeedsPhoneNumber,
+  paymentMethodLabel,
+} from "@/lib/payment-methods";
 import { rateLimit } from "@/lib/rate-limit";
 import { detectSpam } from "@/lib/spam";
 import { slugify } from "@/lib/format";
 import { jobSubmitSchema, jobUpdateSchema } from "@/lib/validations/job";
 import { paymentSubmitSchema } from "@/lib/validations/payment";
+import { z } from "zod";
 import { jobRepo } from "@/server/repositories/job";
 import { paymentRepo } from "@/server/repositories/payment";
 import { auditLogRepo } from "@/server/repositories/auditLog";
@@ -27,6 +35,27 @@ const fail = (
   error: string,
   fieldErrors?: Record<string, string[]>,
 ): ActionState => ({ ok: false, error, fieldErrors });
+
+function normalizeAccountSuffixForMethod(
+  method: string,
+  rawSuffix: string | null | undefined,
+): string | undefined {
+  if (!rawSuffix?.trim()) return undefined;
+  const requiredLength = methodAccountSuffixLength(method);
+  if (!requiredLength) return rawSuffix.trim();
+  const digits = rawSuffix.replace(/\D/g, "");
+  if (!digits) return undefined;
+  if (digits.length < requiredLength) return digits;
+  return digits.slice(-requiredLength);
+}
+
+const checkPaymentReferenceSchema = z.object({
+  jobId: z.string().uuid(),
+  method: z.string().min(1),
+  referenceCode: z.string().trim().min(1),
+  accountSuffix: z.string().trim().optional(),
+  phoneNumber: z.string().trim().optional(),
+});
 
 /* ──────────────────────────────────────────────
  * Submit a new job (web flow). After this the user uploads payment proof.
@@ -167,14 +196,49 @@ export async function submitPaymentAction(
     return fail("Payment already verified for this job");
   }
 
+  const selectedMethod = input.method;
+  const selectedSuffix = normalizeAccountSuffixForMethod(
+    selectedMethod,
+    input.accountSuffix,
+  );
+  const selectedPhone = input.phoneNumber?.trim() || undefined;
+
+  if (methodNeedsAccountSuffix(selectedMethod) && !selectedSuffix) {
+    return fail(
+      `${paymentMethodLabel(selectedMethod)} verification requires account suffix`,
+      { accountSuffix: ["Required for this method"] },
+    );
+  }
+  if (methodNeedsPhoneNumber(selectedMethod) && !selectedPhone) {
+    return fail(
+      `${paymentMethodLabel(selectedMethod)} verification requires phone number`,
+      { phoneNumber: ["Required for this method"] },
+    );
+  }
+
+  if (input.referenceCode) {
+    const verification = await verifyPaymentWithLeul({
+      reference: input.referenceCode,
+      method: selectedMethod,
+      accountSuffix: selectedSuffix,
+      phoneNumber: selectedPhone,
+    });
+    if (!verification.ok || !verification.verified) {
+      return fail(
+        verification.error ?? "Could not verify your payment reference",
+        { referenceCode: ["Reference check failed"] },
+      );
+    }
+  }
+
   const payment = existing
     ? await paymentRepo.setStatus(existing.id, "pending", {
         amount: input.amount,
         currency: input.currency,
-        method: input.method,
+        method: selectedMethod,
         referenceCode: input.referenceCode ?? null,
-        accountSuffix: input.accountSuffix ?? null,
-        phoneNumber: input.phoneNumber ?? null,
+        accountSuffix: selectedSuffix ?? null,
+        phoneNumber: selectedPhone ?? null,
         screenshotUrl: publicUrlFor(input.screenshotKey),
       })
     : await paymentRepo.create({
@@ -182,10 +246,10 @@ export async function submitPaymentAction(
         userId: user.id,
         amount: input.amount,
         currency: input.currency,
-        method: input.method,
+        method: selectedMethod,
         referenceCode: input.referenceCode ?? null,
-        accountSuffix: input.accountSuffix ?? null,
-        phoneNumber: input.phoneNumber ?? null,
+        accountSuffix: selectedSuffix ?? null,
+        phoneNumber: selectedPhone ?? null,
         screenshotUrl: publicUrlFor(input.screenshotKey),
         status: "pending",
       });
@@ -210,4 +274,52 @@ export async function submitPaymentAction(
   revalidatePath("/dashboard/jobs");
   revalidatePath(`/dashboard/jobs/${job.id}`);
   return ok();
+}
+
+export async function checkPaymentReferenceAction(
+  formData: FormData,
+): Promise<ActionState> {
+  const user = await requireUser();
+  const parsed = checkPaymentReferenceSchema.safeParse(
+    Object.fromEntries(formData),
+  );
+  if (!parsed.success) {
+    return fail("Enter a valid reference before checking.");
+  }
+
+  const { jobId, method, referenceCode, accountSuffix, phoneNumber } =
+    parsed.data;
+  const job = await jobRepo.byId(jobId);
+  if (!job || job.userId !== user.id) return fail("Job not found");
+
+  const selectedSuffix = normalizeAccountSuffixForMethod(method, accountSuffix);
+  const selectedPhone = phoneNumber?.trim() || undefined;
+
+  if (methodNeedsAccountSuffix(method) && !selectedSuffix) {
+    return fail(
+      `${paymentMethodLabel(method)} verification requires account suffix`,
+    );
+  }
+  if (methodNeedsPhoneNumber(method) && !selectedPhone) {
+    return fail(
+      `${paymentMethodLabel(method)} verification requires phone number`,
+    );
+  }
+
+  const verification = await verifyPaymentWithLeul({
+    reference: referenceCode,
+    method,
+    accountSuffix: selectedSuffix,
+    phoneNumber: selectedPhone,
+  });
+  if (!verification.ok || !verification.verified) {
+    return fail(verification.error ?? "Could not verify your payment reference");
+  }
+
+  return ok({
+    provider: verification.provider ?? null,
+    status: verification.status ?? "Verified",
+    transactionId: verification.transactionId ?? null,
+    amount: verification.amount ?? null,
+  });
 }
