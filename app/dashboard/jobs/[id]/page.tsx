@@ -35,6 +35,7 @@ import {
   formatSalary,
   statusLabel,
 } from "@/lib/format";
+import { paymentMethodLabel } from "@/lib/payment-methods";
 
 export async function generateMetadata(props: {
   params: Promise<{ id: string }>;
@@ -223,7 +224,10 @@ export default async function MyJobDetailPage(props: {
                     label="Amount"
                     value={`${payment.amount} ${payment.currency}`}
                   />
-                  <SidebarRow label="Method" value={statusLabel(payment.method)} />
+                  <SidebarRow
+                    label="Method"
+                    value={paymentMethodLabel(payment.method)}
+                  />
                   <SidebarRow
                     label="Status"
                     value={
@@ -241,6 +245,19 @@ export default async function MyJobDetailPage(props: {
                         </span>
                       }
                     />
+                  )}
+                  {payment.accountSuffix && (
+                    <SidebarRow
+                      label="Account suffix"
+                      value={
+                        <span className="font-mono text-xs">
+                          {payment.accountSuffix}
+                        </span>
+                      }
+                    />
+                  )}
+                  {payment.phoneNumber && (
+                    <SidebarRow label="Phone" value={payment.phoneNumber} />
                   )}
                 </dl>
                 {payment.screenshotUrl ? (

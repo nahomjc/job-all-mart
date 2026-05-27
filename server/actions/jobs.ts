@@ -173,6 +173,8 @@ export async function submitPaymentAction(
         currency: input.currency,
         method: input.method,
         referenceCode: input.referenceCode ?? null,
+        accountSuffix: input.accountSuffix ?? null,
+        phoneNumber: input.phoneNumber ?? null,
         screenshotUrl: publicUrlFor(input.screenshotKey),
       })
     : await paymentRepo.create({
@@ -182,6 +184,8 @@ export async function submitPaymentAction(
         currency: input.currency,
         method: input.method,
         referenceCode: input.referenceCode ?? null,
+        accountSuffix: input.accountSuffix ?? null,
+        phoneNumber: input.phoneNumber ?? null,
         screenshotUrl: publicUrlFor(input.screenshotKey),
         status: "pending",
       });

@@ -55,8 +55,9 @@ export default async function PaymentPage(props: {
             Payment details
           </CardTitle>
           <CardDescription>
-            Upload a clear screenshot of your transfer. Our team will verify it
-            before your job goes live.
+            Upload a clear screenshot of your transfer (CBE, Telebirr, Dashen,
+            etc.). Reference and suffix/phone are optional while testing — our
+            team will verify before your job goes live.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6">

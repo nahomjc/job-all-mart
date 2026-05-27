@@ -2,6 +2,8 @@
 
 import { requireAdmin } from "@/lib/auth";
 import { env } from "@/lib/env";
+import { verifyPaymentWithLeul } from "@/lib/leul-verify";
+import { verifyPaymentReferenceSchema } from "@/lib/validations/payment";
 import { telegramClient } from "@/lib/telegram/client";
 import { notifyAdmins, publishJobToTelegram } from "@/lib/telegram/publisher";
 import { categoryInputSchema } from "@/lib/validators/category";
@@ -286,129 +288,65 @@ export async function verifyPaymentAction(
 }
 
 /* ──────────────────────────────────────────────
- * Leul verifier test (by reference)
+ * Leul verifier — check transaction reference
+ * @see https://verify.leul.et/docs
  * ────────────────────────────────────────────── */
-function extractLeulVerification(payload: unknown): {
-	verified: boolean;
-	status?: string;
-	provider?: string;
-	transactionId?: string;
-	amount?: number;
-} {
-	if (!payload || typeof payload !== "object") {
-		return { verified: false };
+export async function verifyPaymentReferenceAction(
+	_prev: AdminActionState,
+	formData: FormData,
+): Promise<AdminActionState> {
+	await requireAdmin();
+	const parsed = verifyPaymentReferenceSchema.safeParse(
+		Object.fromEntries(formData),
+	);
+	if (!parsed.success) {
+		return failState(
+			parsed.error.flatten().fieldErrors.paymentId?.[0] ??
+				"Invalid verification input",
+		);
 	}
 
-	const p = payload as Record<string, unknown>;
-	const data =
-		typeof p.data === "object" && p.data !== null
-			? (p.data as Record<string, unknown>)
-			: undefined;
-	const transaction =
-		typeof p.transaction === "object" && p.transaction !== null
-			? (p.transaction as Record<string, unknown>)
-			: undefined;
-
-	const statusRaw =
-		(typeof p.status === "string" ? p.status : undefined) ??
-		(typeof transaction?.status === "string"
-			? transaction.status
-			: undefined) ??
-		(typeof data?.status === "string" ? data.status : undefined);
-
-	const status = typeof statusRaw === "string" ? statusRaw : undefined;
-
-	const isVerifiedRaw = p.is_verified;
-	const isVerified =
-		isVerifiedRaw === true ||
-		(typeof status === "string" && status.toLowerCase().includes("verified"));
-
-	const provider =
-		(typeof data?.provider === "string" ? data.provider : undefined) ??
-		(typeof p.provider === "string" ? p.provider : undefined);
-
-	const transactionId =
-		(typeof p.transaction_id === "string" ? p.transaction_id : undefined) ??
-		(typeof transaction?.transaction_id === "string"
-			? transaction.transaction_id
-			: undefined);
-
-	const amount =
-		typeof data?.amount === "number"
-			? data.amount
-			: typeof p.amount === "number"
-				? p.amount
-				: undefined;
-
-	return { verified: isVerified, status, provider, transactionId, amount };
-}
-
-export async function testLeulVerifyPaymentByReferenceAction(
-	paymentId: string,
-): Promise<AdminActionState> {
-	const admin = await requireAdmin();
+	const { paymentId, reference, method, accountSuffix, phoneNumber } =
+		parsed.data;
 	const p = await paymentRepo.byId(paymentId);
 	if (!p) return failState("Payment not found");
 
-	if (!p.referenceCode) return failState("No reference code on this payment");
-
-	const apiKey = env.LEUL_VERIFY_API_KEY;
-	if (!apiKey) {
-		return failState(
-			"Leul verifier not configured. Set LEUL_VERIFY_API_KEY in your environment.",
-		);
+	const ref = reference ?? p.referenceCode ?? "";
+	if (!ref.trim()) {
+		return failState("Enter a transaction reference to verify");
 	}
 
-	const baseUrl = env.LEUL_VERIFY_BASE_URL;
-	const controller = new AbortController();
-	const timeout = setTimeout(() => controller.abort(), 15000);
+	const result = await verifyPaymentWithLeul({
+		reference: ref,
+		method: method ?? p.method,
+		accountSuffix: accountSuffix ?? p.accountSuffix,
+		phoneNumber: phoneNumber ?? p.phoneNumber,
+	});
 
-	let res: Response;
-	try {
-		res = await fetch(`${baseUrl}/verify`, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				"x-api-key": apiKey,
-			},
-			body: JSON.stringify({
-				reference: p.referenceCode,
-			}),
-			signal: controller.signal,
-		});
-	} catch (err) {
-		const message = err instanceof Error ? err.message : String(err);
-		clearTimeout(timeout);
-		return failState(`Leul verifier request failed: ${message}`);
-	}
-	clearTimeout(timeout);
-
-	if (!res.ok) {
-		const text = await res.text().catch(() => "");
-		return failState(
-			`Leul verifier error: HTTP ${res.status}${text ? ` - ${text}` : ""}`,
-		);
+	if (!result.ok) {
+		return failState(result.error ?? "Verification request failed");
 	}
 
-	const json = (await res.json().catch(() => null)) as unknown;
-	const extracted = extractLeulVerification(json);
-
-	if (!extracted.verified) {
-		return failState(
-			`Leul verifier: not verified${
-				extracted.status ? ` (${extracted.status})` : ""
-			}`,
-		);
+	if (!result.verified) {
+		return failState(result.error ?? "Transaction not verified");
 	}
 
 	return okState({
-		reference: p.referenceCode,
-		provider: extracted.provider ?? null,
-		status: extracted.status ?? "verified",
-		transactionId: extracted.transactionId ?? null,
-		amount: extracted.amount ?? null,
-		testedBy: admin.id,
+		reference: ref,
+		provider: result.provider ?? null,
+		status: result.status ?? "verified",
+		transactionId: result.transactionId ?? null,
+		amount: result.amount ?? null,
 	});
+}
+
+/** @deprecated Use verifyPaymentReferenceAction — kept for existing imports */
+export async function testLeulVerifyPaymentByReferenceAction(
+	paymentId: string,
+): Promise<AdminActionState> {
+	const fd = new FormData();
+	fd.set("paymentId", paymentId);
+	return verifyPaymentReferenceAction({ ok: false }, fd);
 }
 
 const rejectPaymentSchema = z.object({
@@ -459,6 +397,7 @@ export async function banUserAction(
 		userAgent: null,
 	});
 	revalidatePath("/admin/users");
+	revalidatePath(`/admin/users/${userId}`);
 	return okState();
 }
 
@@ -477,6 +416,7 @@ export async function unbanUserAction(
 		userAgent: null,
 	});
 	revalidatePath("/admin/users");
+	revalidatePath(`/admin/users/${userId}`);
 	return okState();
 }
 

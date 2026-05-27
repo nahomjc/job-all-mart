@@ -249,7 +249,9 @@ export const payments = pgTable(
     amount: integer("amount").notNull(), // in minor units (cents/santims)
     currency: varchar("currency", { length: 8 }).notNull().default("USD"),
     referenceCode: varchar("reference_code", { length: 64 }),
-    method: varchar("method", { length: 32 }).notNull().default("bank_transfer"),
+    accountSuffix: varchar("account_suffix", { length: 32 }),
+    phoneNumber: varchar("phone_number", { length: 20 }),
+    method: varchar("method", { length: 32 }).notNull().default("telebirr"),
 
     status: paymentStatusEnum("status").notNull().default("pending"),
     verifiedBy: uuid("verified_by").references(() => users.id, {

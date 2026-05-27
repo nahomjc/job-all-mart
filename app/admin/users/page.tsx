@@ -1,4 +1,5 @@
-import { Users } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -9,15 +10,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
-import { UserRowActions } from "@/components/admin/user-row-actions";
+import { AdminUserCell } from "@/components/admin/admin-user-cell";
 import { userRepo } from "@/server/repositories/user";
 import { formatRelativeTime } from "@/lib/format";
 
 export const metadata = { title: "Users" };
 
 export default async function AdminUsersPage() {
-  const rows = await userRepo.list({ limit: 100 });
+  const rows = await userRepo.listForAdmin({ limit: 100 });
   return (
     <div className="space-y-6">
       <PageHeader
@@ -39,8 +41,8 @@ export default async function AdminUsersPage() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/40 hover:bg-muted/40">
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
+                  <TableHead>User</TableHead>
+                  <TableHead>Jobs</TableHead>
                   <TableHead>Telegram</TableHead>
                   <TableHead>Source</TableHead>
                   <TableHead>Role</TableHead>
@@ -50,12 +52,16 @@ export default async function AdminUsersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {rows.map((u) => (
+                {rows.map(({ user: u, jobCount, companyLogoUrl }) => (
                   <TableRow key={u.id}>
-                    <TableCell className="font-medium">
-                      {u.displayName ?? "—"}
+                    <TableCell>
+                      <AdminUserCell
+                        user={u}
+                        companyLogoUrl={companyLogoUrl}
+                        href={`/admin/users/${u.id}`}
+                      />
                     </TableCell>
-                    <TableCell>{u.email ?? "—"}</TableCell>
+                    <TableCell className="tabular-nums">{jobCount}</TableCell>
                     <TableCell>
                       {u.telegramUsername
                         ? `@${u.telegramUsername}`
@@ -87,7 +93,11 @@ export default async function AdminUsersPage() {
                       {formatRelativeTime(u.createdAt)}
                     </TableCell>
                     <TableCell className="text-right">
-                      <UserRowActions userId={u.id} status={u.status} />
+                      <Button asChild size="sm" variant="outline">
+                        <Link href={`/admin/users/${u.id}`}>
+                          View <ArrowRight className="size-3.5" />
+                        </Link>
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}

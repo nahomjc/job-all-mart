@@ -1,5 +1,5 @@
 import { AdminJobActions } from "@/components/admin/admin-job-actions";
-import { PageHeader } from "@/components/page-header";
+import { VerifyPaymentReference } from "@/components/admin/verify-payment-reference";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { formatRelativeTime, formatSalary, statusLabel } from "@/lib/format";
+import { paymentMethodLabel } from "@/lib/payment-methods";
 import { jobRepo } from "@/server/repositories/job";
 import { paymentRepo } from "@/server/repositories/payment";
 import { telegramPostRepo } from "@/server/repositories/telegramPost";
@@ -55,28 +56,47 @@ export default async function AdminJobReviewPage(props: {
 
 	return (
 		<div className="space-y-8">
-			<PageHeader
-				eyebrow="Job review"
-				title={job.title}
-				description={
-					<span className="flex flex-wrap items-center gap-2">
-						<span className="inline-flex items-center gap-1.5">
-							<Building2 className="size-3.5" />
-							{job.company}
-						</span>
-						<span className="text-muted-foreground/60">·</span>
-						<span>{category?.name ?? "Uncategorized"}</span>
-					</span>
-				}
-				actions={
-					<Button asChild variant="outline" size="sm">
-						<Link href="/admin/jobs">
-							<ArrowLeft className="size-3.5" />
-							Back to queue
-						</Link>
-					</Button>
-				}
-			/>
+			<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+				<div className="flex min-w-0 items-start gap-4">
+					<div className="flex size-14 shrink-0 items-center justify-center rounded-xl border bg-muted/50 md:size-16">
+						{job.logoUrl ? (
+							<Image
+								src={job.logoUrl}
+								alt={job.company}
+								width={64}
+								height={64}
+								className="size-full rounded-xl object-cover"
+							/>
+						) : (
+							<Building2 className="size-7 text-muted-foreground md:size-8" />
+						)}
+					</div>
+					<div className="min-w-0">
+						<p className="text-xs font-semibold uppercase tracking-wider text-primary">
+							Job review
+						</p>
+						<h1 className="mt-1 text-2xl font-bold tracking-tight md:text-3xl">
+							{job.title}
+						</h1>
+						<p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+							<span className="inline-flex flex-wrap items-center gap-2">
+								<span className="inline-flex items-center gap-1.5 font-medium text-foreground">
+									<Building2 className="size-3.5" />
+									{job.company}
+								</span>
+								<span className="text-muted-foreground/60">·</span>
+								<span>{category?.name ?? "Uncategorized"}</span>
+							</span>
+						</p>
+					</div>
+				</div>
+				<Button asChild variant="outline" size="sm">
+					<Link href="/admin/jobs">
+						<ArrowLeft className="size-3.5" />
+						Back to queue
+					</Link>
+				</Button>
+			</div>
 
 			<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
 				<SnapshotTile
@@ -115,7 +135,6 @@ export default async function AdminJobReviewPage(props: {
 						jobId={job.id}
 						paymentId={payment?.id}
 						paymentStatus={payment?.status}
-						paymentReferenceCode={payment?.referenceCode}
 						jobStatus={job.status}
 					/>
 
@@ -223,7 +242,7 @@ export default async function AdminJobReviewPage(props: {
 									/>
 									<SidebarRow
 										label="Method"
-										value={statusLabel(payment.method)}
+										value={paymentMethodLabel(payment.method)}
 									/>
 									<SidebarRow
 										label="Status"
@@ -243,7 +262,31 @@ export default async function AdminJobReviewPage(props: {
 											}
 										/>
 									)}
+									{payment.accountSuffix && (
+										<SidebarRow
+											label="Account suffix"
+											value={
+												<span className="font-mono text-xs">
+													{payment.accountSuffix}
+												</span>
+											}
+										/>
+									)}
+									{payment.phoneNumber && (
+										<SidebarRow
+											label="Phone"
+											value={payment.phoneNumber}
+										/>
+									)}
 								</dl>
+
+								<VerifyPaymentReference
+									paymentId={payment.id}
+									defaultReference={payment.referenceCode}
+									defaultMethod={payment.method}
+									defaultAccountSuffix={payment.accountSuffix}
+									defaultPhoneNumber={payment.phoneNumber}
+								/>
 								{payment.screenshotUrl ? (
 									<a
 										href={payment.screenshotUrl}

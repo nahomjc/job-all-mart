@@ -69,6 +69,15 @@ export const paymentRepo = {
       .orderBy(desc(payments.createdAt));
   },
 
+  listByUserWithJobs(userId: string) {
+    return db
+      .select({ payment: payments, job: jobs })
+      .from(payments)
+      .leftJoin(jobs, eq(jobs.id, payments.jobId))
+      .where(eq(payments.userId, userId))
+      .orderBy(desc(payments.createdAt));
+  },
+
   /** Dashboard: server-side search + filter + sort (scoped to a single user). */
   listDashboardPayments(opts: {
     userId: string;

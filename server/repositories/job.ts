@@ -1,5 +1,5 @@
 import "server-only";
-import { and, asc, count, desc, eq, gte, inArray, lt, lte, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, inArray, isNotNull, lt, lte, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import {
   categories,
@@ -102,6 +102,51 @@ export const jobRepo = {
       .leftJoin(categories, eq(categories.id, jobs.categoryId))
       .where(eq(jobs.userId, userId))
       .orderBy(desc(jobs.createdAt));
+  },
+
+  async countByUser(userId: string): Promise<number> {
+    const [row] = await db
+      .select({ n: count() })
+      .from(jobs)
+      .where(eq(jobs.userId, userId));
+    return row?.n ?? 0;
+  },
+
+  async latestCompanyLogoByUser(userId: string): Promise<string | null> {
+    const [row] = await db
+      .select({ logoUrl: jobs.logoUrl })
+      .from(jobs)
+      .where(and(eq(jobs.userId, userId), isNotNull(jobs.logoUrl)))
+      .orderBy(desc(jobs.createdAt))
+      .limit(1);
+    return row?.logoUrl ?? null;
+  },
+
+  async countsByUserIds(userIds: string[]): Promise<Map<string, number>> {
+    if (userIds.length === 0) return new Map();
+    const rows = await db
+      .select({ userId: jobs.userId, n: count() })
+      .from(jobs)
+      .where(inArray(jobs.userId, userIds))
+      .groupBy(jobs.userId);
+    return new Map(rows.map((r) => [r.userId, r.n]));
+  },
+
+  async latestLogosByUserIds(userIds: string[]): Promise<Map<string, string>> {
+    if (userIds.length === 0) return new Map();
+    const rows = await db
+      .selectDistinctOn([jobs.userId], {
+        userId: jobs.userId,
+        logoUrl: jobs.logoUrl,
+      })
+      .from(jobs)
+      .where(and(inArray(jobs.userId, userIds), isNotNull(jobs.logoUrl)))
+      .orderBy(jobs.userId, desc(jobs.createdAt));
+    return new Map(
+      rows
+        .filter((r): r is { userId: string; logoUrl: string } => !!r.logoUrl)
+        .map((r) => [r.userId, r.logoUrl]),
+    );
   },
 
   /** Used by spam detection — recent titles by a single employer. */

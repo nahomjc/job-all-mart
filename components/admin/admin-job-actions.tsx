@@ -20,7 +20,6 @@ import {
 	rejectPaymentAction,
 	republishJobAction,
 	scheduleJobAction,
-	testLeulVerifyPaymentByReferenceAction,
 	verifyPaymentAction,
 } from "@/server/actions/admin";
 import {
@@ -28,7 +27,6 @@ import {
 	CheckCircle2,
 	Pin,
 	Rocket,
-	Search,
 	Send,
 	ShieldAlert,
 	XCircle,
@@ -43,7 +41,6 @@ interface AdminJobActionsProps {
 	jobId: string;
 	paymentId?: string;
 	paymentStatus?: string;
-	paymentReferenceCode?: string | null;
 	jobStatus: string;
 }
 
@@ -79,26 +76,6 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 				router.refresh();
 			} else {
 				toast.error(r.error ?? "Failed to verify payment");
-			}
-		});
-	};
-
-	const runLeulVerifyTest = () => {
-		const paymentId = props.paymentId;
-		if (!paymentId) return;
-		startTransition(async () => {
-			const r = await testLeulVerifyPaymentByReferenceAction(paymentId);
-			if (r.ok) {
-				const d = r.data as
-					| {
-							provider?: string | null;
-							status?: string;
-							transactionId?: string | null;
-					  }
-					| undefined;
-				toast.success(`Leul verified${d?.provider ? ` (${d.provider})` : ""}`);
-			} else {
-				toast.error(r.error ?? "Leul verification failed");
 			}
 		});
 	};
@@ -165,17 +142,6 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 								<CheckCircle2 className="size-3.5" />
 								Verify payment
 							</Button>
-							{props.paymentReferenceCode && (
-								<Button
-									size="sm"
-									variant="outline"
-									onClick={runLeulVerifyTest}
-									disabled={pending}
-								>
-									<Search className="size-3.5" />
-									Verify by reference (Leul test)
-								</Button>
-							)}
 							{props.paymentId && (
 								<RejectPaymentForm paymentId={props.paymentId} />
 							)}
