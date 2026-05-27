@@ -13,6 +13,7 @@ import {
 import { AuthForm } from "@/components/auth-form";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/auth";
+import { buildRequiredChannelJoinUrl } from "@/lib/required-channel-links";
 
 export const metadata = {
   title: "Sign in",
@@ -41,7 +42,11 @@ export default async function LoginPage() {
   if (user) redirect("/dashboard");
 
   const brandName = process.env.NEXT_PUBLIC_APP_NAME ?? "JobPost";
-  const tgChannel = process.env.TELEGRAM_REQUIRED_CHANNEL ?? "";
+  const tgJoinUrl = buildRequiredChannelJoinUrl({
+    username: process.env.TELEGRAM_REQUIRED_CHANNEL ?? "",
+    invite: process.env.TELEGRAM_REQUIRED_CHANNEL_INVITE,
+  });
+  const hasTgJoin = Boolean(process.env.TELEGRAM_REQUIRED_CHANNEL);
 
   return (
     <div className="grid min-h-screen lg:grid-cols-[1fr_1.05fr]">
@@ -159,9 +164,9 @@ export default async function LoginPage() {
               </span>
             </div>
 
-            {tgChannel && (
+            {hasTgJoin && (
               <a
-                href={`https://t.me/${tgChannel}`}
+                href={tgJoinUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-sm text-primary-foreground/85 underline-offset-4 hover:underline"

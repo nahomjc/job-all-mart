@@ -88,13 +88,20 @@ export async function handleChatId(ctx: Context): Promise<void> {
     hints.push(
       "→ <code>TELEGRAM_CHANNEL_ID</code> (job posting supergroup with forum topics)",
     );
+    hints.push(
+      "→ <code>TELEGRAM_REQUIRED_CHAT_ID</code> (if this is the group users must join before /postjob)",
+    );
+  } else if (chat.type === "group") {
+    hints.push(
+      "→ <code>TELEGRAM_REQUIRED_CHAT_ID</code> (membership gate for /postjob)",
+    );
   } else if (chat.type === "private") {
     hints.push(
       "→ <code>TELEGRAM_ADMIN_NOTIFY_CHAT_ID</code> (your personal DM for admin alerts)",
     );
-  } else if (chat.type === "group" || chat.type === "channel") {
+  } else if (chat.type === "channel") {
     hints.push(
-      "→ <code>TELEGRAM_CHANNEL_ID</code> or <code>TELEGRAM_ADMIN_NOTIFY_CHAT_ID</code>",
+      "→ <code>TELEGRAM_CHANNEL_ID</code> or <code>TELEGRAM_REQUIRED_CHAT_ID</code>",
     );
   }
 
@@ -193,6 +200,10 @@ export async function handleSetupIds(ctx: Context): Promise<void> {
     chat?.type === "supergroup"
       ? `TELEGRAM_CHANNEL_ID=${chat.id}`
       : "# TELEGRAM_CHANNEL_ID=  ← run /chatid inside your jobs supergroup",
+    chat?.type === "supergroup" || chat?.type === "group"
+      ? `TELEGRAM_REQUIRED_CHAT_ID=${chat.id}`
+      : "# TELEGRAM_REQUIRED_CHAT_ID=  ← /chatid in the join-required group",
+    "# TELEGRAM_REQUIRED_CHANNEL_INVITE=https://t.me/+YourInviteHash",
     chat?.type === "private"
       ? `TELEGRAM_ADMIN_NOTIFY_CHAT_ID=${chat.id}`
       : "# TELEGRAM_ADMIN_NOTIFY_CHAT_ID=  ← run /chatid in DM or admin group",
@@ -220,6 +231,11 @@ export async function handleSetupIds(ctx: Context): Promise<void> {
       "<b>Configured in .env</b>",
       envLine("TELEGRAM_CHANNEL_ID", env.TELEGRAM_CHANNEL_ID),
       envLine("TELEGRAM_REQUIRED_CHANNEL", env.TELEGRAM_REQUIRED_CHANNEL),
+      envLine("TELEGRAM_REQUIRED_CHAT_ID", env.TELEGRAM_REQUIRED_CHAT_ID),
+      envLine(
+        "TELEGRAM_REQUIRED_CHANNEL_INVITE",
+        env.TELEGRAM_REQUIRED_CHANNEL_INVITE,
+      ),
       envLine(
         "TELEGRAM_ADMIN_NOTIFY_CHAT_ID",
         env.TELEGRAM_ADMIN_NOTIFY_CHAT_ID,

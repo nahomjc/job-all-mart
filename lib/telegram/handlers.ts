@@ -19,6 +19,7 @@ import {
 } from "@/lib/telegram/admin-setup";
 import { formatSalary, statusLabel } from "@/lib/format";
 import { joinRequiredChannelKeyboard } from "@/lib/telegram/keyboards";
+import { requiredChannelLabel } from "@/lib/telegram/required-channel";
 
 let registered = false;
 
@@ -50,7 +51,7 @@ Available commands:
 • /pricing – view our plans
 • /help – show this message
 
-Before posting, join @${env.TELEGRAM_REQUIRED_CHANNEL} using the button below.`,
+Before posting, join ${requiredChannelLabel()} using the button below.`,
       joinRequiredChannelKeyboard(),
     );
   });

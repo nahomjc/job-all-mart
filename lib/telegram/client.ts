@@ -1,6 +1,10 @@
 import "server-only";
 import { Telegram } from "telegraf";
 import { env } from "@/lib/env";
+import {
+  requiredChatIdForApi,
+  type MembershipCheckResult,
+} from "@/lib/telegram/required-channel";
 
 let _client: Telegram | null = null;
 
@@ -10,26 +14,44 @@ function tg(): Telegram {
   return _client;
 }
 
+const MEMBER_STATUSES = new Set([
+  "creator",
+  "administrator",
+  "member",
+  "restricted",
+]);
+
 /**
- * Checks whether a user is a member of the configured required channel.
- * Telegram requires the bot to be an admin in the channel for this to work.
+ * Checks whether a user is a member of the configured required group/channel.
+ * The bot must be an administrator in that chat for the API call to succeed.
  */
+export async function checkRequiredChannelMembership(
+  telegramUserId: number,
+): Promise<MembershipCheckResult> {
+  try {
+    const member = await tg().getChatMember(
+      requiredChatIdForApi(),
+      telegramUserId,
+    );
+    return MEMBER_STATUSES.has(member.status)
+      ? { status: "member" }
+      : { status: "not_member" };
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err);
+    console.warn(
+      "[telegram] membership check failed for",
+      requiredChatIdForApi(),
+      detail,
+    );
+    return { status: "check_failed", detail };
+  }
+}
+
 export async function isUserInRequiredChannel(
   telegramUserId: number,
 ): Promise<boolean> {
-  try {
-    const member = await tg().getChatMember(
-      `@${env.TELEGRAM_REQUIRED_CHANNEL}`,
-      telegramUserId,
-    );
-    return ["creator", "administrator", "member", "restricted"].includes(
-      member.status,
-    );
-  } catch (err) {
-    // Bot not admin in channel, or user blocked the bot — treat as not a member.
-    console.warn("[telegram] membership check failed:", err);
-    return false;
-  }
+  const result = await checkRequiredChannelMembership(telegramUserId);
+  return result.status === "member";
 }
 
 export const telegramClient = {

@@ -24,7 +24,7 @@ import { Input } from "@/components/ui/input";
 import { JobCard } from "@/components/jobs/job-card";
 import { jobRepo } from "@/server/repositories/job";
 import { categoryRepo } from "@/server/repositories/category";
-import { env } from "@/lib/env";
+import { requiredChannelJoinUrl } from "@/lib/telegram/required-channel";
 
 const TRUSTED_BRANDS = [
   "zendesk",
@@ -152,7 +152,7 @@ export default async function HomePage() {
               <span className="text-muted-foreground/60">·</span>
               <Button asChild variant="ghost" size="sm">
                 <a
-                  href={`https://t.me/${env.TELEGRAM_REQUIRED_CHANNEL}`}
+                  href={requiredChannelJoinUrl()}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -633,7 +633,7 @@ export default async function HomePage() {
                 className="border-white/40 bg-transparent text-primary-foreground hover:bg-white/10 hover:text-primary-foreground"
               >
                 <a
-                  href={`https://t.me/${env.TELEGRAM_REQUIRED_CHANNEL}`}
+                  href={requiredChannelJoinUrl()}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

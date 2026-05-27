@@ -56,13 +56,17 @@ Before editing `.env`, set up Telegram assets:
 2. Send `/newbot`, follow prompts, copy the **HTTP API token**.
 3. Optional: `/setcommands` for a cleaner command menu.
 
-### 2. Required membership channel
+### 2. Required membership group/channel
 
-Users must join this channel before `/postjob` works.
+Users must join this chat before `/postjob` works.
 
-1. Create a **public channel** (e.g. `@YourJobsChannel`).
-2. Add your bot as an **administrator** with permission to read members (needed for `getChatMember`).
-3. Note the **username without `@`** → `TELEGRAM_REQUIRED_CHANNEL`.
+1. Create the group (public `@username` or **private invite link** `https://t.me/+…`).
+2. Add your bot as an **administrator** (required for `getChatMember`).
+3. Set env:
+   - `TELEGRAM_REQUIRED_CHANNEL` — short name for messages (e.g. `all-mart-job-post`)
+   - `TELEGRAM_REQUIRED_CHANNEL_INVITE` — full invite URL if the group is private (e.g. `https://t.me/+wo7yTwl1yEhkOTRk`)
+   - `TELEGRAM_REQUIRED_CHAT_ID` — numeric id from `/chatid` **inside that group** (required for private invite-only groups)
+4. Run `/chatid` in the membership group → paste id into `TELEGRAM_REQUIRED_CHAT_ID`.
 
 ### 3. Job posting supergroup (forum topics)
 
@@ -106,7 +110,9 @@ Add these to `.env` (see `lib/env.ts` for the canonical list):
 |----------|----------|-------------|
 | `TELEGRAM_BOT_TOKEN` | Yes | Bot token from BotFather |
 | `TELEGRAM_CHANNEL_ID` | Yes | Supergroup chat id (`-100…`) where jobs are posted |
-| `TELEGRAM_REQUIRED_CHANNEL` | Yes | Channel username **without** `@` (membership gate) |
+| `TELEGRAM_REQUIRED_CHANNEL` | Yes | Display slug **without** `@` (membership gate label) |
+| `TELEGRAM_REQUIRED_CHAT_ID` | No* | Numeric chat id for `getChatMember` (*required for private `t.me/+` groups) |
+| `TELEGRAM_REQUIRED_CHANNEL_INVITE` | No | Invite URL for Join button (`https://t.me/+…`) |
 | `TELEGRAM_WEBHOOK_SECRET` | Yes | Long random string; validated on every webhook request |
 | `TELEGRAM_ADMIN_IDS` | No | Comma-separated Telegram user ids treated as admins (if used) |
 | `TELEGRAM_ADMIN_NOTIFY_CHAT_ID` | No | Chat id for "new submission" notifications |
@@ -359,11 +365,13 @@ Fix: complete payment → admin verify → **Approve & publish**, or use **Mark 
 
 Use **Retry Telegram publish** on the admin job page to see the exact error.
 
-### `/postjob` says I must join the channel
+### `/postjob` says I must join the channel (but I already joined)
 
-1. User must join `@TELEGRAM_REQUIRED_CHANNEL`.
-2. Bot must be **admin** in that channel.
-3. `TELEGRAM_REQUIRED_CHANNEL` must be the username **without** `@`.
+1. **Bot must be administrator** in the membership group (most common fix).
+2. For **private invite links** (`https://t.me/+…`), set `TELEGRAM_REQUIRED_CHAT_ID` from `/chatid` in that group — `@username` checks often fail.
+3. Set `TELEGRAM_REQUIRED_CHANNEL_INVITE` to the real invite link so the Join button opens the correct chat.
+4. User must be in the **same** chat as configured (not a similarly named group).
+5. Redeploy Vercel after changing env vars.
 
 ### Webhook returns 403
 

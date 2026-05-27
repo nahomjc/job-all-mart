@@ -17,6 +17,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/page-header";
 import { CategoryForm } from "@/components/admin/category-form";
+import { CategoryEditDialog } from "@/components/admin/category-edit-dialog";
 import { categoryRepo } from "@/server/repositories/category";
 
 export const metadata = { title: "Categories" };
@@ -64,6 +65,7 @@ export default async function AdminCategoriesPage() {
                   <TableHead>Topic ID</TableHead>
                   <TableHead>Sort</TableHead>
                   <TableHead>Active</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -73,12 +75,17 @@ export default async function AdminCategoriesPage() {
                     <TableCell className="font-mono text-xs text-muted-foreground">
                       {c.slug}
                     </TableCell>
-                    <TableCell>{c.telegramTopicId ?? "—"}</TableCell>
+                    <TableCell className="font-mono text-sm tabular-nums">
+                      {c.telegramTopicId ?? "—"}
+                    </TableCell>
                     <TableCell>{c.sortOrder}</TableCell>
                     <TableCell>
                       <Badge variant={c.active ? "success" : "outline"}>
                         {c.active ? "active" : "off"}
                       </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <CategoryEditDialog category={c} />
                     </TableCell>
                   </TableRow>
                 ))}

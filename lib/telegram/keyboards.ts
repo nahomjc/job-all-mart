@@ -1,16 +1,12 @@
 import { Markup } from "telegraf";
-import { env } from "@/lib/env";
+import {
+  requiredChannelJoinUrl,
+  requiredChannelLabel,
+} from "@/lib/telegram/required-channel";
 
-export function requiredChannelUrl(): string {
-  return `https://t.me/${env.TELEGRAM_REQUIRED_CHANNEL}`;
-}
-
-/** Opens the public channel users must join before /postjob. */
+/** Opens the group/channel users must join before /postjob. */
 export function joinRequiredChannelKeyboard() {
   return Markup.inlineKeyboard([
-    Markup.button.url(
-      `Join @${env.TELEGRAM_REQUIRED_CHANNEL}`,
-      requiredChannelUrl(),
-    ),
+    Markup.button.url(`Join ${requiredChannelLabel()}`, requiredChannelJoinUrl()),
   ]);
 }

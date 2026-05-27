@@ -11,6 +11,7 @@ import { userRepo } from "@/server/repositories/user";
 import { auditLogRepo } from "@/server/repositories/auditLog";
 import { categoryRepo } from "@/server/repositories/category";
 import { env } from "@/lib/env";
+import { categoryInputSchema } from "@/lib/validators/category";
 
 export interface AdminActionState {
   ok: boolean;
@@ -343,57 +344,86 @@ export async function unbanUserAction(
 /* ──────────────────────────────────────────────
  * Categories
  * ────────────────────────────────────────────── */
-const categorySchema = z.object({
-  name: z.string().min(2).max(128),
-  slug: z.string().min(2).max(64),
-  description: z.string().optional().nullable(),
-  telegramTopicId: z.coerce.number().int().optional().nullable(),
-  sortOrder: z.coerce.number().int().default(0),
-  active: z.coerce.boolean().default(true),
-});
-
 export async function createCategoryAction(
   _prev: AdminActionState,
   formData: FormData,
 ): Promise<AdminActionState> {
   const admin = await requireAdmin();
   const obj = Object.fromEntries(formData);
-  const parsed = categorySchema.safeParse(obj);
-  if (!parsed.success) return failState("Invalid category");
-  const created = await categoryRepo.create({
-    ...parsed.data,
-    icon: null,
-  } as never);
-  await auditLogRepo.log({
-    actorId: admin.id,
-    action: "category.create",
-    targetType: "category",
-    targetId: created.id,
-    metadata: parsed.data,
-    ip: null,
-    userAgent: null,
+  const parsed = categoryInputSchema.safeParse({
+    ...obj,
+    active: obj.active ?? true,
   });
-  revalidatePath("/admin/categories");
-  return okState();
+  if (!parsed.success) {
+    const msg = parsed.error.issues[0]?.message ?? "Invalid category";
+    return failState(msg);
+  }
+
+  const slugTaken = await categoryRepo.bySlug(parsed.data.slug);
+  if (slugTaken) return failState("Slug is already in use");
+
+  try {
+    const created = await categoryRepo.create({
+      ...parsed.data,
+      icon: null,
+    } as never);
+    await auditLogRepo.log({
+      actorId: admin.id,
+      action: "category.create",
+      targetType: "category",
+      targetId: created.id,
+      metadata: parsed.data,
+      ip: null,
+      userAgent: null,
+    });
+    revalidatePath("/admin/categories");
+    return okState();
+  } catch {
+    return failState("Could not create category (topic ID may already be in use)");
+  }
 }
 
-export async function updateCategoryAction(
-  id: string,
-  patch: { name?: string; telegramTopicId?: number | null; active?: boolean },
+export async function updateCategoryFormAction(
+  _prev: AdminActionState,
+  formData: FormData,
 ): Promise<AdminActionState> {
   const admin = await requireAdmin();
-  await categoryRepo.update(id, patch);
-  await auditLogRepo.log({
-    actorId: admin.id,
-    action: "category.update",
-    targetType: "category",
-    targetId: id,
-    metadata: patch,
-    ip: null,
-    userAgent: null,
-  });
-  revalidatePath("/admin/categories");
-  return okState();
+  const id = formData.get("id");
+  if (typeof id !== "string" || id.length === 0) {
+    return failState("Missing category id");
+  }
+
+  const existing = await categoryRepo.byId(id);
+  if (!existing) return failState("Category not found");
+
+  const obj = Object.fromEntries(formData);
+  const parsed = categoryInputSchema.safeParse(obj);
+  if (!parsed.success) {
+    const msg = parsed.error.issues[0]?.message ?? "Invalid category";
+    return failState(msg);
+  }
+
+  const slugTaken = await categoryRepo.bySlug(parsed.data.slug);
+  if (slugTaken && slugTaken.id !== id) {
+    return failState("Slug is already in use");
+  }
+
+  try {
+    await categoryRepo.update(id, parsed.data);
+    await auditLogRepo.log({
+      actorId: admin.id,
+      action: "category.update",
+      targetType: "category",
+      targetId: id,
+      metadata: parsed.data,
+      ip: null,
+      userAgent: null,
+    });
+    revalidatePath("/admin/categories");
+    return okState();
+  } catch {
+    return failState("Could not update category (topic ID may already be in use)");
+  }
 }
 
 /* ──────────────────────────────────────────────

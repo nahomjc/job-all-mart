@@ -9,8 +9,7 @@
 function required(name: string, value: string | undefined): string {
   if (!value || value.length === 0) {
     throw new Error(
-      `Missing required environment variable: ${name}. ` +
-        `See .env.example for the full list.`,
+      `Missing required environment variable: ${name}. See .env.example for the full list.`,
     );
   }
   return value;
@@ -36,7 +35,10 @@ export const env = {
 
   // Supabase
   get NEXT_PUBLIC_SUPABASE_URL() {
-    return required("NEXT_PUBLIC_SUPABASE_URL", process.env.NEXT_PUBLIC_SUPABASE_URL);
+    return required(
+      "NEXT_PUBLIC_SUPABASE_URL",
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+    );
   },
   get NEXT_PUBLIC_SUPABASE_ANON_KEY() {
     return required(
@@ -45,7 +47,10 @@ export const env = {
     );
   },
   get SUPABASE_SERVICE_ROLE_KEY() {
-    return required("SUPABASE_SERVICE_ROLE_KEY", process.env.SUPABASE_SERVICE_ROLE_KEY);
+    return required(
+      "SUPABASE_SERVICE_ROLE_KEY",
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
+    );
   },
 
   // R2
@@ -73,10 +78,28 @@ export const env = {
     return required("TELEGRAM_CHANNEL_ID", process.env.TELEGRAM_CHANNEL_ID);
   },
   get TELEGRAM_REQUIRED_CHANNEL() {
-    return required("TELEGRAM_REQUIRED_CHANNEL", process.env.TELEGRAM_REQUIRED_CHANNEL);
+    return required(
+      "TELEGRAM_REQUIRED_CHANNEL",
+      process.env.TELEGRAM_REQUIRED_CHANNEL,
+    );
+  },
+  /** Numeric supergroup/channel id for membership checks (required for private invite-only groups). */
+  get TELEGRAM_REQUIRED_CHAT_ID() {
+    return optional(process.env.TELEGRAM_REQUIRED_CHAT_ID);
+  },
+  /** Invite link for Join button, e.g. `https://t.me/+wo7yTwl1yEhkOTRk` or `+wo7yTwl1yEhkOTRk`. */
+  get TELEGRAM_REQUIRED_CHANNEL_INVITE() {
+    return optional(process.env.TELEGRAM_REQUIRED_CHANNEL_INVITE);
+  },
+  /** Optional label in bot copy, e.g. `all-mart-job-post`. */
+  get TELEGRAM_REQUIRED_CHANNEL_LABEL() {
+    return optional(process.env.TELEGRAM_REQUIRED_CHANNEL_LABEL);
   },
   get TELEGRAM_WEBHOOK_SECRET() {
-    return required("TELEGRAM_WEBHOOK_SECRET", process.env.TELEGRAM_WEBHOOK_SECRET);
+    return required(
+      "TELEGRAM_WEBHOOK_SECRET",
+      process.env.TELEGRAM_WEBHOOK_SECRET,
+    );
   },
   get TELEGRAM_ADMIN_IDS(): number[] {
     const raw = process.env.TELEGRAM_ADMIN_IDS ?? "";

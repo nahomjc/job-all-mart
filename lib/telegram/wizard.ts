@@ -11,7 +11,8 @@ import { auditLogRepo } from "@/server/repositories/auditLog";
 import { detectSpam } from "@/lib/spam";
 import { rateLimit } from "@/lib/rate-limit";
 import { slugify } from "@/lib/format";
-import { isUserInRequiredChannel } from "@/lib/telegram/client";
+import { checkRequiredChannelMembership } from "@/lib/telegram/client";
+import { requiredChannelLabel } from "@/lib/telegram/required-channel";
 import { notifyAdmins } from "@/lib/telegram/publisher";
 
 /**
@@ -170,11 +171,18 @@ export async function handleWizardMessage(ctx: Context): Promise<boolean> {
         }
       }
 
+      const jobFields = getDraftJobFields(draft);
+      if (!jobFields) {
+        await ctx.reply("Session expired. Run /postjob to start over.");
+        clearDraft(from.id);
+        return true;
+      }
+
       // Create the job in pending_payment now so we can attach payment to it.
       const recentTitles = await jobRepo.recentTitlesByUser(user.id, 10);
       const spam = detectSpam({
-        title: draft.title!,
-        description: draft.description!,
+        title: jobFields.title,
+        description: jobFields.description,
         applyUrl: draft.applyUrl ?? null,
         recentTitlesByUser: recentTitles,
       });
@@ -188,12 +196,12 @@ export async function handleWizardMessage(ctx: Context): Promise<boolean> {
 
       const job = await jobRepo.create({
         userId: user.id,
-        categoryId: draft.categoryId!,
-        title: draft.title!,
-        company: draft.company!,
-        description: draft.description!,
+        categoryId: jobFields.categoryId,
+        title: jobFields.title,
+        company: jobFields.company,
+        description: jobFields.description,
         employmentType: "full_time",
-        location: draft.location!,
+        location: jobFields.location,
         salaryMin: draft.salaryMin ?? null,
         salaryMax: draft.salaryMax ?? null,
         salaryCurrency: "USD",
@@ -201,7 +209,7 @@ export async function handleWizardMessage(ctx: Context): Promise<boolean> {
         status: "pending_payment",
         source: "telegram",
         spamScore: spam.score,
-        slug: slugify(draft.title!),
+        slug: slugify(jobFields.title),
       });
       draft.jobId = job.id;
       draft.step = "awaiting_payment_amount";
@@ -231,37 +239,47 @@ export async function handleWizardMessage(ctx: Context): Promise<boolean> {
         return true;
       }
 
+      const jobId = draft.jobId;
+      const paymentAmount = draft.paymentAmount;
+      const jobTitle = draft.title;
+      if (!jobId || paymentAmount === undefined || !jobTitle) {
+        await ctx.reply("Session expired. Run /postjob to start over.");
+        clearDraft(from.id);
+        return true;
+      }
+
       let screenshotUrl = "";
       if (photo) {
-        // Largest size variant is last
-        const fileId = photo[photo.length - 1]!.file_id;
-        const fileLink = await telegramClient.getFileLink(fileId);
-        screenshotUrl = await uploadBufferToR2(
-          await fetchAsBuffer(fileLink.toString()),
-          {
-            kind: "payment",
-            userId: user.id,
-            ext: ".jpg",
-            contentType: "image/jpeg",
-          },
-        );
+        const largest = photo[photo.length - 1];
+        if (largest) {
+          const fileLink = await telegramClient.getFileLink(largest.file_id);
+          screenshotUrl = await uploadBufferToR2(
+            await fetchAsBuffer(fileLink.toString()),
+            {
+              kind: "payment",
+              userId: user.id,
+              ext: ".jpg",
+              contentType: "image/jpeg",
+            },
+          );
+        }
       }
 
       await paymentRepo.create({
-        jobId: draft.jobId!,
+        jobId,
         userId: user.id,
-        amount: draft.paymentAmount!,
+        amount: paymentAmount,
         currency: "USD",
         method: "bank_transfer",
         screenshotUrl,
         status: "pending",
       });
-      await jobRepo.setStatus(draft.jobId!, "pending_review");
+      await jobRepo.setStatus(jobId, "pending_review");
       await auditLogRepo.log({
         actorId: user.id,
         action: "job.create",
         targetType: "job",
-        targetId: draft.jobId!,
+        targetId: jobId,
         metadata: { via: "telegram" },
         ip: null,
         userAgent: "telegram",
@@ -271,7 +289,7 @@ export async function handleWizardMessage(ctx: Context): Promise<boolean> {
         "✅ Submission received! It is now in admin review.\nYou'll get a Telegram message when it's approved or rejected.\nUse /myjobs to track status.",
       );
       await notifyAdmins(
-        `🆕 New Telegram submission\nUser: @${user.telegramUsername ?? user.telegramId}\nJob: ${escapeHtml(draft.title!)}\nReview at ${env.NEXT_PUBLIC_APP_URL}/admin/jobs/${draft.jobId}`,
+        `🆕 New Telegram submission\nUser: @${user.telegramUsername ?? user.telegramId}\nJob: ${escapeHtml(jobTitle)}\nReview at ${env.NEXT_PUBLIC_APP_URL}/admin/jobs/${jobId}`,
       );
 
       clearDraft(from.id);
@@ -306,13 +324,20 @@ export async function ensureCanPost(
   if (!from) return { ok: false, reason: "no user" };
 
   // 1) Membership check
-  const inChannel = await isUserInRequiredChannel(from.id);
-  if (!inChannel) {
+  const membership = await checkRequiredChannelMembership(from.id);
+  if (membership.status === "check_failed") {
     return {
       ok: false,
       reason:
-        `🔒 You must join @${env.TELEGRAM_REQUIRED_CHANNEL} before posting.\n` +
-        "Tap Join below, then run /postjob again.",
+        "🔒 Could not verify your group membership.\n" +
+        "Ask the admin to add the bot as administrator in the required group " +
+        "(and set TELEGRAM_REQUIRED_CHAT_ID in env), then try again.",
+    };
+  }
+  if (membership.status === "not_member") {
+    return {
+      ok: false,
+      reason: `🔒 You must join ${requiredChannelLabel()} before posting.\nTap Join below, then run /postjob again.`,
     };
   }
 
@@ -347,6 +372,20 @@ export async function ensureCanPost(
   }
 
   return { ok: true };
+}
+
+function getDraftJobFields(draft: Draft): {
+  title: string;
+  company: string;
+  description: string;
+  categoryId: string;
+  location: string;
+} | null {
+  const { title, company, description, categoryId, location } = draft;
+  if (!title || !company || !description || !categoryId || !location) {
+    return null;
+  }
+  return { title, company, description, categoryId, location };
 }
 
 async function askAgain(ctx: Context, msg: string): Promise<boolean> {
