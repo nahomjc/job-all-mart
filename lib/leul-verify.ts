@@ -34,6 +34,16 @@ const ENDPOINT_BY_METHOD: Record<PaymentVerifyMethod, string> = {
 	mpesa: "/verify-mpesa",
 };
 
+const DEFAULT_VERIFY_BASE_URL = "https://verifyapi.leulzenebe.pro";
+
+function getPathCandidates(
+	method: PaymentVerifyMethod | "auto",
+): string[] {
+	if (method === "auto") return ["/verify"];
+	// Some deployments expose only the universal route.
+	return [ENDPOINT_BY_METHOD[method], "/verify"];
+}
+
 function buildRequestBody(
 	method: PaymentVerifyMethod | "auto",
 	input: VerifyPaymentInput,
@@ -148,24 +158,36 @@ export async function verifyPaymentWithLeul(
 	const resolved = input.method
 		? resolveVerifyMethod(input.method)
 		: "auto";
-	const path =
-		resolved === "auto" ? "/verify" : ENDPOINT_BY_METHOD[resolved];
-	const baseUrl = env.LEUL_VERIFY_BASE_URL.replace(/\/$/, "");
 	const controller = new AbortController();
 	const timeoutMs = env.LEUL_VERIFY_TIMEOUT_MS;
 	const timeout = setTimeout(() => controller.abort(), timeoutMs);
+	const configuredBaseUrl = env.LEUL_VERIFY_BASE_URL.replace(/\/$/, "");
+	const baseUrls = Array.from(
+		new Set([configuredBaseUrl, DEFAULT_VERIFY_BASE_URL]),
+	);
+	const paths = getPathCandidates(resolved);
 
-	let res: Response;
+	let res: Response | undefined;
+	let requestedUrl = "";
 	try {
-		res = await fetch(`${baseUrl}${path}`, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				"x-api-key": apiKey,
-			},
-			body: JSON.stringify(buildRequestBody(resolved, { ...input, reference })),
-			signal: controller.signal,
-		});
+		for (const baseUrl of baseUrls) {
+			for (const path of paths) {
+				requestedUrl = `${baseUrl}${path}`;
+				const current = await fetch(requestedUrl, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						"x-api-key": apiKey,
+					},
+					body: JSON.stringify(buildRequestBody(resolved, { ...input, reference })),
+					signal: controller.signal,
+				});
+				res = current;
+				// Continue trying path/base-url fallbacks only on 404.
+				if (current.status !== 404) break;
+			}
+			if (res?.status !== 404) break;
+		}
 	} catch (err) {
 		clearTimeout(timeout);
 		const isAbort =
@@ -182,6 +204,14 @@ export async function verifyPaymentWithLeul(
 		};
 	}
 	clearTimeout(timeout);
+	if (!res) {
+		return {
+			ok: false,
+			httpStatus: 0,
+			verified: false,
+			error: "Verifier request failed before receiving a response",
+		};
+	}
 
 	const raw = (await res.json().catch(() => null)) as unknown;
 	const extracted = extractLeulVerification(raw);
@@ -191,12 +221,24 @@ export async function verifyPaymentWithLeul(
 			raw && typeof raw === "object" && "message" in raw
 				? String((raw as { message: unknown }).message)
 				: "";
+		if (res.status === 404) {
+			return {
+				ok: false,
+				httpStatus: res.status,
+				verified: false,
+				raw,
+				error:
+					"Verifier could not find this reference. Double-check reference/method (and suffix or phone when required), or try another receipt.",
+			};
+		}
 		return {
 			ok: false,
 			httpStatus: res.status,
 			verified: false,
 			raw,
-			error: `Verifier error: HTTP ${res.status}${text ? ` — ${text}` : ""}`,
+			error: `Verifier error: HTTP ${res.status}${
+				text ? ` — ${text}` : ""
+			} (endpoint: ${requestedUrl})`,
 		};
 	}
 
