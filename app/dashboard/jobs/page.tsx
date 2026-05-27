@@ -146,7 +146,13 @@ export default async function MyJobsPage(props: {
         </div>
       </form>
 
-      <Card>
+      <p className="text-sm text-muted-foreground">
+        {rows.length} {rows.length === 1 ? "post" : "posts"}
+        {status !== "all" ? ` · ${statusLabel(status)}` : ""}
+        {q ? ` · matching “${q}”` : ""}
+      </p>
+
+      <Card className="shadow-sm">
         <CardContent className="p-0">
           {rows.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-3 p-12 text-center">
