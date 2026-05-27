@@ -464,6 +464,52 @@ export async function unbanUserAction(
 	return okState();
 }
 
+const updateUserRoleSchema = z.object({
+	userId: z.string().uuid(),
+	role: z.enum(["user", "admin", "owner"]),
+});
+
+export async function updateUserRoleAction(
+	userId: string,
+	role: "user" | "admin" | "owner",
+): Promise<AdminActionState> {
+	const admin = await requireAdmin();
+	const parsed = updateUserRoleSchema.safeParse({ userId, role });
+	if (!parsed.success) return failState("Invalid role");
+
+	if (admin.id === userId) {
+		return failState("You cannot change your own role.");
+	}
+
+	const target = await userRepo.byId(userId);
+	if (!target) return failState("User not found");
+
+	if (role === "owner" && admin.role !== "owner") {
+		return failState("Only owners can grant the owner role.");
+	}
+
+	if (target.role === "owner" && admin.role !== "owner") {
+		return failState("Only owners can change another owner's role.");
+	}
+
+	if (target.role === role) return okState();
+
+	const previousRole = target.role;
+	await userRepo.setRole(userId, role);
+	await auditLogRepo.log({
+		actorId: admin.id,
+		action: "user.role_change",
+		targetType: "user",
+		targetId: userId,
+		metadata: { from: previousRole, to: role },
+		ip: null,
+		userAgent: null,
+	});
+	revalidatePath("/admin/users");
+	revalidatePath(`/admin/users/${userId}`);
+	return okState();
+}
+
 /* ──────────────────────────────────────────────
  * Categories
  * ────────────────────────────────────────────── */

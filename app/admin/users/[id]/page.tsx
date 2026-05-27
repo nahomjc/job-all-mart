@@ -15,6 +15,7 @@ import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/page-header";
 import { StatCard } from "@/components/stat-card";
 import { AdminUserCell } from "@/components/admin/admin-user-cell";
+import { UpdateUserRoleForm } from "@/components/admin/update-user-role";
 import { UserRowActions } from "@/components/admin/user-row-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatRelativeTime, statusLabel } from "@/lib/format";
+import { getCurrentUser } from "@/lib/auth";
 import { userDisplayName } from "@/lib/user-display";
 import { userRepo } from "@/server/repositories/user";
 
@@ -51,8 +53,11 @@ export default async function AdminUserDetailPage(props: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await props.params;
-  const profile = await userRepo.adminProfile(id);
-  if (!profile) notFound();
+  const [profile, actor] = await Promise.all([
+    userRepo.adminProfile(id),
+    getCurrentUser(),
+  ]);
+  if (!profile || !actor) notFound();
 
   const { user, jobCount, companyLogoUrl, jobs, payments } = profile;
   const name = userDisplayName(user);
@@ -176,6 +181,13 @@ export default async function AdminUserDetailPage(props: {
                 <p className="mt-1 text-muted-foreground">{user.banReason}</p>
               </div>
             )}
+
+            <UpdateUserRoleForm
+              userId={user.id}
+              currentRole={user.role}
+              actorId={actor.id}
+              actorRole={actor.role}
+            />
           </CardContent>
         </Card>
 
