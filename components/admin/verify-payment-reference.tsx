@@ -14,6 +14,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import {
+	methodAccountSuffixLength,
 	PAYMENT_METHOD_OPTIONS,
 	methodNeedsAccountSuffix,
 	methodNeedsPhoneNumber,
@@ -81,10 +82,12 @@ export function VerifyPaymentReference({
 
 	const showSuffix = methodNeedsAccountSuffix(method);
 	const showPhone = methodNeedsPhoneNumber(method);
+	const requiredSuffixLength = methodAccountSuffixLength(method);
 
 	return (
 		<form action={action} className="space-y-3 rounded-xl border bg-muted/20 p-4">
 			<input type="hidden" name="paymentId" value={paymentId} />
+			<input type="hidden" name="method" value={method} />
 
 			<div>
 				<p className="text-sm font-semibold">Check reference</p>
@@ -105,7 +108,6 @@ export function VerifyPaymentReference({
 			<div className="space-y-1.5">
 				<Label htmlFor={`verify-method-${paymentId}`}>Method</Label>
 				<Select
-					name="method"
 					value={method}
 					onValueChange={(v) => setMethod(v as PaymentVerifyMethod)}
 				>
@@ -141,17 +143,28 @@ export function VerifyPaymentReference({
 			{showSuffix && (
 				<div className="space-y-1.5">
 					<Label htmlFor={`verify-suffix-${paymentId}`}>
-						Account suffix{" "}
-						<span className="font-normal text-muted-foreground">(optional)</span>
+						Account number or suffix{" "}
+						<span className="font-normal text-muted-foreground">
+							(required, we use last {requiredSuffixLength ?? "specific"} digits)
+						</span>
 					</Label>
 					<Input
 						id={`verify-suffix-${paymentId}`}
 						name="accountSuffix"
 						defaultValue={defaultAccountSuffix ?? ""}
-						placeholder="16825193"
+						placeholder={
+							requiredSuffixLength === 8
+								? "Last 8 digits (e.g. 16825193)"
+								: "Last 5 digits (e.g. 825193 -> 25193)"
+						}
+						inputMode="numeric"
 						maxLength={32}
 						autoComplete="off"
 					/>
+					<p className="text-xs text-muted-foreground">
+						You can paste the full account number. We automatically use the
+						last {requiredSuffixLength ?? ""} digits for verification.
+					</p>
 				</div>
 			)}
 

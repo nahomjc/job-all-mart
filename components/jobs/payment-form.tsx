@@ -50,6 +50,7 @@ export function PaymentForm({ jobId }: { jobId: string }) {
 	return (
 		<form action={action} className="space-y-5">
 			<input type="hidden" name="jobId" value={jobId} />
+			<input type="hidden" name="method" value={method} />
 
 			<div className="grid gap-4 md:grid-cols-2">
 				<div className="space-y-1.5">
@@ -81,7 +82,6 @@ export function PaymentForm({ jobId }: { jobId: string }) {
 			<div className="space-y-1.5">
 				<Label htmlFor="method">Payment method</Label>
 				<Select
-					name="method"
 					value={method}
 					onValueChange={(v) => setMethod(v as PaymentVerifyMethod)}
 					required

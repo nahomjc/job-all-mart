@@ -52,14 +52,18 @@ function buildRequestBody(
 
 	if (method === "auto") {
 		if (input.accountSuffix?.trim()) {
-			body.suffix = input.accountSuffix.trim();
+			const suffix = input.accountSuffix.trim();
+			body.suffix = suffix;
+			body.accountSuffix = suffix;
 		}
 		return body;
 	}
 
 	if (method === "cbe" || method === "abyssinia") {
 		if (input.accountSuffix?.trim()) {
-			body.suffix = input.accountSuffix.trim();
+			const suffix = input.accountSuffix.trim();
+			body.suffix = suffix;
+			body.accountSuffix = suffix;
 		}
 		return body;
 	}
@@ -72,6 +76,62 @@ function buildRequestBody(
 	}
 
 	return body;
+}
+
+function pickString(...values: unknown[]): string | undefined {
+	for (const value of values) {
+		if (typeof value === "string" && value.trim()) {
+			return value.trim();
+		}
+	}
+	return undefined;
+}
+
+function pickNumber(...values: unknown[]): number | undefined {
+	for (const value of values) {
+		if (typeof value === "number" && Number.isFinite(value)) return value;
+		if (typeof value === "string" && value.trim()) {
+			const normalized = value.replace(/,/g, "").trim();
+			const parsed = Number(normalized);
+			if (Number.isFinite(parsed)) return parsed;
+		}
+	}
+	return undefined;
+}
+
+function normalizeStatus(status: string | undefined): string | undefined {
+	if (!status) return undefined;
+	const canonical = status.trim().toLowerCase().replace(/[_-]+/g, " ");
+	if (!canonical) return undefined;
+	return canonical
+		.split(/\s+/)
+		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+		.join(" ");
+}
+
+function extractErrorText(raw: unknown): string {
+	if (!raw || typeof raw !== "object") return "";
+	const r = raw as Record<string, unknown>;
+	const direct =
+		(typeof r.message === "string" && r.message) ||
+		(typeof r.error === "string" && r.error) ||
+		(typeof r.detail === "string" && r.detail) ||
+		(typeof r.reason === "string" && r.reason);
+	if (direct) return direct;
+	if (Array.isArray(r.errors)) {
+		const msgs = r.errors
+			.map((e) => {
+				if (typeof e === "string") return e;
+				if (e && typeof e === "object" && "message" in e) {
+					const m = (e as { message?: unknown }).message;
+					return typeof m === "string" ? m : "";
+				}
+				return "";
+			})
+			.filter(Boolean);
+		return msgs.join("; ");
+	}
+	return "";
 }
 
 export function extractLeulVerification(payload: unknown): {
@@ -101,32 +161,42 @@ export function extractLeulVerification(payload: unknown): {
 			? transaction.status
 			: undefined) ??
 		(typeof data?.status === "string" ? data.status : undefined);
-
-	const status = typeof statusRaw === "string" ? statusRaw : undefined;
+	const statusRawNormalized =
+		typeof statusRaw === "string" ? statusRaw.trim() : undefined;
+	const status = normalizeStatus(statusRawNormalized);
 
 	const isVerifiedRaw = p.is_verified;
 	const isVerified =
 		isVerifiedRaw === true ||
 		p.verified === true ||
 		p.success === true ||
-		(typeof status === "string" && status.toLowerCase().includes("verified"));
+		(typeof statusRawNormalized === "string" &&
+			statusRawNormalized.toLowerCase().includes("verified"));
 
-	const provider =
-		(typeof data?.provider === "string" ? data.provider : undefined) ??
-		(typeof p.provider === "string" ? p.provider : undefined);
+	const provider = pickString(
+		data?.provider,
+		p.provider,
+		transaction?.provider,
+		data?.bank,
+		data?.network,
+		transaction?.bank,
+	);
 
-	const transactionId =
-		(typeof p.transaction_id === "string" ? p.transaction_id : undefined) ??
-		(typeof transaction?.transaction_id === "string"
-			? transaction.transaction_id
-			: undefined);
+	const transactionId = pickString(
+		p.transaction_id,
+		transaction?.transaction_id,
+		transaction?.id,
+		data?.transaction_id,
+		data?.id,
+	);
 
-	const amount =
-		typeof data?.amount === "number"
-			? data.amount
-			: typeof p.amount === "number"
-				? p.amount
-				: undefined;
+	const amount = pickNumber(
+		data?.amount,
+		p.amount,
+		transaction?.amount,
+		data?.totalAmount,
+		data?.paidAmount,
+	);
 
 	return { verified: isVerified, status, provider, transactionId, amount };
 }
@@ -217,10 +287,7 @@ export async function verifyPaymentWithLeul(
 	const extracted = extractLeulVerification(raw);
 
 	if (!res.ok) {
-		const text =
-			raw && typeof raw === "object" && "message" in raw
-				? String((raw as { message: unknown }).message)
-				: "";
+		const text = extractErrorText(raw);
 		if (res.status === 404) {
 			return {
 				ok: false,
@@ -229,6 +296,17 @@ export async function verifyPaymentWithLeul(
 				raw,
 				error:
 					"Verifier could not find this reference. Double-check reference/method (and suffix or phone when required), or try another receipt.",
+			};
+		}
+		if (res.status === 400) {
+			return {
+				ok: false,
+				httpStatus: res.status,
+				verified: false,
+				raw,
+				error: `Verifier rejected the request${
+					text ? `: ${text}` : ""
+				}. Check method-specific fields (suffix/phone) and reference format.`,
 			};
 		}
 		return {

@@ -71,6 +71,12 @@ export function methodNeedsPhoneNumber(method: string): boolean {
 	return method === "cbebirr" || method === "mpesa";
 }
 
+export function methodAccountSuffixLength(method: string): number | null {
+	if (method === "cbe") return 8;
+	if (method === "abyssinia") return 5;
+	return null;
+}
+
 /** Map stored method to a verifier provider; unknown/legacy uses smart router. */
 export function resolveVerifyMethod(
 	method: string,

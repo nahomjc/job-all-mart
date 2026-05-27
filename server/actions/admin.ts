@@ -3,6 +3,12 @@
 import { requireAdmin } from "@/lib/auth";
 import { env } from "@/lib/env";
 import { verifyPaymentWithLeul } from "@/lib/leul-verify";
+import {
+	methodAccountSuffixLength,
+	methodNeedsAccountSuffix,
+	methodNeedsPhoneNumber,
+	paymentMethodLabel,
+} from "@/lib/payment-methods";
 import { verifyPaymentReferenceSchema } from "@/lib/validations/payment";
 import { telegramClient } from "@/lib/telegram/client";
 import { notifyAdmins, publishJobToTelegram } from "@/lib/telegram/publisher";
@@ -23,6 +29,19 @@ export interface AdminActionState {
 
 const okState = <T>(data?: T): AdminActionState => ({ ok: true, data });
 const failState = (error: string): AdminActionState => ({ ok: false, error });
+
+function normalizeAccountSuffixForMethod(
+	method: string,
+	rawSuffix: string | null | undefined,
+): string | undefined {
+	if (!rawSuffix?.trim()) return undefined;
+	const requiredLength = methodAccountSuffixLength(method);
+	if (!requiredLength) return rawSuffix.trim();
+	const digits = rawSuffix.replace(/\D/g, "");
+	if (!digits) return undefined;
+	if (digits.length < requiredLength) return digits;
+	return digits.slice(-requiredLength);
+}
 
 /* ──────────────────────────────────────────────
  * Approve job — guards against unverified payment, then publishes.
@@ -310,17 +329,42 @@ export async function verifyPaymentReferenceAction(
 		parsed.data;
 	const p = await paymentRepo.byId(paymentId);
 	if (!p) return failState("Payment not found");
+	const selectedMethod = method ?? p.method;
 
 	const ref = reference ?? p.referenceCode ?? "";
 	if (!ref.trim()) {
 		return failState("Enter a transaction reference to verify");
 	}
+	const selectedSuffix = normalizeAccountSuffixForMethod(
+		selectedMethod,
+		accountSuffix ?? p.accountSuffix,
+	);
+	const selectedPhone = phoneNumber ?? p.phoneNumber;
+	if (methodNeedsAccountSuffix(selectedMethod) && !selectedSuffix?.trim()) {
+		return failState(
+			`${paymentMethodLabel(selectedMethod)} verification requires account suffix`,
+		);
+	}
+	const requiredSuffixLength = methodAccountSuffixLength(selectedMethod);
+	if (requiredSuffixLength && selectedSuffix?.trim()) {
+		const suffixDigits = selectedSuffix.replace(/\D/g, "");
+		if (suffixDigits.length !== requiredSuffixLength) {
+			return failState(
+				`${paymentMethodLabel(selectedMethod)} requires a ${requiredSuffixLength}-digit account suffix`,
+			);
+		}
+	}
+	if (methodNeedsPhoneNumber(selectedMethod) && !selectedPhone?.trim()) {
+		return failState(
+			`${paymentMethodLabel(selectedMethod)} verification requires phone number`,
+		);
+	}
 
 	const result = await verifyPaymentWithLeul({
 		reference: ref,
-		method: method ?? p.method,
-		accountSuffix: accountSuffix ?? p.accountSuffix,
-		phoneNumber: phoneNumber ?? p.phoneNumber,
+		method: selectedMethod,
+		accountSuffix: selectedSuffix,
+		phoneNumber: selectedPhone,
 	});
 
 	if (!result.ok) {
