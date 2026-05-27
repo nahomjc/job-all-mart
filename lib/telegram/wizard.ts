@@ -311,8 +311,8 @@ export async function ensureCanPost(
     return {
       ok: false,
       reason:
-        `🔒 You must first join @${env.TELEGRAM_REQUIRED_CHANNEL} to post jobs.\n` +
-        "Join the channel, then run /postjob again.",
+        `🔒 You must join @${env.TELEGRAM_REQUIRED_CHANNEL} before posting.\n` +
+        "Tap Join below, then run /postjob again.",
     };
   }
 

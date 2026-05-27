@@ -18,6 +18,7 @@ import {
   isSetupAdmin,
 } from "@/lib/telegram/admin-setup";
 import { formatSalary, statusLabel } from "@/lib/format";
+import { joinRequiredChannelKeyboard } from "@/lib/telegram/keyboards";
 
 let registered = false;
 
@@ -49,7 +50,8 @@ Available commands:
 • /pricing – view our plans
 • /help – show this message
 
-Before posting, make sure you've joined @${env.TELEGRAM_REQUIRED_CHANNEL}.`,
+Before posting, join @${env.TELEGRAM_REQUIRED_CHANNEL} using the button below.`,
+      joinRequiredChannelKeyboard(),
     );
   });
 
@@ -102,7 +104,7 @@ Full details: ${env.NEXT_PUBLIC_APP_URL}/pricing`,
     if (!ctx.from) return;
     const check = await ensureCanPost(ctx);
     if (!check.ok) {
-      await ctx.reply(check.reason);
+      await ctx.reply(check.reason, joinRequiredChannelKeyboard());
       return;
     }
     startDraft(ctx.from.id);
