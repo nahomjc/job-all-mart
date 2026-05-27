@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Inbox } from "lucide-react";
+import { ArrowRight, Inbox, Search } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -11,17 +11,23 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/page-header";
 import { jobRepo } from "@/server/repositories/job";
 import { formatRelativeTime, statusLabel } from "@/lib/format";
+import type { Job } from "@/server/db/schema";
 
 export const metadata = { title: "Approval queue" };
 
 interface SearchParams {
   status?: string;
+  q?: string;
+  sortBy?: string;
+  sortDir?: string;
 }
 
 const STATUSES = [
+  ["all", "All statuses"],
   ["pending_review", "Pending review"],
   ["pending_payment", "Pending payment"],
   ["approved", "Approved"],
@@ -29,13 +35,31 @@ const STATUSES = [
   ["posted", "Posted"],
   ["rejected", "Rejected"],
 ] as const;
+const SORT_OPTIONS = [
+  ["createdAt", "Created time"],
+  ["updatedAt", "Updated time"],
+  ["spamScore", "Spam score"],
+  ["title", "Title"],
+] as const;
+const SORT_DIR_OPTIONS = [
+  ["desc", "Descending"],
+  ["asc", "Ascending"],
+] as const;
 
 export default async function AdminJobsQueuePage(props: {
   searchParams: Promise<SearchParams>;
 }) {
   const sp = await props.searchParams;
+  const status = normalizeStatus(sp.status);
+  const sortBy = normalizeSortBy(sp.sortBy);
+  const sortDir = normalizeSortDir(sp.sortDir);
+  const q = (sp.q ?? "").trim();
+
   const rows = await jobRepo.listAdminQueue({
-    status: sp.status as never,
+    statuses: status === "all" ? undefined : [status],
+    q,
+    sortBy,
+    sortDir,
     limit: 100,
   });
 
@@ -47,22 +71,70 @@ export default async function AdminJobsQueuePage(props: {
         description="Review job submissions before they go live on the channels."
       />
 
+      <form className="grid gap-3 rounded-xl border bg-card p-4 md:grid-cols-[1fr_auto_auto_auto]">
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+          <Input
+            name="q"
+            defaultValue={q}
+            placeholder="Search title, company, employer..."
+            className="pl-8"
+          />
+        </div>
+        <select
+          name="status"
+          defaultValue={status}
+          className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-sm"
+        >
+          {STATUSES.map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+        <select
+          name="sortBy"
+          defaultValue={sortBy}
+          className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-sm"
+        >
+          {SORT_OPTIONS.map(([value, label]) => (
+            <option key={value} value={value}>
+              Sort: {label}
+            </option>
+          ))}
+        </select>
+        <div className="flex gap-2">
+          <select
+            name="sortDir"
+            defaultValue={sortDir}
+            className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-sm"
+          >
+            {SORT_DIR_OPTIONS.map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+          <Button type="submit" size="sm">
+            Apply
+          </Button>
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/admin/jobs">Reset</Link>
+          </Button>
+        </div>
+      </form>
+
       <div className="flex flex-wrap gap-2">
         {STATUSES.map(([s, label]) => (
           <Button
             key={s}
             asChild
-            variant={sp.status === s ? "default" : "outline"}
+            variant={status === s ? "default" : "outline"}
             size="sm"
           >
-            <Link href={`/admin/jobs?status=${s}`}>{label}</Link>
+            <Link href={buildStatusHref(sp, s)}>{label}</Link>
           </Button>
         ))}
-        {sp.status && (
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/admin/jobs">Clear</Link>
-          </Button>
-        )}
       </div>
 
       <Card>
@@ -134,6 +206,36 @@ export default async function AdminJobsQueuePage(props: {
       </Card>
     </div>
   );
+}
+
+function normalizeStatus(status: string | undefined): "all" | Job["status"] {
+  const value = status ?? "all";
+  const allowed = new Set<string>(STATUSES.map(([s]) => s));
+  if (!allowed.has(value)) return "all";
+  return value as "all" | Job["status"];
+}
+
+function normalizeSortBy(
+  value: string | undefined,
+): "createdAt" | "updatedAt" | "spamScore" | "title" {
+  if (value === "updatedAt" || value === "spamScore" || value === "title") {
+    return value;
+  }
+  return "createdAt";
+}
+
+function normalizeSortDir(value: string | undefined): "asc" | "desc" {
+  return value === "asc" ? "asc" : "desc";
+}
+
+function buildStatusHref(sp: SearchParams, status: string): string {
+  const params = new URLSearchParams();
+  if (sp.q) params.set("q", sp.q);
+  if (sp.sortBy) params.set("sortBy", sp.sortBy);
+  if (sp.sortDir) params.set("sortDir", sp.sortDir);
+  if (status !== "all") params.set("status", status);
+  const qs = params.toString();
+  return qs ? `/admin/jobs?${qs}` : "/admin/jobs";
 }
 
 function EmptyState() {

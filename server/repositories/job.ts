@@ -1,5 +1,5 @@
 import "server-only";
-import { and, count, desc, eq, gte, inArray, lt, lte, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, inArray, lt, lte, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import {
   categories,
@@ -35,7 +35,15 @@ export const jobRepo = {
   },
 
   create(values: NewJob) {
-    return db.insert(jobs).values(values).returning().then(r => r[0]!);
+    return db
+      .insert(jobs)
+      .values(values)
+      .returning()
+      .then((r) => {
+        const row = r[0];
+        if (!row) throw new Error("Failed to create job");
+        return row;
+      });
   },
 
   async update(id: string, patch: Partial<NewJob>) {
@@ -70,7 +78,11 @@ export const jobRepo = {
       categoryId ? eq(jobs.categoryId, categoryId) : undefined,
       employmentType ? eq(jobs.employmentType, employmentType) : undefined,
       q
-        ? sql`(${jobs.title} ILIKE ${"%" + q + "%"} OR ${jobs.company} ILIKE ${"%" + q + "%"} OR ${jobs.description} ILIKE ${"%" + q + "%"})`
+        ? sql`(
+            ${jobs.title} ILIKE ${`%${q}%`}
+            OR ${jobs.company} ILIKE ${`%${q}%`}
+            OR ${jobs.description} ILIKE ${`%${q}%`}
+          )`
         : undefined,
     );
     return db
@@ -130,20 +142,68 @@ export const jobRepo = {
     return row?.n ?? 0;
   },
 
-  /** Admin queue: jobs awaiting action. */
-  listAdminQueue(opts: { status?: Job["status"]; limit?: number; offset?: number } = {}) {
-    const { status, limit = 50, offset = 0 } = opts;
+  /** Admin queue: server-side search + filter + sort. */
+  listAdminQueue(opts: {
+    statuses?: Job["status"][];
+    q?: string;
+    sortBy?: "createdAt" | "updatedAt" | "spamScore" | "title";
+    sortDir?: "asc" | "desc";
+    limit?: number;
+    offset?: number;
+  } = {}) {
+    const {
+      statuses,
+      q,
+      sortBy = "createdAt",
+      sortDir = "desc",
+      limit = 50,
+      offset = 0,
+    } = opts;
+    const normalizedQ = q?.trim();
+    const orderExpr =
+      sortBy === "updatedAt"
+        ? jobs.updatedAt
+        : sortBy === "spamScore"
+          ? jobs.spamScore
+          : sortBy === "title"
+            ? jobs.title
+            : jobs.createdAt;
+    const allowedStatuses: Job["status"][] = [
+      "pending_payment",
+      "pending_review",
+      "approved",
+      "scheduled",
+      "posted",
+      "rejected",
+    ];
+    const filterStatuses =
+      statuses && statuses.length > 0
+        ? statuses.filter((s) => allowedStatuses.includes(s))
+        : allowedStatuses;
+
     return db
       .select({ job: jobs, category: categories, employer: users })
       .from(jobs)
       .leftJoin(categories, eq(categories.id, jobs.categoryId))
       .leftJoin(users, eq(users.id, jobs.userId))
       .where(
-        status
-          ? eq(jobs.status, status)
-          : inArray(jobs.status, ["pending_review", "pending_payment"]),
+        and(
+          inArray(jobs.status, filterStatuses),
+          normalizedQ
+            ? sql`(
+                ${jobs.title} ILIKE ${`%${normalizedQ}%`}
+                OR ${jobs.company} ILIKE ${`%${normalizedQ}%`}
+                OR ${jobs.description} ILIKE ${`%${normalizedQ}%`}
+                OR ${users.displayName} ILIKE ${`%${normalizedQ}%`}
+                OR ${users.email} ILIKE ${`%${normalizedQ}%`}
+              )`
+            : undefined,
+        ),
       )
-      .orderBy(desc(jobs.createdAt))
+      .orderBy(
+        sortDir === "asc" ? asc(orderExpr) : desc(orderExpr),
+        desc(jobs.createdAt),
+      )
       .limit(limit)
       .offset(offset);
   },
