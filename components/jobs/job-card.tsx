@@ -12,15 +12,22 @@ interface JobCardProps {
 }
 
 export function JobCard({ job, category }: JobCardProps) {
+  const href = `/jobs/${job.slug}`;
+
   return (
     <Card className="group relative overflow-hidden transition-all hover:border-primary/60 hover:shadow-md">
+      <Link
+        href={href}
+        className="absolute inset-0 z-10 rounded-xl"
+        aria-label={`View ${job.title} at ${job.company}`}
+      />
       {job.isFeatured && (
-        <div className="absolute right-3 top-3">
+        <div className="pointer-events-none absolute right-3 top-3 z-20">
           <Badge variant="warning">Featured</Badge>
         </div>
       )}
       <CardContent className="flex gap-4 p-5">
-        <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border bg-muted/50">
+        <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border bg-muted/50 transition-colors group-hover:border-primary/30">
           {job.logoUrl ? (
             <Image
               src={job.logoUrl}
@@ -34,12 +41,9 @@ export function JobCard({ job, category }: JobCardProps) {
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <Link
-            href={`/jobs/${job.slug}`}
-            className="line-clamp-1 font-semibold leading-tight hover:text-primary"
-          >
+          <p className="line-clamp-1 font-semibold leading-tight transition-colors group-hover:text-primary">
             {job.title}
-          </Link>
+          </p>
           <p className="mt-0.5 text-sm text-muted-foreground">{job.company}</p>
           <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
             {truncate(job.description.replace(/\s+/g, " "), 140)}
@@ -54,7 +58,7 @@ export function JobCard({ job, category }: JobCardProps) {
               {statusLabel(job.employmentType)}
             </span>
             {category && (
-              <Badge variant="secondary" className="font-normal">
+              <Badge variant="secondary" className="pointer-events-none font-normal">
                 {category.name}
               </Badge>
             )}

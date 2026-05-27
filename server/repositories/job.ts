@@ -34,6 +34,22 @@ export const jobRepo = {
     return rows[0] ?? null;
   },
 
+  /** Public job detail by slug (same joins as byIdWithRelations). */
+  async bySlugWithRelations(slug: string) {
+    const rows = await db
+      .select({
+        job: jobs,
+        category: categories,
+        employer: users,
+      })
+      .from(jobs)
+      .leftJoin(categories, eq(categories.id, jobs.categoryId))
+      .leftJoin(users, eq(users.id, jobs.userId))
+      .where(eq(jobs.slug, slug))
+      .limit(1);
+    return rows[0] ?? null;
+  },
+
   create(values: NewJob) {
     return db
       .insert(jobs)
