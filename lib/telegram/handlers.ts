@@ -14,6 +14,7 @@ import {
   handleChatId,
   handleMyId,
   handleSetupIds,
+  handleTestNotify,
   handleTopicId,
   isSetupAdmin,
 } from "@/lib/telegram/admin-setup";
@@ -72,6 +73,7 @@ Before posting, join ${requiredChannelLabel()} using the button below.`,
         "/chatid – chat id for channel / notify",
         "/topicid – forum topic id (run inside a topic)",
         "/setupids – all ids + suggested .env block",
+        "/testnotify – send a test admin alert",
       );
     }
     await ctx.reply(lines.join("\n"));
@@ -81,6 +83,7 @@ Before posting, join ${requiredChannelLabel()} using the button below.`,
   bot.command("chatid", handleChatId);
   bot.command("topicid", handleTopicId);
   bot.command("setupids", handleSetupIds);
+  bot.command("testnotify", handleTestNotify);
 
   bot.command("pricing", async (ctx) => {
     await ctx.reply(

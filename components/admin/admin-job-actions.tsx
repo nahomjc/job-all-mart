@@ -22,10 +22,15 @@ import {
 	scheduleJobAction,
 	verifyPaymentAction,
 } from "@/server/actions/admin";
+import { statusLabel } from "@/lib/format";
+import { Badge } from "@/components/ui/badge";
 import {
 	CalendarClock,
 	CheckCircle2,
+	ClipboardCheck,
+	Clock,
 	Pin,
+	Receipt,
 	Rocket,
 	Send,
 	ShieldAlert,
@@ -122,31 +127,13 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 			</CardHeader>
 
 			<CardContent className="space-y-6 p-6">
-				{needsPaymentVerify && (
-					<div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4">
-						<p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
-							Payment awaiting verification
-						</p>
-						<p className="mt-1 text-sm text-muted-foreground">
-							Status: <span className="font-medium">{props.paymentStatus}</span>
-							. Confirm the screenshot in the panel on the right before
-							approving.
-						</p>
-						<div className="mt-3 flex flex-wrap gap-2">
-							<Button
-								size="sm"
-								variant="success"
-								onClick={runVerifyPayment}
-								disabled={pending}
-							>
-								<CheckCircle2 className="size-3.5" />
-								Verify payment
-							</Button>
-							{props.paymentId && (
-								<RejectPaymentForm paymentId={props.paymentId} />
-							)}
-						</div>
-					</div>
+				{needsPaymentVerify && props.paymentId && (
+					<PaymentAwaitingVerification
+						paymentId={props.paymentId}
+						paymentStatus={props.paymentStatus ?? "pending"}
+						onVerify={runVerifyPayment}
+						verifyPending={pending}
+					/>
 				)}
 
 				{isStuckAtApproved && (
@@ -229,6 +216,124 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 				</div>
 			</CardContent>
 		</Card>
+	);
+}
+
+const VERIFICATION_STEPS = [
+	{
+		title: "Review payment proof",
+		description:
+			"Open the Payment proof panel on the right. Confirm the screenshot, amount, and reference match the submission.",
+	},
+	{
+		title: "Check the reference",
+		description:
+			"Use the Leul verifier in that panel to validate the transaction reference before you mark the payment verified.",
+	},
+	{
+		title: "Mark payment verified",
+		description:
+			"Once proof and reference checks pass, confirm verification here to unlock Approve & publish.",
+	},
+] as const;
+
+function PaymentAwaitingVerification({
+	paymentId,
+	paymentStatus,
+	onVerify,
+	verifyPending,
+}: {
+	paymentId: string;
+	paymentStatus: string;
+	onVerify: () => void;
+	verifyPending: boolean;
+}) {
+	const statusBadgeVariant =
+		paymentStatus === "rejected" ? "destructive" : "warning";
+
+	return (
+		<section
+			aria-labelledby="payment-verify-heading"
+			className="overflow-hidden rounded-xl border border-amber-500/25 bg-linear-to-b from-amber-50/80 to-card shadow-sm dark:from-amber-950/30 dark:to-card"
+		>
+			<header className="flex flex-col gap-3 border-b border-amber-500/20 bg-amber-500/5 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+				<div className="flex items-start gap-3">
+					<span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-300">
+						<Receipt className="size-5" />
+					</span>
+					<div>
+						<h3
+							id="payment-verify-heading"
+							className="text-sm font-semibold tracking-tight"
+						>
+							Payment verification required
+						</h3>
+						<p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+							<Clock className="size-3.5 shrink-0" />
+							Complete all steps before approving this job
+						</p>
+					</div>
+				</div>
+				<Badge variant={statusBadgeVariant} className="w-fit capitalize">
+					{statusLabel(paymentStatus)}
+				</Badge>
+			</header>
+
+			<div className="space-y-5 px-4 py-4 sm:px-5">
+				<ol className="space-y-3">
+					{VERIFICATION_STEPS.map((step, index) => (
+						<li key={step.title} className="flex gap-3">
+							<span className="flex size-7 shrink-0 items-center justify-center rounded-full border bg-background text-xs font-semibold text-muted-foreground shadow-sm">
+								{index + 1}
+							</span>
+							<div className="min-w-0 pt-0.5">
+								<p className="text-sm font-medium leading-none">{step.title}</p>
+								<p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+									{step.description}
+								</p>
+							</div>
+						</li>
+					))}
+				</ol>
+
+				<div className="rounded-lg border bg-background/80 p-4 shadow-sm">
+					<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+						<div className="flex items-start gap-2.5">
+							<ClipboardCheck className="mt-0.5 size-4 shrink-0 text-primary" />
+							<div>
+								<p className="text-sm font-medium">Ready to confirm?</p>
+								<p className="text-xs text-muted-foreground">
+									This records the payment as verified in your system.
+								</p>
+							</div>
+						</div>
+						<Button
+							size="sm"
+							variant="success"
+							className="w-full shrink-0 sm:w-auto"
+							onClick={onVerify}
+							disabled={verifyPending}
+						>
+							<CheckCircle2 className="size-3.5" />
+							{verifyPending ? "Verifying…" : "Mark payment verified"}
+						</Button>
+					</div>
+				</div>
+
+				<div className="rounded-lg border border-destructive/20 bg-destructive/3 p-4">
+					<p className="text-xs font-semibold uppercase tracking-wider text-destructive">
+						Reject payment
+					</p>
+					<p className="mt-1 text-xs text-muted-foreground">
+						Use only if the proof is invalid, duplicated, or does not match the
+						job fee.
+					</p>
+					<div className="mt-3">
+						<RejectPaymentForm paymentId={paymentId} />
+					</div>
+				</div>
+			</div>
+		</section>
 	);
 }
 
@@ -368,17 +473,29 @@ function RejectPaymentForm({ paymentId }: { paymentId: string }) {
 	useActionToast(state, "Payment rejected");
 
 	return (
-		<form action={action} className="flex flex-wrap gap-2">
+		<form action={action} className="flex flex-col gap-2 sm:flex-row sm:items-end">
 			<input type="hidden" name="paymentId" value={paymentId} />
-			<Input
-				name="reason"
-				placeholder="Reject reason…"
-				required
-				className="min-w-[140px] flex-1"
+			<div className="min-w-0 flex-1 space-y-1.5">
+				<Label htmlFor={`reject-payment-${paymentId}`} className="sr-only">
+					Rejection reason
+				</Label>
+				<Input
+					id={`reject-payment-${paymentId}`}
+					name="reason"
+					placeholder="Explain why this payment is being rejected…"
+					required
+					disabled={pending}
+				/>
+			</div>
+			<Button
+				type="submit"
+				variant="destructive"
+				size="sm"
+				className="w-full shrink-0 sm:w-auto"
 				disabled={pending}
-			/>
-			<Button type="submit" variant="destructive" size="sm" disabled={pending}>
-				Reject payment
+			>
+				<XCircle className="size-3.5" />
+				{pending ? "Rejecting…" : "Reject payment"}
 			</Button>
 		</form>
 	);

@@ -1,4 +1,8 @@
 import "server-only";
+import {
+	canUseTelegramInlineUrl,
+	deliverAdminNotification,
+} from "@/lib/telegram/admin-notify";
 import { env } from "@/lib/env";
 import { formatSalary, statusLabel } from "@/lib/format";
 import { telegramClient } from "@/lib/telegram/client";
@@ -70,17 +74,22 @@ export async function publishJobToTelegram(jobId: string): Promise<{
   const chatId = env.TELEGRAM_CHANNEL_ID;
   const text = formatJobMessage({ job, category, employer });
 
-  const message = job.logoUrl
-    ? await telegramClient.sendPhoto(chatId, job.logoUrl, {
-        caption: text,
-        parse_mode: "HTML",
-        ...(topicId ? { message_thread_id: topicId } : {}),
-      })
-    : await telegramClient.sendMessage(chatId, text, {
-        parse_mode: "HTML",
-        link_preview_options: { is_disabled: false },
-        ...(topicId ? { message_thread_id: topicId } : {}),
-      });
+  let message: { message_id: number };
+  try {
+    message = job.logoUrl
+      ? await telegramClient.sendPhoto(chatId, job.logoUrl, {
+          caption: text,
+          parse_mode: "HTML",
+          ...(topicId ? { message_thread_id: topicId } : {}),
+        })
+      : await telegramClient.sendMessage(chatId, text, {
+          parse_mode: "HTML",
+          link_preview_options: { is_disabled: false },
+          ...(topicId ? { message_thread_id: topicId } : {}),
+        });
+  } catch (err) {
+    throw new Error(describePublishError(err, chatId, topicId));
+  }
 
   const numericChatId = String(chatId);
   await telegramPostRepo.create({
@@ -103,13 +112,9 @@ export async function publishJobToTelegram(jobId: string): Promise<{
 }
 
 export async function notifyAdmins(text: string): Promise<void> {
-  const chatId = env.TELEGRAM_ADMIN_NOTIFY_CHAT_ID;
-  if (!chatId) return;
-  try {
+  await deliverAdminNotification(async (chatId) => {
     await telegramClient.sendMessage(chatId, text, { parse_mode: "HTML" });
-  } catch (err) {
-    console.warn("[telegram] notifyAdmins failed:", err);
-  }
+  });
 }
 
 /**
@@ -117,11 +122,11 @@ export async function notifyAdmins(text: string): Promise<void> {
  * and company logo (when available).
  */
 export async function notifyAdminsNewSubmission(jobId: string): Promise<void> {
-  const chatId = env.TELEGRAM_ADMIN_NOTIFY_CHAT_ID;
-  if (!chatId) return;
-
   const data = await jobRepo.byIdWithRelations(jobId);
-  if (!data?.job) return;
+  if (!data?.job) {
+    console.warn("[telegram] notifyAdminsNewSubmission: job not found", jobId);
+    return;
+  }
 
   const payment = await paymentRepo.byJobId(jobId);
   const { job, category, employer } = data;
@@ -154,16 +159,28 @@ export async function notifyAdminsNewSubmission(jobId: string): Promise<void> {
     lines.push("", "📸 <i>No payment screenshot attached</i>");
   }
 
-  lines.push("", `<a href="${escapeHtml(adminUrl)}">Open in admin panel</a>`);
+  if (canUseTelegramInlineUrl(adminUrl)) {
+    lines.push("", `<a href="${escapeHtml(adminUrl)}">Open in admin panel</a>`);
+  } else {
+    lines.push(
+      "",
+      "🔗 Admin panel:",
+      escapeHtml(adminUrl),
+      "",
+      "<i>Set NEXT_PUBLIC_APP_URL to your public HTTPS domain for clickable review links.</i>",
+    );
+  }
 
-  const replyMarkup = {
-    inline_keyboard: [[{ text: "Review job", url: adminUrl }]],
-  };
+  const replyMarkup = canUseTelegramInlineUrl(adminUrl)
+    ? { inline_keyboard: [[{ text: "Review job", url: adminUrl }]] }
+    : undefined;
 
-  try {
-    await telegramClient.sendMessage(chatId, lines.join("\n"), {
+  const text = lines.filter(Boolean).join("\n");
+
+  await deliverAdminNotification(async (chatId) => {
+    await telegramClient.sendMessage(chatId, text, {
       parse_mode: "HTML",
-      reply_markup: replyMarkup,
+      ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
       link_preview_options: { is_disabled: true },
     });
 
@@ -178,9 +195,7 @@ export async function notifyAdminsNewSubmission(jobId: string): Promise<void> {
         caption: "🏢 Company logo",
       });
     }
-  } catch (err) {
-    console.warn("[telegram] notifyAdminsNewSubmission failed:", err);
-  }
+  });
 }
 
 function isImageUrl(url: string): boolean {
@@ -207,4 +222,37 @@ function buildMessageUrl(chatId: string | number, messageId: number): string {
     return `https://t.me/c/${idStr.slice(4)}/${messageId}`;
   }
   return "";
+}
+
+function describePublishError(
+  err: unknown,
+  chatId: string,
+  topicId: number | null,
+): string {
+  const raw = err instanceof Error ? err.message : String(err);
+  const msg = raw.toLowerCase();
+
+  if (msg.includes("chat not found")) {
+    return [
+      `Telegram chat not found for TELEGRAM_CHANNEL_ID='${chatId}'.`,
+      "Fix: run /chatid inside your target Telegram supergroup and copy that exact id into TELEGRAM_CHANNEL_ID.",
+      "Also ensure the bot is added to that chat (preferably admin), then restart the app.",
+    ].join(" ");
+  }
+
+  if (msg.includes("not enough rights")) {
+    return [
+      "Telegram bot lacks permissions to post in the configured channel/group.",
+      "Fix: make the bot an admin in that chat with permission to send messages/media.",
+    ].join(" ");
+  }
+
+  if (msg.includes("message thread not found")) {
+    return [
+      `Telegram topic (thread) not found for topicId=${topicId ?? "null"}.`,
+      "Fix: open the forum topic in Telegram, run /topicid there, and update the category topic id.",
+    ].join(" ");
+  }
+
+  return raw;
 }

@@ -1,6 +1,9 @@
 import "server-only";
 import type { Context } from "telegraf";
 import { env } from "@/lib/env";
+import {
+	resolvePrimaryAdminNotifyTargets,
+} from "@/lib/telegram/admin-notify";
 
 /**
  * Setup/discovery commands are open to everyone while `TELEGRAM_ADMIN_IDS` is
@@ -242,13 +245,77 @@ export async function handleSetupIds(ctx: Context): Promise<void> {
       ),
       `TELEGRAM_ADMIN_IDS: ${adminList}`,
       "",
+      "<b>Admin alerts</b>",
+      notifySetupHint(),
+      "",
       "<b>Suggested .env lines</b>",
       `<pre>${escapeHtml(suggestedEnv)}</pre>`,
       "",
-      "Commands: /myid · /chatid · /topicid · /setupids",
+      "Commands: /myid · /chatid · /topicid · /setupids · /testnotify",
     ].join("\n"),
     { parse_mode: "HTML" },
   );
+}
+
+export async function handleTestNotify(ctx: Context): Promise<void> {
+  const from = ctx.from;
+  if (!from) return;
+
+  if (!isSetupAdmin(from.id)) {
+    await ctx.reply("⛔ Setup commands are restricted to configured admins.");
+    return;
+  }
+
+  const targets = resolvePrimaryAdminNotifyTargets();
+  if (targets.length === 0) {
+    await ctx.reply(
+      [
+        "⚠️ <b>No admin notify targets configured</b>",
+        "",
+        "1. DM this bot → run <code>/myid</code> → set <code>TELEGRAM_ADMIN_IDS</code>",
+        "2. Or DM this bot → run <code>/chatid</code> → set <code>TELEGRAM_ADMIN_NOTIFY_CHAT_ID</code>",
+        "3. Restart the app after updating <code>.env</code>",
+        "4. You must have sent <code>/start</code> to this bot for DM alerts",
+      ].join("\n"),
+      { parse_mode: "HTML" },
+    );
+    return;
+  }
+
+  const { notifyAdmins } = await import("@/lib/telegram/publisher");
+  const adminUrl = `${env.NEXT_PUBLIC_APP_URL}/admin/jobs`;
+  await notifyAdmins(
+    [
+      "🔔 <b>Test admin notification</b>",
+      "",
+      `Sent by @${escapeHtml(from.username ?? String(from.id))}`,
+      `Targets: ${targets.map((id) => `<code>${id}</code>`).join(", ")}`,
+      "",
+      `<a href="${escapeHtml(adminUrl)}">Open admin panel</a>`,
+    ].join("\n"),
+  );
+
+  await ctx.reply(
+    [
+      "✅ Test notification sent.",
+      "",
+      notifySetupHint(),
+      "",
+      "If you did not receive it, check server logs and ensure the bot can message each target chat.",
+    ].join("\n"),
+    { parse_mode: "HTML" },
+  );
+}
+
+function notifySetupHint(): string {
+  const targets = resolvePrimaryAdminNotifyTargets();
+  if (targets.length === 0) {
+    return "<i>No notify targets — new job submissions will not ping you on Telegram.</i>";
+  }
+  if (env.TELEGRAM_ADMIN_NOTIFY_CHAT_ID) {
+    return `Alerts go to notify chat <code>${escapeHtml(env.TELEGRAM_ADMIN_NOTIFY_CHAT_ID)}</code>.`;
+  }
+  return `Alerts go to admin DMs: ${targets.map((id) => `<code>${id}</code>`).join(", ")} (requires /start with this bot).`;
 }
 
 function escapeHtml(input: string): string {
