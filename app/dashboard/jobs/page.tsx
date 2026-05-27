@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Briefcase, Plus } from "lucide-react";
+import { ArrowRight, Briefcase, Plus, Search } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -12,15 +12,64 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
+import { Input } from "@/components/ui/input";
 import { requireUser } from "@/lib/auth";
 import { jobRepo } from "@/server/repositories/job";
 import { formatRelativeTime, formatSalary, statusLabel } from "@/lib/format";
+import type { Job } from "@/server/db/schema";
 
 export const metadata = { title: "My jobs" };
 
-export default async function MyJobsPage() {
+interface SearchParams {
+  status?: string;
+  q?: string;
+  sortBy?: string;
+  sortDir?: string;
+}
+
+const STATUSES = [
+  ["all", "All statuses"],
+  ["approved", "Approved"],
+  ["scheduled", "Scheduled"],
+  ["rejected", "Rejected"],
+  ["posted", "Posted"],
+  ["pending_review", "Pending review"],
+  ["pending_payment", "Pending payment"],
+  ["draft", "Draft"],
+  ["expired", "Expired"],
+] as const;
+
+const SORT_OPTIONS = [
+  ["createdAt", "Created time"],
+  ["updatedAt", "Updated time"],
+  ["spamScore", "Spam score"],
+  ["title", "Title"],
+] as const;
+
+const SORT_DIR_OPTIONS = [
+  ["desc", "Newest first"],
+  ["asc", "Oldest first"],
+] as const;
+
+export default async function MyJobsPage(props: {
+  searchParams: Promise<SearchParams>;
+}) {
   const user = await requireUser();
-  const rows = await jobRepo.listByUser(user.id);
+  const sp = await props.searchParams;
+
+  const status = normalizeStatus(sp.status);
+  const q = (sp.q ?? "").trim();
+  const sortBy = normalizeSortBy(sp.sortBy);
+  const sortDir = normalizeSortDir(sp.sortDir);
+
+  const rows = await jobRepo.listDashboardJobs({
+    userId: user.id,
+    statuses: status === "all" ? undefined : [status],
+    q: q || undefined,
+    sortBy,
+    sortDir,
+    limit: 100,
+  });
 
   return (
     <div className="space-y-6">
@@ -36,6 +85,66 @@ export default async function MyJobsPage() {
           </Button>
         }
       />
+
+      <form
+        className="grid gap-3 rounded-xl border bg-card p-4 md:grid-cols-[1fr_auto_auto_auto]"
+        method="GET"
+        action="/dashboard/jobs"
+      >
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+          <Input
+            name="q"
+            defaultValue={q}
+            placeholder="Search title, company, description..."
+            className="pl-8"
+          />
+        </div>
+
+        <select
+          name="status"
+          defaultValue={status}
+          className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-sm"
+        >
+          {STATUSES.map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+
+        <select
+          name="sortBy"
+          defaultValue={sortBy}
+          className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-sm"
+        >
+          {SORT_OPTIONS.map(([value, label]) => (
+            <option key={value} value={value}>
+              Sort: {label}
+            </option>
+          ))}
+        </select>
+
+        <div className="flex gap-2">
+          <select
+            name="sortDir"
+            defaultValue={sortDir}
+            className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-sm"
+          >
+            {SORT_DIR_OPTIONS.map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+          <Button type="submit" size="sm">
+            Apply
+          </Button>
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/dashboard/jobs">Reset</Link>
+          </Button>
+        </div>
+      </form>
 
       <Card>
         <CardContent className="p-0">
@@ -101,6 +210,25 @@ export default async function MyJobsPage() {
       </Card>
     </div>
   );
+}
+
+function normalizeStatus(status: string | undefined): "all" | Job["status"] {
+  const value = status ?? "all";
+  const allowed = new Set<string>(STATUSES.map(([s]) => s));
+  if (!allowed.has(value)) return "all";
+  return value as "all" | Job["status"];
+}
+
+function normalizeSortBy(
+  sortBy: string | undefined,
+): "createdAt" | "updatedAt" | "spamScore" | "title" {
+  if (sortBy === "updatedAt" || sortBy === "spamScore" || sortBy === "title")
+    return sortBy;
+  return "createdAt";
+}
+
+function normalizeSortDir(sortDir: string | undefined): "asc" | "desc" {
+  return sortDir === "asc" ? "asc" : "desc";
 }
 
 function statusBadgeVariant(

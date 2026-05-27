@@ -142,6 +142,78 @@ export const jobRepo = {
     return row?.n ?? 0;
   },
 
+  /** Dashboard: server-side search + filter + sort (scoped to a single user). */
+  listDashboardJobs(opts: {
+    userId: string;
+    statuses?: Job["status"][];
+    q?: string;
+    sortBy?: "createdAt" | "updatedAt" | "spamScore" | "title";
+    sortDir?: "asc" | "desc";
+    limit?: number;
+    offset?: number;
+  }) {
+    const {
+      userId,
+      statuses,
+      q,
+      sortBy = "createdAt",
+      sortDir = "desc",
+      limit = 50,
+      offset = 0,
+    } = opts;
+
+    const normalizedQ = q?.trim();
+    const orderExpr =
+      sortBy === "updatedAt"
+        ? jobs.updatedAt
+        : sortBy === "spamScore"
+          ? jobs.spamScore
+          : sortBy === "title"
+            ? jobs.title
+            : jobs.createdAt;
+
+    const allowedStatuses: Job["status"][] = [
+      "draft",
+      "pending_payment",
+      "pending_review",
+      "approved",
+      "scheduled",
+      "posted",
+      "rejected",
+      "expired",
+    ];
+
+    const filterStatuses =
+      statuses && statuses.length > 0
+        ? statuses.filter((s) => allowedStatuses.includes(s))
+        : allowedStatuses;
+
+    return db
+      .select({ job: jobs, category: categories })
+      .from(jobs)
+      .leftJoin(categories, eq(categories.id, jobs.categoryId))
+      .where(
+        and(
+          eq(jobs.userId, userId),
+          inArray(jobs.status, filterStatuses),
+          normalizedQ
+            ? sql`(
+                ${jobs.title} ILIKE ${`%${normalizedQ}%`}
+                OR ${jobs.company} ILIKE ${`%${normalizedQ}%`}
+                OR ${jobs.description} ILIKE ${`%${normalizedQ}%`}
+                OR ${categories.name} ILIKE ${`%${normalizedQ}%`}
+              )`
+            : undefined,
+        ),
+      )
+      .orderBy(
+        sortDir === "asc" ? asc(orderExpr) : desc(orderExpr),
+        desc(jobs.createdAt),
+      )
+      .limit(limit)
+      .offset(offset);
+  },
+
   /** Admin queue: server-side search + filter + sort. */
   listAdminQueue(opts: {
     statuses?: Job["status"][];
