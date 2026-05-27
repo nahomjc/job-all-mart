@@ -29,6 +29,42 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Bad JSON" }, { status: 400 });
   }
 
+  const updateObj =
+    update && typeof update === "object" ? (update as Record<string, unknown>) : null;
+  const messageObj =
+    updateObj?.message && typeof updateObj.message === "object"
+      ? (updateObj.message as Record<string, unknown>)
+      : null;
+  const fromObj =
+    messageObj?.from && typeof messageObj.from === "object"
+      ? (messageObj.from as Record<string, unknown>)
+      : null;
+  const messageText =
+    typeof messageObj?.text === "string" ? messageObj.text : undefined;
+
+  if (messageText?.startsWith("/")) {
+    console.info("[telegram webhook] command received", {
+      command: messageText,
+      updateId:
+        typeof updateObj?.update_id === "number" ? updateObj.update_id : null,
+      fromId: typeof fromObj?.id === "number" ? fromObj.id : null,
+      username:
+        typeof fromObj?.username === "string" ? fromObj.username : null,
+      chatId:
+        messageObj?.chat &&
+        typeof messageObj.chat === "object" &&
+        typeof (messageObj.chat as Record<string, unknown>).id === "number"
+          ? (messageObj.chat as Record<string, unknown>).id
+          : null,
+      chatType:
+        messageObj?.chat &&
+        typeof messageObj.chat === "object" &&
+        typeof (messageObj.chat as Record<string, unknown>).type === "string"
+          ? (messageObj.chat as Record<string, unknown>).type
+          : null,
+    });
+  }
+
   // We must respond quickly. Process the update but do not await long work.
   try {
     await bot.handleUpdate(update as Parameters<typeof bot.handleUpdate>[0]);

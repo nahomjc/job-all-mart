@@ -17,6 +17,14 @@ export function isSetupAdmin(telegramUserId: number): boolean {
   return admins.includes(telegramUserId);
 }
 
+function logSetupCommand(
+  command: string,
+  phase: string,
+  details: Record<string, unknown>,
+): void {
+  console.info(`[telegram][setup][${command}] ${phase}`, details);
+}
+
 function chatTypeLabel(type: string | undefined): string {
   switch (type) {
     case "private":
@@ -68,15 +76,31 @@ export async function handleMyId(ctx: Context): Promise<void> {
 
 export async function handleChatId(ctx: Context): Promise<void> {
   const from = ctx.from;
-  if (!from) return;
+  if (!from) {
+    logSetupCommand("chatid", "missing-from", {});
+    return;
+  }
+
+  logSetupCommand("chatid", "received", {
+    fromId: from.id,
+    username: from.username ?? null,
+    chatId: ctx.chat?.id ?? null,
+    chatType: ctx.chat?.type ?? "unknown",
+    configuredAdmins: env.TELEGRAM_ADMIN_IDS,
+  });
 
   if (!isSetupAdmin(from.id)) {
+    logSetupCommand("chatid", "blocked-not-admin", {
+      fromId: from.id,
+      configuredAdmins: env.TELEGRAM_ADMIN_IDS,
+    });
     await ctx.reply("⛔ Setup commands are restricted to configured admins.");
     return;
   }
 
   const chat = ctx.chat;
   if (!chat) {
+    logSetupCommand("chatid", "missing-chat-context", { fromId: from.id });
     await ctx.reply("No chat context.");
     return;
   }
@@ -108,26 +132,43 @@ export async function handleChatId(ctx: Context): Promise<void> {
     );
   }
 
-  await ctx.reply(
-    [
-      "💬 <b>Current chat ID</b>",
-      "",
-      `<code>${chatId}</code>`,
-      `Type: ${type}`,
-      `Title: ${title}`,
-      "",
-      ...hints,
-      "",
-      envLine("TELEGRAM_CHANNEL_ID (configured)", env.TELEGRAM_CHANNEL_ID),
-      envLine(
-        "TELEGRAM_ADMIN_NOTIFY_CHAT_ID (configured)",
-        env.TELEGRAM_ADMIN_NOTIFY_CHAT_ID,
-      ),
-      "",
-      "<i>Tip: forward any message from your jobs supergroup to this bot, or add the bot to that group and run /chatid there.</i>",
-    ].join("\n"),
-    { parse_mode: "HTML" },
-  );
+  try {
+    await ctx.reply(
+      [
+        "💬 <b>Current chat ID</b>",
+        "",
+        `<code>${chatId}</code>`,
+        `Type: ${type}`,
+        `Title: ${title}`,
+        "",
+        ...hints,
+        "",
+        envLine("TELEGRAM_CHANNEL_ID (configured)", env.TELEGRAM_CHANNEL_ID),
+        envLine(
+          "TELEGRAM_ADMIN_NOTIFY_CHAT_ID (configured)",
+          env.TELEGRAM_ADMIN_NOTIFY_CHAT_ID,
+        ),
+        "",
+        "<i>Tip: forward any message from your jobs supergroup to this bot, or add the bot to that group and run /chatid there.</i>",
+      ].join("\n"),
+      { parse_mode: "HTML" },
+    );
+    logSetupCommand("chatid", "reply-sent", {
+      fromId: from.id,
+      chatId,
+      chatType: chat.type,
+      chatTitle: "title" in chat ? (chat.title ?? null) : null,
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    logSetupCommand("chatid", "reply-failed", {
+      fromId: from.id,
+      chatId,
+      chatType: chat.type,
+      error: message,
+    });
+    throw err;
+  }
 }
 
 export async function handleTopicId(ctx: Context): Promise<void> {
