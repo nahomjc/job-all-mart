@@ -12,8 +12,8 @@ import { jobRepo } from "@/server/repositories/job";
 import { paymentRepo } from "@/server/repositories/payment";
 import { auditLogRepo } from "@/server/repositories/auditLog";
 import { publicUrlFor } from "@/lib/r2";
-import { notifyAdmins } from "@/lib/telegram/publisher";
-import { env } from "@/lib/env";
+import { notifyAdminsNewSubmission } from "@/lib/telegram/publisher";
+import type { User } from "@/server/db/schema";
 
 export interface ActionState {
   ok: boolean;
@@ -35,7 +35,7 @@ export async function submitJobAction(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  let user;
+  let user: User;
   try {
     user = await requireUser();
   } catch {
@@ -186,26 +186,24 @@ export async function submitPaymentAction(
         status: "pending",
       });
 
+  if (!payment) {
+    return fail("Failed to save payment");
+  }
+
   await jobRepo.setStatus(job.id, "pending_review");
   await auditLogRepo.log({
     actorId: user.id,
     action: "job.update",
     targetType: "payment",
-    targetId: payment!.id,
+    targetId: payment.id,
     metadata: { amount: input.amount, currency: input.currency },
     ip: null,
     userAgent: null,
   });
 
-  await notifyAdmins(
-    `🆕 New web submission awaiting review\nJob: ${escapeHtml(job.title)}\n${env.NEXT_PUBLIC_APP_URL}/admin/jobs/${job.id}`,
-  );
+  await notifyAdminsNewSubmission(job.id);
 
   revalidatePath("/dashboard/jobs");
   revalidatePath(`/dashboard/jobs/${job.id}`);
   return ok();
-}
-
-function escapeHtml(input: string): string {
-  return input.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }

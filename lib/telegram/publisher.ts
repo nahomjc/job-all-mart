@@ -5,6 +5,7 @@ import { telegramClient } from "@/lib/telegram/client";
 import type { Category, Job, User } from "@/server/db/schema";
 import { telegramPostRepo } from "@/server/repositories/telegramPost";
 import { jobRepo } from "@/server/repositories/job";
+import { paymentRepo } from "@/server/repositories/payment";
 
 /**
  * Build the public Telegram message body for a job.
@@ -111,9 +112,84 @@ export async function notifyAdmins(text: string): Promise<void> {
   }
 }
 
+/**
+ * Notifies admins of a new job submission with summary text, payment screenshot,
+ * and company logo (when available).
+ */
+export async function notifyAdminsNewSubmission(jobId: string): Promise<void> {
+  const chatId = env.TELEGRAM_ADMIN_NOTIFY_CHAT_ID;
+  if (!chatId) return;
+
+  const data = await jobRepo.byIdWithRelations(jobId);
+  if (!data?.job) return;
+
+  const payment = await paymentRepo.byJobId(jobId);
+  const { job, category, employer } = data;
+  const adminUrl = `${env.NEXT_PUBLIC_APP_URL}/admin/jobs/${jobId}`;
+
+  const employerLabel = employer?.telegramUsername
+    ? `@${employer.telegramUsername}`
+    : (employer?.displayName ?? employer?.email ?? "Unknown");
+
+  const sourceLabel = job.source === "telegram" ? "Telegram bot" : "Website";
+
+  const lines = [
+    "🆕 <b>New submission awaiting review</b>",
+    "",
+    `💼 <b>${escapeHtml(job.title)}</b>`,
+    `🏢 ${escapeHtml(job.company)}`,
+    `📍 ${escapeHtml(job.location)}`,
+    category ? `🏷️ ${escapeHtml(category.name)}` : "",
+    payment
+      ? `💵 ${payment.amount} ${payment.currency} · ${escapeHtml(statusLabel(payment.status))}`
+      : "",
+    `👤 ${escapeHtml(employerLabel)}`,
+    `📨 Source: ${sourceLabel}`,
+  ];
+
+  const screenshotUrl = payment?.screenshotUrl?.trim() ?? "";
+  const logoUrl = job.logoUrl?.trim() ?? "";
+
+  if (!isImageUrl(screenshotUrl)) {
+    lines.push("", "📸 <i>No payment screenshot attached</i>");
+  }
+
+  lines.push("", `<a href="${escapeHtml(adminUrl)}">Open in admin panel</a>`);
+
+  const replyMarkup = {
+    inline_keyboard: [[{ text: "Review job", url: adminUrl }]],
+  };
+
+  try {
+    await telegramClient.sendMessage(chatId, lines.join("\n"), {
+      parse_mode: "HTML",
+      reply_markup: replyMarkup,
+      link_preview_options: { is_disabled: true },
+    });
+
+    if (isImageUrl(screenshotUrl)) {
+      await telegramClient.sendPhoto(chatId, screenshotUrl, {
+        caption: "📸 Payment screenshot",
+      });
+    }
+
+    if (isImageUrl(logoUrl) && logoUrl !== screenshotUrl) {
+      await telegramClient.sendPhoto(chatId, logoUrl, {
+        caption: "🏢 Company logo",
+      });
+    }
+  } catch (err) {
+    console.warn("[telegram] notifyAdminsNewSubmission failed:", err);
+  }
+}
+
+function isImageUrl(url: string): boolean {
+  return url.startsWith("http://") || url.startsWith("https://");
+}
+
 function truncateForTelegram(text: string, max: number): string {
   if (text.length <= max) return text;
-  return text.slice(0, max - 3) + "...";
+  return `${text.slice(0, max - 3)}...`;
 }
 
 function escapeHtml(input: string): string {

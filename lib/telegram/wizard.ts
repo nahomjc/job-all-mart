@@ -2,7 +2,6 @@ import "server-only";
 import type { Context } from "telegraf";
 import { telegramClient } from "@/lib/telegram/client";
 import { uploadBufferToR2 } from "@/lib/telegram/upload";
-import { env } from "@/lib/env";
 import { categoryRepo } from "@/server/repositories/category";
 import { jobRepo } from "@/server/repositories/job";
 import { paymentRepo } from "@/server/repositories/payment";
@@ -13,7 +12,7 @@ import { rateLimit } from "@/lib/rate-limit";
 import { slugify } from "@/lib/format";
 import { checkRequiredChannelMembership } from "@/lib/telegram/client";
 import { requiredChannelLabel } from "@/lib/telegram/required-channel";
-import { notifyAdmins } from "@/lib/telegram/publisher";
+import { notifyAdminsNewSubmission } from "@/lib/telegram/publisher";
 
 /**
  * In-memory wizard state. For a single-instance deployment this is fine; for
@@ -288,9 +287,7 @@ export async function handleWizardMessage(ctx: Context): Promise<boolean> {
       await ctx.reply(
         "✅ Submission received! It is now in admin review.\nYou'll get a Telegram message when it's approved or rejected.\nUse /myjobs to track status.",
       );
-      await notifyAdmins(
-        `🆕 New Telegram submission\nUser: @${user.telegramUsername ?? user.telegramId}\nJob: ${escapeHtml(jobTitle)}\nReview at ${env.NEXT_PUBLIC_APP_URL}/admin/jobs/${jobId}`,
-      );
+      await notifyAdminsNewSubmission(jobId);
 
       clearDraft(from.id);
       return true;
@@ -398,8 +395,4 @@ async function fetchAsBuffer(url: string): Promise<Buffer> {
   if (!res.ok) throw new Error(`failed to fetch telegram file: ${res.status}`);
   const ab = await res.arrayBuffer();
   return Buffer.from(ab);
-}
-
-function escapeHtml(input: string): string {
-  return input.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
