@@ -10,6 +10,13 @@ import {
   handleWizardMessage,
   startDraft,
 } from "@/lib/telegram/wizard";
+import {
+  handleChatId,
+  handleMyId,
+  handleSetupIds,
+  handleTopicId,
+  isSetupAdmin,
+} from "@/lib/telegram/admin-setup";
 import { formatSalary, statusLabel } from "@/lib/format";
 
 let registered = false;
@@ -32,35 +39,56 @@ export function registerHandlers(bot: Telegraf): void {
       lastName: from.last_name,
     });
     await ctx.reply(
-      `Welcome to ${env.NEXT_PUBLIC_APP_NAME}! 👋\n\n` +
-        "I help you post jobs to our Telegram channels.\n\n" +
-        "Available commands:\n" +
-        "• /postjob – submit a new job\n" +
-        "• /myjobs – view your submissions\n" +
-        "• /pricing – view our plans\n" +
-        "• /help – show this message\n\n" +
-        `Before posting, make sure you've joined @${env.TELEGRAM_REQUIRED_CHANNEL}.`,
+      `Welcome to ${env.NEXT_PUBLIC_APP_NAME}! 👋
+
+I help you post jobs to our Telegram channels.
+
+Available commands:
+• /postjob – submit a new job
+• /myjobs – view your submissions
+• /pricing – view our plans
+• /help – show this message
+
+Before posting, make sure you've joined @${env.TELEGRAM_REQUIRED_CHANNEL}.`,
     );
   });
 
   bot.help(async (ctx) => {
-    await ctx.reply(
-      "Commands:\n" +
-        "/postjob – guided job submission\n" +
-        "/myjobs – list your posts and their status\n" +
-        "/pricing – view our plans\n" +
-        "/cancel – cancel an in-progress submission",
-    );
+    const lines = [
+      "Commands:",
+      "/postjob – guided job submission",
+      "/myjobs – list your posts and their status",
+      "/pricing – view our plans",
+      "/cancel – cancel an in-progress submission",
+      "/myid – your Telegram user id (for .env setup)",
+    ];
+    if (ctx.from && isSetupAdmin(ctx.from.id)) {
+      lines.push(
+        "",
+        "Setup (admin):",
+        "/chatid – chat id for channel / notify",
+        "/topicid – forum topic id (run inside a topic)",
+        "/setupids – all ids + suggested .env block",
+      );
+    }
+    await ctx.reply(lines.join("\n"));
   });
+
+  bot.command("myid", handleMyId);
+  bot.command("chatid", handleChatId);
+  bot.command("topicid", handleTopicId);
+  bot.command("setupids", handleSetupIds);
 
   bot.command("pricing", async (ctx) => {
     await ctx.reply(
-      "💎 Pricing\n\n" +
-        "• Free: 1 post / 30 days\n" +
-        "• Basic ($10/post): goes live in <2h after admin approval\n" +
-        "• Pro ($25/post): featured + pinned for 24h\n" +
-        "• Enterprise: contact admin\n\n" +
-        `Full details: ${env.NEXT_PUBLIC_APP_URL}/pricing`,
+      `💎 Pricing
+
+• Free: 1 post / 30 days
+• Basic ($10/post): goes live in <2h after admin approval
+• Pro ($25/post): featured + pinned for 24h
+• Enterprise: contact admin
+
+Full details: ${env.NEXT_PUBLIC_APP_URL}/pricing`,
     );
   });
 

@@ -160,6 +160,8 @@ See `.env.example` for the full list. The required ones in short:
 
 ## Telegram bot setup
 
+> **Full guide:** [docs/TELEGRAM.md](docs/TELEGRAM.md) — setup, env vars, webhook vs polling, topics, troubleshooting, and the `approved` → `posted` flow.
+
 1. **Create the bot** with [@BotFather](https://t.me/BotFather): `/newbot`. Save
    the token into `TELEGRAM_BOT_TOKEN`.
 2. **Make a supergroup with forum topics enabled.** Note the chat id (use
@@ -200,6 +202,10 @@ See `.env.example` for the full list. The required ones in short:
 | `/myjobs` | Lists the caller's posts and statuses. |
 | `/pricing` | Inline pricing. |
 | `/cancel` | Abort an in-progress wizard. |
+| `/myid` | Your Telegram user id → `TELEGRAM_ADMIN_IDS`. |
+| `/chatid` | Current chat id → channel or notify chat (admin). |
+| `/topicid` | Forum topic id → Admin → Categories (admin, run inside topic). |
+| `/setupids` | All setup ids + suggested `.env` block (admin). |
 
 ---
 
