@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
-import { publishJobToTelegram } from "@/lib/telegram/publisher";
+import { notifyAdmins, publishJobToTelegram } from "@/lib/telegram/publisher";
 import { telegramClient } from "@/lib/telegram/client";
 import { jobRepo } from "@/server/repositories/job";
 import { paymentRepo } from "@/server/repositories/payment";
@@ -50,7 +50,18 @@ export async function approveJobAction(
   });
 
   // Publish immediately unless the admin scheduled it elsewhere.
-  await publishJobToTelegram(jobId);
+  const adminLink = `${env.NEXT_PUBLIC_APP_URL}/admin/jobs/${jobId}`;
+  try {
+    await publishJobToTelegram(jobId);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    await notifyAdmins(
+      `⚠️ Job approved but Telegram publish failed\nJob: ${escapeHtml(
+        job.title,
+      )}\n${adminLink}\nError: ${escapeHtml(message)}`,
+    );
+    return failState(`Telegram publish failed: ${message}`);
+  }
   await auditLogRepo.log({
     actorId: admin.id,
     action: "job.post",
@@ -61,6 +72,9 @@ export async function approveJobAction(
     userAgent: null,
   });
 
+  await notifyAdmins(
+    `✅ Job approved & posted to Telegram\nJob: ${escapeHtml(job.title)}\n${adminLink}`,
+  );
   await notifyOwner(jobId, "approved", job.title);
 
   revalidatePath("/admin/jobs");
