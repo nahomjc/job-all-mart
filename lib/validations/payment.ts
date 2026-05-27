@@ -3,7 +3,12 @@ import { z } from "zod";
 export const paymentSubmitSchema = z.object({
   jobId: z.string().uuid(),
   amount: z.coerce.number().int().positive(),
-  currency: z.string().min(3).max(8).default("USD"),
+  currency: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z]{3}$/, "Use a 3-letter ISO currency code (e.g. USD, ETB)")
+    .default("USD"),
   method: z
     .enum(["bank_transfer", "mobile_money", "crypto", "card", "other"])
     .default("bank_transfer"),

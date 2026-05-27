@@ -10,8 +10,14 @@ export function formatRelativeTime(date: Date | string | number): string {
 
 type AmountFormatter = (amount: number) => string;
 
+/** Common typos / non-ISO codes stored before validation was tightened. */
+const CURRENCY_ALIASES: Record<string, string> = {
+	USDU: "USD",
+};
+
 function normalizeCurrencyCode(currency: string | null | undefined): string {
-	return (currency?.trim() || "USD").toUpperCase();
+	const raw = (currency?.trim() || "USD").toUpperCase();
+	return CURRENCY_ALIASES[raw] ?? raw;
 }
 
 function isThreeLetterCurrencyCode(

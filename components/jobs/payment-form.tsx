@@ -50,12 +50,16 @@ export function PaymentForm({ jobId }: { jobId: string }) {
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="currency">Currency</Label>
-          <Input
-            id="currency"
-            name="currency"
-            defaultValue="USD"
-            maxLength={8}
-          />
+          <Select name="currency" defaultValue="USD" required>
+            <SelectTrigger id="currency">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="USD">USD - US Dollar</SelectItem>
+              <SelectItem value="ETB">ETB - Ethiopian Birr</SelectItem>
+              <SelectItem value="EUR">EUR - Euro</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
