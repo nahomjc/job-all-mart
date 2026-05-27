@@ -130,7 +130,9 @@ export async function notifyAdminsNewSubmission(jobId: string): Promise<void> {
 
   const payment = await paymentRepo.byJobId(jobId);
   const { job, category, employer } = data;
-  const adminUrl = `${env.NEXT_PUBLIC_APP_URL}/admin/jobs/${jobId}`;
+  const adminPath = `/admin/jobs/${jobId}`;
+  const adminUrl = `${env.NEXT_PUBLIC_APP_URL}${adminPath}`;
+  const loginRedirectUrl = `${env.NEXT_PUBLIC_APP_URL}/login?next=${encodeURIComponent(adminPath)}`;
 
   const employerLabel = employer?.telegramUsername
     ? `@${employer.telegramUsername}`
@@ -154,47 +156,59 @@ export async function notifyAdminsNewSubmission(jobId: string): Promise<void> {
 
   const screenshotUrl = payment?.screenshotUrl?.trim() ?? "";
   const logoUrl = job.logoUrl?.trim() ?? "";
+  const previewImageUrl = isImageUrl(screenshotUrl)
+    ? screenshotUrl
+    : isImageUrl(logoUrl)
+      ? logoUrl
+      : "";
 
   if (!isImageUrl(screenshotUrl)) {
     lines.push("", "📸 <i>No payment screenshot attached</i>");
   }
 
-  if (canUseTelegramInlineUrl(adminUrl)) {
-    lines.push("", `<a href="${escapeHtml(adminUrl)}">Open in admin panel</a>`);
+  if (canUseTelegramInlineUrl(loginRedirectUrl)) {
+    lines.push(
+      "",
+      `<a href="${escapeHtml(loginRedirectUrl)}">Review in admin panel (login required)</a>`,
+    );
   } else {
     lines.push(
       "",
       "🔗 Admin panel:",
-      escapeHtml(adminUrl),
+      escapeHtml(loginRedirectUrl),
       "",
       "<i>Set NEXT_PUBLIC_APP_URL to your public HTTPS domain for clickable review links.</i>",
     );
   }
 
-  const replyMarkup = canUseTelegramInlineUrl(adminUrl)
-    ? { inline_keyboard: [[{ text: "Review job", url: adminUrl }]] }
+  const replyMarkup = canUseTelegramInlineUrl(loginRedirectUrl)
+    ? {
+        inline_keyboard: [
+          [
+            { text: "Review in Telegram", web_app: { url: loginRedirectUrl } },
+            { text: "Review in browser", url: loginRedirectUrl },
+          ],
+        ],
+      }
     : undefined;
 
   const text = lines.filter(Boolean).join("\n");
 
   await deliverAdminNotification(async (chatId) => {
+    if (previewImageUrl) {
+      await telegramClient.sendPhoto(chatId, previewImageUrl, {
+        caption: text,
+        parse_mode: "HTML",
+        ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
+      });
+      return;
+    }
+
     await telegramClient.sendMessage(chatId, text, {
       parse_mode: "HTML",
       ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
       link_preview_options: { is_disabled: true },
     });
-
-    if (isImageUrl(screenshotUrl)) {
-      await telegramClient.sendPhoto(chatId, screenshotUrl, {
-        caption: "📸 Payment screenshot",
-      });
-    }
-
-    if (isImageUrl(logoUrl) && logoUrl !== screenshotUrl) {
-      await telegramClient.sendPhoto(chatId, logoUrl, {
-        caption: "🏢 Company logo",
-      });
-    }
   });
 }
 
