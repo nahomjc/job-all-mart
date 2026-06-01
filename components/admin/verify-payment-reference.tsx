@@ -94,7 +94,7 @@ export function VerifyPaymentReference({
 		<form
 			action={action}
 			className={cn(
-				"space-y-3 rounded-xl border p-4 transition-colors duration-300",
+				"min-w-0 space-y-3 rounded-xl border p-3 transition-colors duration-300 sm:p-4",
 				verified
 					? "border-emerald-500/50 bg-emerald-50/80 shadow-sm shadow-emerald-500/10 dark:bg-emerald-950/25"
 					: "bg-muted/20",
@@ -103,10 +103,10 @@ export function VerifyPaymentReference({
 			<input type="hidden" name="paymentId" value={paymentId} />
 			<input type="hidden" name="method" value={method} />
 
-			<div className="flex items-start justify-between gap-3">
-				<div>
+			<div className="flex flex-col gap-2 min-[400px]:flex-row min-[400px]:items-start min-[400px]:justify-between min-[400px]:gap-3">
+				<div className="min-w-0">
 					<p className="text-sm font-semibold">Check reference</p>
-					<p className="text-xs text-muted-foreground">
+					<p className="text-xs leading-relaxed break-words text-muted-foreground">
 						Verify against{" "}
 						<a
 							href="https://verify.leul.et/docs"
@@ -231,8 +231,7 @@ export function VerifyPaymentReference({
 
 			<Button
 				type="submit"
-				size="sm"
-				className="w-full"
+				className="h-11 w-full"
 				variant={verified ? "secondary" : "default"}
 				disabled={pending}
 			>

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { formatRelativeTime, formatSalary, statusLabel } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { paymentMethodLabel } from "@/lib/payment-methods";
 import { jobRepo } from "@/server/repositories/job";
 import { paymentRepo } from "@/server/repositories/payment";
@@ -55,10 +56,10 @@ export default async function AdminJobReviewPage(props: {
 	const tgPosts = await telegramPostRepo.byJobId(id);
 
 	return (
-		<div className="space-y-8">
-			<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-				<div className="flex min-w-0 items-start gap-4">
-					<div className="flex size-14 shrink-0 items-center justify-center rounded-xl border bg-muted/50 md:size-16">
+		<div className="mx-auto w-full max-w-full min-w-0 space-y-4 overflow-x-hidden sm:space-y-6 md:space-y-8">
+			<header className="flex flex-col gap-3 sm:gap-4">
+				<div className="flex min-w-0 items-start gap-3 sm:gap-4">
+					<div className="flex size-12 shrink-0 items-center justify-center rounded-xl border bg-muted/50 sm:size-14 md:size-16">
 						{job.logoUrl ? (
 							<Image
 								src={job.logoUrl}
@@ -68,37 +69,46 @@ export default async function AdminJobReviewPage(props: {
 								className="size-full rounded-xl object-cover"
 							/>
 						) : (
-							<Building2 className="size-7 text-muted-foreground md:size-8" />
+							<Building2 className="size-6 text-muted-foreground sm:size-7 md:size-8" />
 						)}
 					</div>
-					<div className="min-w-0">
-						<p className="text-xs font-semibold uppercase tracking-wider text-primary">
+					<div className="min-w-0 flex-1">
+						<p className="text-[10px] font-semibold uppercase tracking-wider text-primary sm:text-xs">
 							Job review
 						</p>
-						<h1 className="mt-1 text-2xl font-bold tracking-tight md:text-3xl">
+						<h1 className="mt-0.5 break-words text-xl font-bold tracking-tight sm:mt-1 sm:text-2xl md:text-3xl">
 							{job.title}
 						</h1>
-						<p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-							<span className="inline-flex flex-wrap items-center gap-2">
-								<span className="inline-flex items-center gap-1.5 font-medium text-foreground">
-									<Building2 className="size-3.5" />
-									{job.company}
+						<p className="mt-1 text-xs text-muted-foreground sm:text-sm">
+							<span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
+								<span className="inline-flex min-w-0 items-center gap-1.5 font-medium text-foreground">
+									<Building2 className="size-3.5 shrink-0" />
+									<span className="break-words">{job.company}</span>
 								</span>
 								<span className="text-muted-foreground/60">·</span>
-								<span>{category?.name ?? "Uncategorized"}</span>
+								<span className="break-words">
+									{category?.name ?? "Uncategorized"}
+								</span>
 							</span>
 						</p>
 					</div>
 				</div>
-				<Button asChild variant="outline" size="sm">
+				<Button
+					asChild
+					variant="outline"
+					className="h-11 w-full shrink-0 sm:w-auto sm:self-end"
+				>
 					<Link href="/admin/jobs">
-						<ArrowLeft className="size-3.5" />
+						<ArrowLeft className="size-4" />
 						Back to queue
 					</Link>
 				</Button>
-			</div>
+			</header>
 
-			<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+			<section
+				aria-label="Status overview"
+				className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-4"
+			>
 				<SnapshotTile
 					label="Job status"
 					value={statusLabel(job.status)}
@@ -127,10 +137,10 @@ export default async function AdminJobReviewPage(props: {
 					value={job.source === "telegram" ? "Telegram" : "Website"}
 					badgeVariant="outline"
 				/>
-			</div>
+			</section>
 
-			<div className="grid gap-6 xl:grid-cols-[1fr_360px]">
-				<div className="space-y-6">
+			<div className="grid min-w-0 gap-4 sm:gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,360px)] xl:items-start">
+				<div className="min-w-0 space-y-4 sm:space-y-6">
 					<AdminJobActions
 						jobId={job.id}
 						paymentId={payment?.id}
@@ -138,15 +148,17 @@ export default async function AdminJobReviewPage(props: {
 						jobStatus={job.status}
 					/>
 
-					<Card>
-						<CardHeader className="border-b bg-muted/20">
-							<CardTitle className="text-lg">Job details</CardTitle>
-							<CardDescription>
+					<Card className="min-w-0 overflow-hidden">
+						<CardHeader className="border-b bg-muted/20 p-3 sm:p-4 md:p-6">
+							<CardTitle className="text-base sm:text-lg">
+								Job details
+							</CardTitle>
+							<CardDescription className="text-xs sm:text-sm">
 								Full submission content and metadata.
 							</CardDescription>
 						</CardHeader>
-						<CardContent className="space-y-6 p-6">
-							<div className="grid gap-4 sm:grid-cols-2">
+						<CardContent className="space-y-4 p-3 sm:space-y-6 sm:p-4 md:p-6">
+							<div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2">
 								<DetailItem
 									icon={Briefcase}
 									label="Employment type"
@@ -178,24 +190,24 @@ export default async function AdminJobReviewPage(props: {
 												href={job.applyUrl}
 												target="_blank"
 												rel="noopener noreferrer"
-												className="inline-flex max-w-full items-center gap-1 text-primary hover:underline"
+												className="inline-flex max-w-full min-w-0 items-start gap-1 break-all text-primary hover:underline sm:items-center"
 											>
-												<span className="truncate">{job.applyUrl}</span>
-												<ExternalLink className="size-3 shrink-0" />
+												<span className="min-w-0">{job.applyUrl}</span>
+												<ExternalLink className="mt-0.5 size-3.5 shrink-0 sm:mt-0" />
 											</a>
 										}
-										className="sm:col-span-2"
+										className="min-[480px]:col-span-2"
 									/>
 								)}
 							</div>
 
 							<Separator />
 
-							<div>
-								<p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+							<div className="min-w-0">
+								<p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground sm:text-xs">
 									Description
 								</p>
-								<div className="mt-3 rounded-xl border bg-muted/20 p-4 text-sm leading-relaxed whitespace-pre-line">
+								<div className="mt-2 max-w-full overflow-hidden rounded-xl border bg-muted/20 p-3 text-sm leading-relaxed break-words whitespace-pre-line sm:mt-3 sm:p-4">
 									{job.description}
 								</div>
 							</div>
@@ -203,11 +215,11 @@ export default async function AdminJobReviewPage(props: {
 					</Card>
 				</div>
 
-				<aside className="space-y-4">
+				<aside className="min-w-0 space-y-3 sm:space-y-4 xl:sticky xl:top-20 xl:self-start">
 					<SidebarCard title="Employer" icon={User}>
 						{employer ? (
 							<div className="space-y-3">
-								<p className="font-semibold">
+								<p className="break-words font-semibold">
 									{employer.displayName ?? "Unnamed user"}
 								</p>
 								{employer.email && (
@@ -219,7 +231,11 @@ export default async function AdminJobReviewPage(props: {
 										text={`@${employer.telegramUsername}`}
 									/>
 								)}
-								<Button asChild variant="outline" size="sm" className="w-full">
+								<Button
+									asChild
+									variant="outline"
+									className="h-11 w-full"
+								>
 									<Link href={`/admin/users/${employer.id}`}>
 										View user profile
 									</Link>
@@ -235,7 +251,7 @@ export default async function AdminJobReviewPage(props: {
 					<SidebarCard title="Payment proof" icon={Receipt}>
 						{payment ? (
 							<div className="space-y-4">
-								<dl className="space-y-2 text-sm">
+								<dl className="space-y-3 text-sm">
 									<SidebarRow
 										label="Amount"
 										value={`${payment.amount} ${payment.currency}`}
@@ -256,7 +272,7 @@ export default async function AdminJobReviewPage(props: {
 										<SidebarRow
 											label="Reference"
 											value={
-												<span className="font-mono text-xs">
+												<span className="break-all font-mono text-xs">
 													{payment.referenceCode}
 												</span>
 											}
@@ -266,7 +282,7 @@ export default async function AdminJobReviewPage(props: {
 										<SidebarRow
 											label="Account suffix"
 											value={
-												<span className="font-mono text-xs">
+												<span className="break-all font-mono text-xs">
 													{payment.accountSuffix}
 												</span>
 											}
@@ -275,7 +291,11 @@ export default async function AdminJobReviewPage(props: {
 									{payment.phoneNumber && (
 										<SidebarRow
 											label="Phone"
-											value={payment.phoneNumber}
+											value={
+												<span className="break-all">
+													{payment.phoneNumber}
+												</span>
+											}
 										/>
 									)}
 								</dl>
@@ -292,22 +312,24 @@ export default async function AdminJobReviewPage(props: {
 										href={payment.screenshotUrl}
 										target="_blank"
 										rel="noopener noreferrer"
-										className="group block overflow-hidden rounded-xl border bg-muted/30"
+										className="group block max-w-full overflow-hidden rounded-xl border bg-muted/30"
 									>
-										<Image
-											src={payment.screenshotUrl}
-											alt="Payment screenshot"
-											width={640}
-											height={480}
-											className="aspect-[4/3] w-full object-cover transition group-hover:scale-[1.02]"
-											unoptimized
-										/>
+										<div className="relative aspect-[4/3] w-full max-w-full">
+											<Image
+												src={payment.screenshotUrl}
+												alt="Payment screenshot"
+												fill
+												sizes="(max-width: 768px) 100vw, 360px"
+												className="object-cover transition group-hover:scale-[1.02]"
+												unoptimized
+											/>
+										</div>
 										<p className="border-t bg-background/80 px-3 py-2 text-center text-xs text-muted-foreground">
-											Click to open full size
+											Tap to open full size
 										</p>
 									</a>
 								) : (
-									<p className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
+									<p className="rounded-lg border border-dashed p-3 text-center text-sm text-muted-foreground sm:p-4">
 										No screenshot on file.
 									</p>
 								)}
@@ -329,13 +351,13 @@ export default async function AdminJobReviewPage(props: {
 									>
 										<a
 											href={p.messageUrl ?? "#"}
-											className="font-medium text-primary hover:underline"
+											className="font-medium break-words text-primary hover:underline"
 											target="_blank"
 											rel="noopener noreferrer"
 										>
 											Message #{p.messageId}
 										</a>
-										<p className="mt-1 text-xs text-muted-foreground">
+										<p className="mt-1 text-xs leading-relaxed break-words text-muted-foreground">
 											Topic {p.topicId ?? "general"} · {p.clickCount} clicks ·{" "}
 											{formatRelativeTime(p.createdAt)}
 										</p>
@@ -346,9 +368,9 @@ export default async function AdminJobReviewPage(props: {
 					)}
 
 					<Card className="border-dashed bg-muted/20">
-						<CardContent className="flex items-start gap-3 p-4 text-sm">
+						<CardContent className="flex items-start gap-3 p-3 text-sm sm:p-4">
 							<Shield className="mt-0.5 size-4 shrink-0 text-primary" />
-							<p className="text-muted-foreground">
+							<p className="min-w-0 break-words text-muted-foreground">
 								Approving publishes to your configured Telegram channel and
 								marks the job as{" "}
 								<span className="font-medium text-foreground">posted</span> on
@@ -378,12 +400,15 @@ function SnapshotTile({
 		| "outline";
 }) {
 	return (
-		<div className="rounded-xl border bg-card p-4 shadow-sm">
-			<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+		<div className="min-w-0 rounded-xl border bg-card p-3 shadow-sm sm:p-4">
+			<p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground sm:text-xs">
 				{label}
 			</p>
-			<div className="mt-2">
-				<Badge variant={badgeVariant} className="text-sm font-semibold">
+			<div className="mt-1.5 sm:mt-2">
+				<Badge
+					variant={badgeVariant}
+					className="max-w-full truncate text-xs font-semibold sm:text-sm"
+				>
 					{value}
 				</Badge>
 			</div>
@@ -403,12 +428,14 @@ function DetailItem({
 	className?: string;
 }) {
 	return (
-		<div className={className}>
-			<p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-				{Icon && <Icon className="size-3.5" />}
+		<div className={cn("min-w-0", className)}>
+			<p className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground sm:text-xs">
+				{Icon && <Icon className="size-3.5 shrink-0" />}
 				{label}
 			</p>
-			<div className="mt-1.5 text-sm font-medium">{value}</div>
+			<div className="mt-1 break-words text-sm font-medium sm:mt-1.5">
+				{value}
+			</div>
 		</div>
 	);
 }
@@ -423,16 +450,16 @@ function SidebarCard({
 	children: React.ReactNode;
 }) {
 	return (
-		<Card className="shadow-sm">
-			<CardHeader className="border-b pb-3">
-				<CardTitle className="flex items-center gap-2 text-base">
-					<span className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+		<Card className="min-w-0 overflow-hidden shadow-sm">
+			<CardHeader className="border-b p-3 pb-3 sm:p-4">
+				<CardTitle className="flex min-w-0 items-center gap-2 text-sm sm:text-base">
+					<span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
 						<Icon className="size-4" />
 					</span>
-					{title}
+					<span className="min-w-0 break-words">{title}</span>
 				</CardTitle>
 			</CardHeader>
-			<CardContent className="p-4">{children}</CardContent>
+			<CardContent className="p-3 sm:p-4">{children}</CardContent>
 		</Card>
 	);
 }
@@ -445,9 +472,9 @@ function SidebarRow({
 	value: React.ReactNode;
 }) {
 	return (
-		<div className="flex items-center justify-between gap-3">
-			<dt className="text-muted-foreground">{label}</dt>
-			<dd className="text-right font-medium">{value}</dd>
+		<div className="flex flex-col gap-0.5 min-[400px]:flex-row min-[400px]:items-start min-[400px]:justify-between min-[400px]:gap-3">
+			<dt className="shrink-0 text-muted-foreground">{label}</dt>
+			<dd className="min-w-0 font-medium min-[400px]:text-right">{value}</dd>
 		</div>
 	);
 }
@@ -460,9 +487,9 @@ function MetaLine({
 	text: string;
 }) {
 	return (
-		<p className="flex items-center gap-2 text-sm text-muted-foreground">
+		<p className="flex min-w-0 items-center gap-2 text-sm text-muted-foreground">
 			<Icon className="size-3.5 shrink-0" />
-			<span className="truncate">{text}</span>
+			<span className="min-w-0 break-all">{text}</span>
 		</p>
 	);
 }

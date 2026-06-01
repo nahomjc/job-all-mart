@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import {
 	type AdminActionState,
 	approveJobAction,
@@ -110,15 +111,15 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 	};
 
 	return (
-		<Card className="overflow-hidden border-primary/15 shadow-sm">
-			<CardHeader className="border-b bg-muted/30 pb-4">
-				<div className="flex items-start gap-3">
+		<Card className="min-w-0 overflow-hidden border-primary/15 shadow-sm">
+			<CardHeader className="border-b bg-muted/30 p-3 sm:p-4 md:p-6">
+				<div className="flex min-w-0 items-start gap-3">
 					<span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
 						<ShieldAlert className="size-5" />
 					</span>
-					<div>
-						<CardTitle className="text-lg">Moderation</CardTitle>
-						<CardDescription className="mt-1">
+					<div className="min-w-0">
+						<CardTitle className="text-base sm:text-lg">Moderation</CardTitle>
+						<CardDescription className="mt-1 text-xs sm:text-sm">
 							Verify payment proof, then approve to publish the job to Telegram
 							and the website.
 						</CardDescription>
@@ -126,7 +127,7 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 				</div>
 			</CardHeader>
 
-			<CardContent className="space-y-6 p-6">
+			<CardContent className="space-y-4 p-3 sm:space-y-6 sm:p-4 md:p-6">
 				{needsPaymentVerify && props.paymentId && (
 					<PaymentAwaitingVerification
 						paymentId={props.paymentId}
@@ -137,17 +138,17 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 				)}
 
 				{isStuckAtApproved && (
-					<div className="rounded-xl border border-primary/25 bg-primary/5 p-4">
+					<div className="rounded-xl border border-primary/25 bg-primary/5 p-3 sm:p-4">
 						<p className="text-sm font-semibold text-primary">
 							Approved but not posted yet
 						</p>
-						<p className="mt-1 text-sm text-muted-foreground">
+						<p className="mt-1 text-xs leading-relaxed text-muted-foreground sm:text-sm">
 							Telegram publish may have failed. Retry publishing or mark as
 							posted for local testing without Telegram.
 						</p>
-						<div className="mt-3 flex flex-wrap gap-2">
+						<div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
 							<Button
-								size="sm"
+								className="h-11 w-full sm:w-auto"
 								variant="default"
 								onClick={runRepublish}
 								disabled={pending}
@@ -156,7 +157,7 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 								Retry Telegram publish
 							</Button>
 							<Button
-								size="sm"
+								className="h-11 w-full sm:w-auto"
 								variant="outline"
 								onClick={runMarkPosted}
 								disabled={pending}
@@ -168,10 +169,9 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 					</div>
 				)}
 
-				<div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+				<div className="flex flex-col gap-3">
 					<Button
-						size="lg"
-						className="flex-1 sm:flex-none"
+						className="h-11 w-full sm:w-auto sm:min-w-[12rem]"
 						onClick={runApprove}
 						disabled={pending || isPosted || needsPaymentVerify}
 						variant="success"
@@ -180,7 +180,7 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 						{pending ? "Processing…" : "Approve & publish"}
 					</Button>
 					{isPosted && (
-						<p className="text-sm text-muted-foreground">
+						<p className="text-xs text-muted-foreground sm:text-sm">
 							This job is already live.
 						</p>
 					)}
@@ -188,11 +188,12 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 
 				<Separator />
 
-				<div className="grid gap-6 md:grid-cols-2">
+				<div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 md:gap-6">
 					<ActionBlock
 						icon={XCircle}
 						title="Reject job"
 						description="Send the submission back with a reason."
+						tone="destructive"
 					>
 						<RejectJobForm jobId={props.jobId} disabled={isPosted} />
 					</ActionBlock>
@@ -201,6 +202,7 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 						icon={CalendarClock}
 						title="Schedule"
 						description="Publish automatically at a future time."
+						tone="secondary"
 					>
 						<ScheduleJobForm jobId={props.jobId} />
 					</ActionBlock>
@@ -209,7 +211,8 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 						icon={Pin}
 						title="Feature"
 						description="Pin the post in the channel for a set number of days."
-						className="md:col-span-2"
+						className="min-[480px]:col-span-2"
+						tone="default"
 					>
 						<FeatureJobForm jobId={props.jobId} />
 					</ActionBlock>
@@ -223,7 +226,7 @@ const VERIFICATION_STEPS = [
 	{
 		title: "Review payment proof",
 		description:
-			"Open the Payment proof panel on the right. Confirm the screenshot, amount, and reference match the submission.",
+			"Open the Payment proof panel below. Confirm the screenshot, amount, and reference match the submission.",
 	},
 	{
 		title: "Check the reference",
@@ -254,14 +257,14 @@ function PaymentAwaitingVerification({
 	return (
 		<section
 			aria-labelledby="payment-verify-heading"
-			className="overflow-hidden rounded-xl border border-amber-500/25 bg-linear-to-b from-amber-50/80 to-card shadow-sm dark:from-amber-950/30 dark:to-card"
+			className="min-w-0 overflow-hidden rounded-xl border border-amber-500/25 bg-linear-to-b from-amber-50/80 to-card shadow-sm dark:from-amber-950/30 dark:to-card"
 		>
-			<header className="flex flex-col gap-3 border-b border-amber-500/20 bg-amber-500/5 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-				<div className="flex items-start gap-3">
+			<header className="flex flex-col gap-3 border-b border-amber-500/20 bg-amber-500/5 p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4 md:px-5">
+				<div className="flex min-w-0 items-start gap-3">
 					<span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-300">
 						<Receipt className="size-5" />
 					</span>
-					<div>
+					<div className="min-w-0">
 						<h3
 							id="payment-verify-heading"
 							className="text-sm font-semibold tracking-tight"
@@ -274,12 +277,12 @@ function PaymentAwaitingVerification({
 						</p>
 					</div>
 				</div>
-				<Badge variant={statusBadgeVariant} className="w-fit capitalize">
+				<Badge variant={statusBadgeVariant} className="w-fit shrink-0 capitalize">
 					{statusLabel(paymentStatus)}
 				</Badge>
 			</header>
 
-			<div className="space-y-5 px-4 py-4 sm:px-5">
+			<div className="space-y-4 p-3 sm:space-y-5 sm:p-4 md:px-5">
 				<ol className="space-y-3">
 					{VERIFICATION_STEPS.map((step, index) => (
 						<li key={step.title} className="flex gap-3">
@@ -287,8 +290,8 @@ function PaymentAwaitingVerification({
 								{index + 1}
 							</span>
 							<div className="min-w-0 pt-0.5">
-								<p className="text-sm font-medium leading-none">{step.title}</p>
-								<p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+								<p className="text-sm font-medium leading-snug">{step.title}</p>
+								<p className="mt-1.5 text-xs leading-relaxed break-words text-muted-foreground">
 									{step.description}
 								</p>
 							</div>
@@ -296,11 +299,11 @@ function PaymentAwaitingVerification({
 					))}
 				</ol>
 
-				<div className="rounded-lg border bg-background/80 p-4 shadow-sm">
+				<div className="rounded-lg border bg-background/80 p-3 shadow-sm sm:p-4">
 					<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-						<div className="flex items-start gap-2.5">
+						<div className="flex min-w-0 items-start gap-2.5">
 							<ClipboardCheck className="mt-0.5 size-4 shrink-0 text-primary" />
-							<div>
+							<div className="min-w-0">
 								<p className="text-sm font-medium">Ready to confirm?</p>
 								<p className="text-xs text-muted-foreground">
 									This records the payment as verified in your system.
@@ -308,9 +311,8 @@ function PaymentAwaitingVerification({
 							</div>
 						</div>
 						<Button
-							size="sm"
 							variant="success"
-							className="w-full shrink-0 sm:w-auto"
+							className="h-11 w-full shrink-0 sm:w-auto"
 							onClick={onVerify}
 							disabled={verifyPending}
 						>
@@ -320,11 +322,11 @@ function PaymentAwaitingVerification({
 					</div>
 				</div>
 
-				<div className="rounded-lg border border-destructive/20 bg-destructive/3 p-4">
+				<div className="rounded-lg border border-destructive/20 bg-destructive/3 p-3 sm:p-4">
 					<p className="text-xs font-semibold uppercase tracking-wider text-destructive">
 						Reject payment
 					</p>
-					<p className="mt-1 text-xs text-muted-foreground">
+					<p className="mt-1 text-xs leading-relaxed text-muted-foreground">
 						Use only if the proof is invalid, duplicated, or does not match the
 						job fee.
 					</p>
@@ -343,23 +345,40 @@ function ActionBlock({
 	description,
 	children,
 	className,
+	tone = "default",
 }: {
 	icon: React.ComponentType<{ className?: string }>;
 	title: string;
 	description: string;
 	children: React.ReactNode;
 	className?: string;
+	tone?: "default" | "secondary" | "destructive";
 }) {
+	const toneClasses =
+		tone === "destructive"
+			? "border-destructive/20 bg-destructive/[0.04]"
+			: tone === "secondary"
+				? "border-primary/20 bg-primary/[0.04]"
+				: "border-border bg-muted/[0.25]";
+
 	return (
 		<div className={className}>
-			<div className="mb-3 flex items-start gap-2">
-				<Icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-				<div>
-					<p className="text-sm font-semibold">{title}</p>
-					<p className="text-xs text-muted-foreground">{description}</p>
+			<div
+				className={`min-w-0 rounded-xl border p-3 shadow-sm sm:p-4 ${toneClasses}`}
+			>
+				<div className="mb-4 flex min-w-0 items-start gap-2.5">
+					<span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-background shadow-sm">
+						<Icon className="size-4 text-muted-foreground" />
+					</span>
+					<div className="min-w-0">
+						<p className="text-sm font-semibold">{title}</p>
+						<p className="mt-1 text-xs leading-relaxed break-words text-muted-foreground">
+							{description}
+						</p>
+					</div>
 				</div>
+				{children}
 			</div>
-			{children}
 		</div>
 	);
 }
@@ -388,22 +407,30 @@ function RejectJobForm({
 	useActionToast(state, "Job rejected");
 
 	return (
-		<form action={action} className="space-y-2">
+		<form action={action} className="space-y-3">
 			<input type="hidden" name="jobId" value={jobId} />
-			<Input
+			<Label
+				htmlFor={`reject-reason-${jobId}`}
+				className="text-xs text-muted-foreground"
+			>
+				Reason for rejection
+			</Label>
+			<Textarea
+				id={`reject-reason-${jobId}`}
 				name="reason"
+				rows={3}
 				placeholder="Reason for rejection…"
 				required
 				disabled={disabled || pending}
+				className="max-w-full min-w-0"
 			/>
 			<Button
 				type="submit"
 				variant="destructive"
-				size="sm"
-				className="w-full"
+				className="h-11 w-full sm:w-auto"
 				disabled={disabled || pending}
 			>
-				Reject job
+				{pending ? "Rejecting…" : "Reject job"}
 			</Button>
 		</form>
 	);
@@ -414,7 +441,7 @@ function ScheduleJobForm({ jobId }: { jobId: string }) {
 	useActionToast(state, "Job scheduled");
 
 	return (
-		<form action={action} className="space-y-2">
+		<form action={action} className="space-y-3">
 			<input type="hidden" name="jobId" value={jobId} />
 			<Label htmlFor="scheduledAt" className="text-xs text-muted-foreground">
 				Publish at
@@ -425,15 +452,15 @@ function ScheduleJobForm({ jobId }: { jobId: string }) {
 				type="datetime-local"
 				required
 				disabled={pending}
+				className="max-w-full min-w-0"
 			/>
 			<Button
 				type="submit"
 				variant="secondary"
-				size="sm"
-				className="w-full"
+				className="h-11 w-full sm:w-auto"
 				disabled={pending}
 			>
-				Schedule publish
+				{pending ? "Scheduling…" : "Schedule publish"}
 			</Button>
 		</form>
 	);
@@ -444,9 +471,12 @@ function FeatureJobForm({ jobId }: { jobId: string }) {
 	useActionToast(state, "Job featured");
 
 	return (
-		<form action={action} className="flex flex-wrap items-end gap-3">
+		<form
+			action={action}
+			className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end"
+		>
 			<input type="hidden" name="jobId" value={jobId} />
-			<div className="space-y-1.5">
+			<div className="min-w-0 flex-1 space-y-1.5 sm:max-w-[8rem]">
 				<Label htmlFor="pinDays" className="text-xs text-muted-foreground">
 					Pin duration (days)
 				</Label>
@@ -457,12 +487,17 @@ function FeatureJobForm({ jobId }: { jobId: string }) {
 					min={0}
 					max={30}
 					defaultValue={1}
-					className="w-24"
+					className="h-11 w-full"
 					disabled={pending}
 				/>
 			</div>
-			<Button type="submit" variant="outline" size="sm" disabled={pending}>
-				Apply feature
+			<Button
+				type="submit"
+				variant="outline"
+				className="h-11 w-full sm:w-auto"
+				disabled={pending}
+			>
+				{pending ? "Applying…" : "Apply feature"}
 			</Button>
 		</form>
 	);
@@ -473,7 +508,10 @@ function RejectPaymentForm({ paymentId }: { paymentId: string }) {
 	useActionToast(state, "Payment rejected");
 
 	return (
-		<form action={action} className="flex flex-col gap-2 sm:flex-row sm:items-end">
+		<form
+			action={action}
+			className="flex flex-col gap-2 sm:flex-row sm:items-end"
+		>
 			<input type="hidden" name="paymentId" value={paymentId} />
 			<div className="min-w-0 flex-1 space-y-1.5">
 				<Label htmlFor={`reject-payment-${paymentId}`} className="sr-only">
@@ -485,13 +523,13 @@ function RejectPaymentForm({ paymentId }: { paymentId: string }) {
 					placeholder="Explain why this payment is being rejected…"
 					required
 					disabled={pending}
+					className="h-11 max-w-full"
 				/>
 			</div>
 			<Button
 				type="submit"
 				variant="destructive"
-				size="sm"
-				className="w-full shrink-0 sm:w-auto"
+				className="h-11 w-full shrink-0 sm:w-auto"
 				disabled={pending}
 			>
 				<XCircle className="size-3.5" />
