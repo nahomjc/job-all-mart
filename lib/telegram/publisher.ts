@@ -41,7 +41,12 @@ export function formatJobMessage(args: {
   lines.push(escapeHtml(truncateForTelegram(job.description, 800)));
 
   if (job.applyUrl) {
-    lines.push("", `👉 <b>Apply:</b> ${escapeHtml(job.applyUrl)}`);
+    const applyUrl = job.applyUrl.trim();
+    if (canUseTelegramInlineUrl(applyUrl)) {
+      lines.push("", "👉 Use the <b>Apply now</b> button below to apply.");
+    } else {
+      lines.push("", `👉 <b>Apply:</b> ${escapeHtml(applyUrl)}`);
+    }
   } else if (job.contactInfo) {
     lines.push("", `📨 <b>Contact:</b> ${escapeHtml(job.contactInfo)}`);
   }
@@ -73,6 +78,7 @@ export async function publishJobToTelegram(jobId: string): Promise<{
   const topicId = category?.telegramTopicId ?? null;
   const chatId = env.TELEGRAM_CHANNEL_ID;
   const text = formatJobMessage({ job, category, employer });
+  const replyMarkup = buildJobPostReplyMarkup(job);
 
   let message: { message_id: number };
   try {
@@ -80,11 +86,13 @@ export async function publishJobToTelegram(jobId: string): Promise<{
       ? await telegramClient.sendPhoto(chatId, job.logoUrl, {
           caption: text,
           parse_mode: "HTML",
+          ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
           ...(topicId ? { message_thread_id: topicId } : {}),
         })
       : await telegramClient.sendMessage(chatId, text, {
           parse_mode: "HTML",
           link_preview_options: { is_disabled: false },
+          ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
           ...(topicId ? { message_thread_id: topicId } : {}),
         });
   } catch (err) {
@@ -210,6 +218,18 @@ export async function notifyAdminsNewSubmission(jobId: string): Promise<void> {
       link_preview_options: { is_disabled: true },
     });
   });
+}
+
+/** Inline keyboard for channel job posts when an apply URL is set. */
+export function buildJobPostReplyMarkup(job: Job):
+  | { inline_keyboard: { text: string; url: string }[][] }
+  | undefined {
+  const applyUrl = job.applyUrl?.trim();
+  if (!applyUrl || !canUseTelegramInlineUrl(applyUrl)) return undefined;
+
+  return {
+    inline_keyboard: [[{ text: "Apply now", url: applyUrl }]],
+  };
 }
 
 function isImageUrl(url: string): boolean {

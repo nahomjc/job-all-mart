@@ -16,6 +16,7 @@ import {
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TelegramAuthButton } from "@/components/telegram-auth-button";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import {
@@ -29,6 +30,7 @@ const initial: AuthActionState = { ok: false };
 export function AuthForm() {
   const sp = useSearchParams();
   const mode = sp.get("mode") === "signup" ? "signup" : "login";
+  const oauthError = sp.get("error");
 
   const action = mode === "signup" ? signupAction : loginAction;
   const [state, formAction, pending] = useActionState(action, initial);
@@ -146,10 +148,10 @@ export function AuthForm() {
           </Field>
 
           {/* Inline error alert */}
-          {state.error && (
+          {(state.error || oauthError) && (
             <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
               <AlertCircle className="mt-0.5 size-4 shrink-0" />
-              <span>{state.error}</span>
+              <span>{state.error ?? oauthError}</span>
             </div>
           )}
 
@@ -169,6 +171,8 @@ export function AuthForm() {
               "Sign in"
             )}
           </Button>
+
+          <TelegramAuthButton mode={isSignup ? "signup" : "login"} />
 
           <p className="text-center text-sm text-muted-foreground">
             {isSignup ? (
