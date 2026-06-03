@@ -180,12 +180,12 @@ export default async function HomePage() {
             {/* Professional team photo */}
             <div className="absolute inset-x-6 inset-y-2 overflow-hidden rounded-[3rem]">
               <Image
-                src="https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1200&q=80"
-                alt="Diverse team of smiling professionals"
+                src="https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?auto=format&fit=crop&w=1200&q=80"
+                alt="Black professionals collaborating in a modern office"
                 fill
                 priority
                 sizes="(min-width: 1024px) 560px, 100vw"
-                className="object-cover object-[center_30%]"
+                className="object-cover object-center"
               />
               {/* Soft green tint to blend with brand */}
               <div
@@ -268,62 +268,123 @@ export default async function HomePage() {
       </section>
 
       {/* ─────────── Build Your Career ─────────── */}
-      <section className="container mx-auto px-4 py-20">
-        <div className="grid gap-10 lg:grid-cols-2 lg:items-start">
-          <div>
-            <h2 className="text-balance text-3xl font-bold tracking-tight md:text-4xl">
-              Build Your Career in Just a Few Steps
-            </h2>
-          </div>
-          <p className="text-pretty text-base text-muted-foreground">
-            From posting jobs to hiring top talent, our platform makes the
-            entire process simple, fast, and effective. We connect employers
-            with skilled professionals, provide secure transactions, and ensure
-            every step is human-reviewed.
-          </p>
-        </div>
-
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {[
-            {
-              icon: Briefcase,
-              tint: "bg-rose-100 text-rose-600",
-              title: "Post Opportunities",
-              body:
-                "Easily publish your job openings and start receiving applications from skilled candidates within minutes of approval.",
-            },
-            {
-              icon: Users,
-              tint: "bg-violet-100 text-violet-600",
-              title: "Find Top Talent",
-              body:
-                "Search and connect with skilled professionals who match your company's needs across Telegram and the open web.",
-            },
-            {
-              icon: Shield,
-              tint: "bg-sky-100 text-sky-600",
-              title: "Secure Transactions",
-              body:
-                "Enjoy a safe and reliable payment process for every hire and collaboration — verified by a real human.",
-            },
-          ].map(({ icon: Icon, tint, title, body }) => (
-            <Card
-              key={title}
-              className="border-transparent bg-muted/30 transition-all hover:-translate-y-1 hover:border-primary/30 hover:bg-background hover:shadow-lg"
-            >
-              <CardContent className="p-6">
-                <span
-                  className={`flex size-12 items-center justify-center rounded-xl ${tint}`}
-                >
-                  <Icon className="size-6" />
+      <section className="relative py-20">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_80%_50%_at_50%_100%,var(--primary)/0.08,transparent_70%)]"
+        />
+        <div className="container mx-auto px-4">
+          <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-end lg:gap-16">
+            <div className="max-w-lg">
+              <p className="text-sm font-semibold uppercase tracking-wider text-primary">
+                For employers & teams
+              </p>
+              <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight md:text-4xl">
+                Build your pipeline in{" "}
+                <span className="relative inline-block">
+                  three moves
+                  <span
+                    aria-hidden="true"
+                    className="absolute -bottom-1 left-0 right-0 h-2.5 -skew-x-3 rounded-sm bg-primary/25"
+                  />
                 </span>
-                <h3 className="mt-4 text-lg font-semibold">{title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {body}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
+              </h2>
+              <p className="mt-4 text-pretty text-muted-foreground">
+                List on web and Telegram, reach candidates where they already
+                are, and close hires with moderation you can trust—not another
+                generic job board workflow.
+              </p>
+              <Button asChild className="mt-6 rounded-full" size="lg">
+                <Link href="/login?mode=signup">
+                  Start hiring <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              {/* Step 01 — featured */}
+              <div className="relative overflow-hidden rounded-3xl bg-primary p-6 text-primary-foreground shadow-xl shadow-primary/25 sm:col-span-2 sm:p-8">
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -right-4 -top-6 select-none font-black leading-none text-primary-foreground/10 text-[7rem] sm:text-[8rem]"
+                >
+                  01
+                </span>
+                <div className="relative">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-primary-foreground/15 px-3 py-1 text-xs font-medium">
+                    <Briefcase className="size-3.5" />
+                    Publish
+                  </span>
+                  <h3 className="mt-4 text-xl font-bold sm:text-2xl">
+                    Ship a listing before lunch
+                  </h3>
+                  <p className="mt-2 max-w-md text-sm leading-relaxed text-primary-foreground/85">
+                    Draft your role, pass a quick human review, and go live on
+                    the site plus our Telegram channel—applications start the
+                    same day.
+                  </p>
+                </div>
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute bottom-0 right-0 size-32 translate-x-1/4 translate-y-1/4 rounded-full bg-primary-foreground/10 blur-2xl"
+                />
+              </div>
+
+              {/* Step 02 */}
+              <div className="group relative overflow-hidden rounded-3xl border bg-background p-6 transition-shadow hover:shadow-lg">
+                <span
+                  aria-hidden="true"
+                  className="absolute right-3 top-2 font-mono text-5xl font-bold text-muted-foreground/15"
+                >
+                  02
+                </span>
+                <div className="relative">
+                  <span className="flex size-11 items-center justify-center rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 text-primary">
+                    <Users className="size-5" />
+                  </span>
+                  <h3 className="mt-4 font-semibold">Reach real people</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    Candidates discover you on search, categories, and
+                    Telegram—not buried in a spreadsheet of cold leads.
+                  </p>
+                </div>
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-x-0 bottom-0 h-1 origin-left scale-x-0 bg-primary transition-transform duration-300 group-hover:scale-x-100"
+                />
+              </div>
+
+              {/* Step 03 */}
+              <div className="group relative overflow-hidden rounded-3xl border bg-muted/40 p-6 backdrop-blur-sm transition-shadow hover:shadow-lg">
+                <span
+                  aria-hidden="true"
+                  className="absolute right-3 top-2 font-mono text-5xl font-bold text-muted-foreground/15"
+                >
+                  03
+                </span>
+                <div className="relative">
+                  <span className="flex size-11 items-center justify-center rounded-2xl bg-background text-primary shadow-sm">
+                    <Shield className="size-5" />
+                  </span>
+                  <h3 className="mt-4 font-semibold">Close with confidence</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    Payments and handoffs stay protected; suspicious listings
+                    get flagged before they waste anyone&apos;s time.
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <span className="inline-flex items-center gap-1 rounded-full border bg-background px-2.5 py-1 text-xs font-medium">
+                      <CheckCircle2 className="size-3 text-primary" />
+                      Human-reviewed
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full border bg-background px-2.5 py-1 text-xs font-medium">
+                      <Handshake className="size-3 text-primary" />
+                      Verified hires
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Script from "next/script";
 
 type TelegramAuthButtonProps = {
@@ -8,12 +9,16 @@ type TelegramAuthButtonProps = {
 
 export function TelegramAuthButton({ mode }: TelegramAuthButtonProps) {
   const botUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-  if (!botUsername) return null;
+  const [callbackUrl, setCallbackUrl] = useState<string | null>(null);
 
-  const callbackUrl = appUrl
-    ? `${appUrl}/api/auth/telegram/callback?next=/dashboard`
-    : "/api/auth/telegram/callback?next=/dashboard";
+  useEffect(() => {
+    // Must match the browser origin (BotFather /setdomain). Do not hardcode prod URL on localhost.
+    setCallbackUrl(
+      `${window.location.origin}/api/auth/telegram/callback?next=/dashboard`,
+    );
+  }, []);
+
+  if (!botUsername) return null;
 
   return (
     <div className="space-y-3">
@@ -26,18 +31,20 @@ export function TelegramAuthButton({ mode }: TelegramAuthButtonProps) {
         </div>
       </div>
 
-      <div className="flex justify-center">
-        <Script
-          src="https://telegram.org/js/telegram-widget.js?22"
-          strategy="afterInteractive"
-          data-telegram-login={botUsername}
-          data-size="large"
-          data-radius="8"
-          data-userpic="false"
-          data-lang="en"
-          data-auth-url={callbackUrl}
-          data-request-access={mode === "signup" ? "write" : "read"}
-        />
+      <div className="flex min-h-11 justify-center">
+        {callbackUrl ? (
+          <Script
+            src="https://telegram.org/js/telegram-widget.js?22"
+            strategy="afterInteractive"
+            data-telegram-login={botUsername}
+            data-size="large"
+            data-radius="8"
+            data-userpic="false"
+            data-lang="en"
+            data-auth-url={callbackUrl}
+            data-request-access={mode === "signup" ? "write" : "read"}
+          />
+        ) : null}
       </div>
     </div>
   );
