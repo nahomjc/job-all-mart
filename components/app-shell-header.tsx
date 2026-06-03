@@ -1,44 +1,76 @@
 "use client";
 
+import { Bell, MessageSquare } from "lucide-react";
 import { MobileSidebar } from "@/components/mobile-sidebar";
-import type { SidebarNavItem } from "@/components/sidebar-nav-content";
+import { ShellSearch } from "@/components/shell-search";
+import type { SidebarNavSection } from "@/components/sidebar-nav-content";
+import { Button } from "@/components/ui/button";
 
 interface AppShellHeaderProps {
 	brand: string;
 	homeHref?: string;
 	badge?: React.ReactNode;
-	nav: SidebarNavItem[];
+	sections: SidebarNavSection[];
 	footer?: React.ReactNode;
-	leading?: React.ReactNode;
+	promo?: boolean;
+	searchPlaceholder?: string;
 	actions?: React.ReactNode;
+	userStrip?: React.ReactNode;
 }
 
 export function AppShellHeader({
 	brand,
 	homeHref,
 	badge,
-	nav,
+	sections,
 	footer,
-	leading,
+	promo,
+	searchPlaceholder,
 	actions,
+	userStrip,
 }: AppShellHeaderProps) {
 	return (
-		<header className="sticky top-0 z-30 flex min-h-14 shrink-0 items-center justify-between gap-2 border-b bg-background/80 px-3 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:min-h-16 sm:gap-3 sm:px-4 md:px-6 lg:px-8">
-			<div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+		<header className="sticky top-0 z-30 shrink-0 border-b border-border/60 bg-card/90 px-4 py-3 backdrop-blur-md supports-[backdrop-filter]:bg-card/80 sm:px-6 lg:px-8">
+			<div className="flex items-center gap-3 lg:gap-6">
 				<MobileSidebar
 					brand={brand}
 					homeHref={homeHref}
 					badge={badge}
-					nav={nav}
+					sections={sections}
 					footer={footer}
+					promo={promo}
 				/>
-				<div className="min-w-0 flex-1">{leading}</div>
-			</div>
-			{actions && (
-				<div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+
+				<ShellSearch placeholder={searchPlaceholder} className="max-w-xl" />
+
+				<div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+					<Button
+						variant="ghost"
+						size="icon"
+						className="hidden size-10 rounded-xl text-muted-foreground sm:inline-flex"
+						aria-label="Messages"
+					>
+						<MessageSquare className="size-5" />
+					</Button>
+					<Button
+						variant="ghost"
+						size="icon"
+						className="size-10 rounded-xl text-muted-foreground"
+						aria-label="Notifications"
+					>
+						<Bell className="size-5" />
+					</Button>
+
 					{actions}
+
+					{userStrip && (
+						<>
+							<span className="mx-1 hidden h-8 w-px bg-border sm:block" />
+							{userStrip}
+						</>
+					)}
 				</div>
-			)}
+			</div>
 		</header>
 	);
 }

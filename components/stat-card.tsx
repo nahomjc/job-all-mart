@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -11,31 +12,16 @@ type StatTone =
   | "info"
   | "violet";
 
-const TONE_STYLES: Record<StatTone, { tile: string; value?: string }> = {
-  default: {
-    tile: "bg-muted text-foreground",
-  },
-  primary: {
-    tile: "bg-primary/15 text-primary",
-  },
-  success: {
-    tile: "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400",
-    value: "text-emerald-600 dark:text-emerald-400",
-  },
-  warning: {
-    tile: "bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400",
-    value: "text-amber-600 dark:text-amber-400",
-  },
-  destructive: {
-    tile: "bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400",
-    value: "text-rose-600 dark:text-rose-400",
-  },
-  info: {
-    tile: "bg-sky-100 text-sky-600 dark:bg-sky-500/15 dark:text-sky-400",
-  },
-  violet: {
-    tile: "bg-violet-100 text-violet-600 dark:bg-violet-500/15 dark:text-violet-400",
-  },
+const TONE_TILE: Record<StatTone, string> = {
+  default: "bg-muted text-foreground",
+  primary: "bg-primary/12 text-primary",
+  success: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400",
+  warning: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
+  destructive:
+    "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-400",
+  info: "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-400",
+  violet:
+    "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-400",
 };
 
 export interface StatCardProps {
@@ -48,6 +34,7 @@ export interface StatCardProps {
     direction: "up" | "down" | "flat";
     label: string;
   };
+  featured?: boolean;
   className?: string;
 }
 
@@ -58,63 +45,82 @@ export function StatCard({
   tone = "primary",
   hint,
   trend,
+  featured = false,
   className,
 }: StatCardProps) {
-  const styles = TONE_STYLES[tone];
+  if (featured) {
+    return (
+      <Card
+        className={cn(
+          "overflow-hidden border-0 bg-brand-deep text-primary-foreground shadow-lg shadow-brand-deep/20",
+          className,
+        )}
+      >
+        <CardContent className="relative p-5">
+          {Icon && (
+            <span className="absolute right-4 top-4 flex size-9 items-center justify-center rounded-full bg-white/15">
+              <Icon className="size-4" />
+            </span>
+          )}
+          <p className="text-sm font-medium text-primary-foreground/80">
+            {label}
+          </p>
+          <p className="mt-2 text-3xl font-bold tracking-tight">{value}</p>
+          {(hint || trend) && (
+            <p className="mt-2 text-xs text-primary-foreground/70">
+              {trend?.label ?? hint}
+            </p>
+          )}
+          <span className="absolute bottom-4 right-4 flex size-8 items-center justify-center rounded-full bg-white/10">
+            <ArrowUpRight className="size-4" />
+          </span>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card
       className={cn(
-        "overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-md",
+        "overflow-hidden border-border/60 shadow-sm transition-shadow hover:shadow-md",
         className,
       )}
     >
-      <CardContent className="flex items-start gap-4 p-5">
+      <CardContent className="relative p-5">
         {Icon && (
           <span
             className={cn(
-              "flex size-11 shrink-0 items-center justify-center rounded-xl",
-              styles.tile,
+              "absolute right-4 top-4 flex size-9 items-center justify-center rounded-full",
+              TONE_TILE[tone],
             )}
           >
-            <Icon className="size-5" />
+            <Icon className="size-4" />
           </span>
         )}
-        <div className="min-w-0 flex-1">
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            {label}
-          </p>
-          <p
-            className={cn(
-              "mt-1 text-2xl font-bold tracking-tight md:text-3xl",
-              styles.value,
+        <p className="pr-12 text-sm font-medium text-muted-foreground">
+          {label}
+        </p>
+        <p className="mt-2 text-3xl font-bold tracking-tight">{value}</p>
+        {(hint || trend) && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            {trend && (
+              <span
+                className={cn(
+                  trend.direction === "up" && "text-emerald-600",
+                  trend.direction === "down" && "text-rose-600",
+                )}
+              >
+                {trend.direction === "up" && "↑ "}
+                {trend.direction === "down" && "↓ "}
+                {trend.label}
+              </span>
             )}
-          >
-            {value}
+            {!trend && hint}
           </p>
-          {(hint || trend) && (
-            <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-              {trend && (
-                <span
-                  className={cn(
-                    "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 font-medium",
-                    trend.direction === "up" &&
-                      "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400",
-                    trend.direction === "down" &&
-                      "bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400",
-                    trend.direction === "flat" && "bg-muted text-muted-foreground",
-                  )}
-                >
-                  {trend.direction === "up" && "▲"}
-                  {trend.direction === "down" && "▼"}
-                  {trend.direction === "flat" && "▶"}
-                  {trend.label}
-                </span>
-              )}
-              {hint}
-            </div>
-          )}
-        </div>
+        )}
+        <span className="absolute bottom-4 right-4 flex size-8 items-center justify-center rounded-full border bg-background">
+          <ArrowUpRight className="size-3.5 text-muted-foreground" />
+        </span>
       </CardContent>
     </Card>
   );

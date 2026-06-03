@@ -1,23 +1,38 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Plus } from "lucide-react";
+import { LogOut, Plus, Upload } from "lucide-react";
 import { AppSidebar } from "@/components/app-sidebar";
+import type { SidebarNavSection } from "@/components/sidebar-nav-content";
 import { AppShellHeader } from "@/components/app-shell-header";
-import type { SidebarNavItem } from "@/components/sidebar-nav-content";
 import { logoutAction } from "@/server/actions/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getCurrentUser } from "@/lib/auth";
 
-const nav: SidebarNavItem[] = [
-	{ href: "/dashboard", label: "Overview", icon: "layout-dashboard", exact: true },
-	{ href: "/dashboard/jobs", label: "My jobs", icon: "briefcase" },
-	{ href: "/dashboard/jobs/new", label: "Post a job", icon: "plus" },
-	{ href: "/dashboard/payments", label: "Payments", icon: "receipt" },
-	{ href: "/dashboard/analytics", label: "Analytics", icon: "trending-up" },
-	{ href: "/dashboard/settings", label: "Settings", icon: "settings" },
+const sections: SidebarNavSection[] = [
+	{
+		title: "MENU",
+		items: [
+			{
+				href: "/dashboard",
+				label: "Dashboard",
+				icon: "layout-dashboard",
+				exact: true,
+			},
+			{ href: "/dashboard/jobs", label: "My jobs", icon: "briefcase" },
+			{ href: "/dashboard/jobs/new", label: "Post a job", icon: "plus" },
+			{ href: "/dashboard/payments", label: "Payments", icon: "receipt" },
+			{ href: "/dashboard/analytics", label: "Analytics", icon: "trending-up" },
+		],
+	},
+	{
+		title: "GENERAL",
+		items: [
+			{ href: "/dashboard/settings", label: "Settings", icon: "settings" },
+			{ href: "/pricing", label: "Help", icon: "circle-help" },
+		],
+	},
 ];
 
 export default async function DashboardLayout({
@@ -29,97 +44,72 @@ export default async function DashboardLayout({
 	if (!user) redirect("/login?next=/dashboard");
 
 	const displayName = user.displayName ?? user.email ?? "User";
-	const initials = displayName
-		.split(/\s+/)
-		.map((s) => s[0])
-		.join("")
-		.slice(0, 2)
-		.toUpperCase();
+	const brandName = process.env.NEXT_PUBLIC_APP_NAME ?? "JobPost";
 
 	const sidebarFooter = (
-		<div className="space-y-3">
-			<div className="flex items-center gap-2.5 rounded-lg border bg-background/60 p-2">
-				<Avatar className="size-8">
-					<AvatarFallback className="bg-primary/15 text-primary">
-						{initials}
-					</AvatarFallback>
-				</Avatar>
-				<div className="min-w-0 flex-1">
-					<p className="line-clamp-1 text-sm font-medium">{displayName}</p>
-					<p className="line-clamp-1 text-xs text-muted-foreground capitalize">
-						{user.role}
-					</p>
-				</div>
-			</div>
-			<form action={logoutAction}>
-				<Button
-					variant="ghost"
-					size="sm"
-					className="h-11 w-full justify-start text-muted-foreground hover:text-foreground"
-				>
-					Sign out
-				</Button>
-			</form>
-		</div>
+		<form action={logoutAction}>
+			<Button
+				variant="ghost"
+				size="sm"
+				className="h-10 w-full justify-start gap-2 rounded-xl text-muted-foreground hover:text-foreground"
+			>
+				<LogOut className="size-4" />
+				Logout
+			</Button>
+		</form>
 	);
 
 	const sidebarProps = {
-		brand: process.env.NEXT_PUBLIC_APP_NAME ?? "JobPost",
-		homeHref: "/" as const,
-		nav,
+		brand: brandName,
+		homeHref: "/dashboard" as const,
+		sections,
 		footer: sidebarFooter,
+		promo: true,
 	};
 
 	return (
-		<div className="flex min-h-screen overflow-x-hidden bg-muted/20">
+		<div className="flex min-h-screen overflow-x-hidden shell-canvas">
 			<AppSidebar {...sidebarProps} />
 
 			<div className="flex min-w-0 flex-1 flex-col">
 				<AppShellHeader
 					{...sidebarProps}
-					leading={
-						<div className="min-w-0">
-							<span className="hidden text-xs font-semibold uppercase tracking-wider text-primary md:inline">
-								Employer dashboard
-							</span>
-							<span className="hidden text-muted-foreground/40 md:inline">
-								{" "}
-								·{" "}
-							</span>
-							<span className="line-clamp-2 text-xs font-medium text-muted-foreground sm:text-sm md:line-clamp-1">
-								Welcome back, {displayName.split(/\s+/)[0]}
-							</span>
-						</div>
+					searchPlaceholder="Search your jobs, payments…"
+					userStrip={
+						<UserMenu
+							name={displayName}
+							email={user.email}
+							role={user.role}
+							showProfile
+						/>
 					}
 					actions={
 						<>
-							<Button asChild className="hidden h-11 sm:inline-flex">
-								<Link href="/dashboard/jobs/new">
-									<Plus className="size-4" /> New job
-								</Link>
-							</Button>
 							<Button
 								asChild
-								size="icon"
-								className="size-11 sm:hidden"
-								aria-label="Post a new job"
+								variant="outline"
+								size="sm"
+								className="hidden h-10 rounded-xl sm:inline-flex"
 							>
+								<Link href="/dashboard/jobs">
+									<Upload className="size-4" />
+									Import
+								</Link>
+							</Button>
+							<Button asChild size="sm" className="h-10 rounded-xl px-4">
 								<Link href="/dashboard/jobs/new">
 									<Plus className="size-4" />
+									<span className="hidden sm:inline">New job</span>
+									<span className="sm:hidden">New</span>
 								</Link>
 							</Button>
 							<ThemeToggle />
-							<UserMenu
-								name={displayName}
-								email={user.email}
-								role={user.role}
-							/>
 						</>
 					}
 				/>
 
-				<main className="flex-1 overflow-x-hidden p-3 sm:p-4 md:p-6 lg:p-8">
-					<div className="mx-auto w-full max-w-7xl min-w-0">{children}</div>
+				<main className="flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8">
+					<div className="mx-auto w-full max-w-[1400px] min-w-0">{children}</div>
 				</main>
 			</div>
 		</div>

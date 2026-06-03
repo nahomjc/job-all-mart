@@ -1,32 +1,36 @@
 "use client";
 
 import { SidebarNavContent } from "@/components/sidebar-nav-content";
+import type { SidebarNavSection } from "@/components/sidebar-nav-content";
 
-export type { SidebarIconName, SidebarNavItem } from "@/components/sidebar-nav-content";
+export type { SidebarIconName, SidebarNavItem, SidebarNavSection } from "@/components/sidebar-nav-content";
 
 export interface AppSidebarProps {
 	brand: string;
 	homeHref?: string;
 	badge?: React.ReactNode;
-	nav: import("@/components/sidebar-nav-content").SidebarNavItem[];
+	sections: SidebarNavSection[];
 	footer?: React.ReactNode;
+	promo?: boolean;
 }
 
 export function AppSidebar({
 	brand,
 	homeHref = "/",
 	badge,
-	nav,
+	sections,
 	footer,
+	promo = true,
 }: AppSidebarProps) {
 	return (
-		<aside className="sticky top-0 hidden h-screen w-[244px] shrink-0 border-r bg-muted/30 md:flex md:flex-col">
+		<aside className="sticky top-0 hidden h-screen w-[260px] shrink-0 border-r border-sidebar-border bg-sidebar md:flex md:flex-col">
 			<SidebarNavContent
 				brand={brand}
 				homeHref={homeHref}
 				badge={badge}
-				nav={nav}
+				sections={sections}
 				footer={footer}
+				promo={promo}
 			/>
 		</aside>
 	);

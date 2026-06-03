@@ -9,22 +9,24 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { SidebarNavContent } from "@/components/sidebar-nav-content";
-import type { SidebarNavItem } from "@/components/sidebar-nav-content";
+import type { SidebarNavSection } from "@/components/sidebar-nav-content";
 
 interface MobileSidebarProps {
 	brand: string;
 	homeHref?: string;
 	badge?: React.ReactNode;
-	nav: SidebarNavItem[];
+	sections: SidebarNavSection[];
 	footer?: React.ReactNode;
+	promo?: boolean;
 }
 
 export function MobileSidebar({
 	brand,
 	homeHref,
 	badge,
-	nav,
+	sections,
 	footer,
+	promo,
 }: MobileSidebarProps) {
 	const [open, setOpen] = useState(false);
 
@@ -34,7 +36,7 @@ export function MobileSidebar({
 				type="button"
 				variant="outline"
 				size="icon"
-				className="size-11 shrink-0 md:hidden"
+				className="size-10 shrink-0 rounded-xl md:hidden"
 				onClick={() => setOpen(true)}
 				aria-label="Open navigation menu"
 			>
@@ -47,13 +49,14 @@ export function MobileSidebar({
 					aria-describedby={undefined}
 				>
 					<DialogTitle className="sr-only">Navigation</DialogTitle>
-					<div className="flex h-full min-h-0 flex-col bg-muted/30">
+					<div className="flex h-full min-h-0 flex-col bg-sidebar">
 						<SidebarNavContent
 							brand={brand}
 							homeHref={homeHref}
 							badge={badge}
-							nav={nav}
+							sections={sections}
 							footer={footer}
+							promo={promo}
 							onNavigate={() => setOpen(false)}
 						/>
 					</div>
