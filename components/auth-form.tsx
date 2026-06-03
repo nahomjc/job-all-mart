@@ -69,7 +69,10 @@ export function AuthForm() {
       {state.ok && isSignup ? (
         <SignupSuccess />
       ) : (
-        <form action={formAction} className="space-y-4">
+        <div className="space-y-4">
+          <TelegramAuthButton mode={isSignup ? "signup" : "login"} />
+
+          <form action={formAction} className="space-y-4">
           {isSignup && (
             <Field
               id="displayName"
@@ -172,8 +175,6 @@ export function AuthForm() {
             )}
           </Button>
 
-          <TelegramAuthButton mode={isSignup ? "signup" : "login"} />
-
           <p className="text-center text-sm text-muted-foreground">
             {isSignup ? (
               <>
@@ -197,7 +198,8 @@ export function AuthForm() {
               </>
             )}
           </p>
-        </form>
+          </form>
+        </div>
       )}
     </div>
   );
