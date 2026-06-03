@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { env } from "@/lib/env";
 
 export function Footer() {
   return (
@@ -6,7 +7,7 @@ export function Footer() {
       <div className="container mx-auto grid gap-8 px-4 py-12 md:grid-cols-4">
         <div>
           <h3 className="mb-2 font-semibold">
-            {process.env.NEXT_PUBLIC_APP_NAME ?? "JobPost"}
+            {env.NEXT_PUBLIC_APP_NAME}
           </h3>
           <p className="text-sm text-muted-foreground">
             Reach thousands of job seekers on Telegram and the web.
@@ -37,7 +38,7 @@ export function Footer() {
       </div>
       <div className="border-t py-4 text-center text-xs text-muted-foreground">
         © {new Date().getFullYear()}{" "}
-        {process.env.NEXT_PUBLIC_APP_NAME ?? "JobPost"}. All rights reserved.
+        {env.NEXT_PUBLIC_APP_NAME}. All rights reserved.
       </div>
     </footer>
   );

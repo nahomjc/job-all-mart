@@ -9,6 +9,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/auth";
+import { env } from "@/lib/env";
 
 const sections: SidebarNavSection[] = [
 	{
@@ -44,7 +45,7 @@ export default async function DashboardLayout({
 	if (!user) redirect("/login?next=/dashboard");
 
 	const displayName = user.displayName ?? user.email ?? "User";
-	const brandName = process.env.NEXT_PUBLIC_APP_NAME ?? "JobPost";
+	const brandName = env.NEXT_PUBLIC_APP_NAME;
 
 	const sidebarFooter = (
 		<form action={logoutAction}>

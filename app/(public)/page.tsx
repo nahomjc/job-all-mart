@@ -9,6 +9,7 @@ import { CtaSection } from "@/components/home/cta-section";
 import { jobRepo } from "@/server/repositories/job";
 import { categoryRepo } from "@/server/repositories/category";
 import { requiredChannelJoinUrl } from "@/lib/telegram/required-channel";
+import { env } from "@/lib/env";
 
 export default async function HomePage() {
 	const [recent, categories] = await Promise.all([
@@ -16,7 +17,7 @@ export default async function HomePage() {
 		categoryRepo.list(),
 	]);
 
-	const appName = process.env.NEXT_PUBLIC_APP_NAME ?? "JobPost";
+	const appName = env.NEXT_PUBLIC_APP_NAME;
 
 	return (
 		<div className="overflow-hidden">

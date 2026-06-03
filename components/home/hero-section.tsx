@@ -6,6 +6,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { HeroPhoneMockup } from "@/components/home/hero-phone-mockup";
 import { EASE } from "@/components/home/motion";
 import { Button } from "@/components/ui/button";
+import { DEFAULT_APP_NAME } from "@/lib/env";
 
 const TRUSTED_BRANDS = [
 	"zendesk",
@@ -87,7 +88,10 @@ type HeroSectionProps = {
 	appName?: string;
 };
 
-export function HeroSection({ telegramJoinUrl, appName = "JobPost" }: HeroSectionProps) {
+export function HeroSection({
+	telegramJoinUrl,
+	appName = DEFAULT_APP_NAME,
+}: HeroSectionProps) {
 	const reduceMotion = useReducedMotion();
 
 	return (

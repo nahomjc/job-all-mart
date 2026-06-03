@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 import { getCurrentUser } from "@/lib/auth";
+import { env } from "@/lib/env";
 
 export async function Navbar() {
   const user = await getCurrentUser();
@@ -15,7 +16,7 @@ export async function Navbar() {
             <Briefcase className="size-4" />
           </span>
           <span className="text-lg tracking-tight">
-            {process.env.NEXT_PUBLIC_APP_NAME ?? "JobPost"}
+            {env.NEXT_PUBLIC_APP_NAME}
           </span>
         </Link>
         <nav className="hidden items-center gap-6 text-sm md:flex">

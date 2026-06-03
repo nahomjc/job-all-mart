@@ -14,6 +14,7 @@ import { AuthForm } from "@/components/auth-form";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/auth";
 import { buildRequiredChannelJoinUrl } from "@/lib/required-channel-links";
+import { env } from "@/lib/env";
 
 export const metadata = {
   title: "Sign in",
@@ -41,7 +42,7 @@ export default async function LoginPage() {
   const user = await getCurrentUser();
   if (user) redirect("/dashboard");
 
-  const brandName = process.env.NEXT_PUBLIC_APP_NAME ?? "JobPost";
+  const brandName = env.NEXT_PUBLIC_APP_NAME;
   const tgJoinUrl = buildRequiredChannelJoinUrl({
     username: process.env.TELEGRAM_REQUIRED_CHANNEL ?? "",
     invite: process.env.TELEGRAM_REQUIRED_CHANNEL_INVITE,

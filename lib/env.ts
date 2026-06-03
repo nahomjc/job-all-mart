@@ -19,13 +19,15 @@ function optional(value: string | undefined): string | undefined {
 	return value && value.length > 0 ? value : undefined;
 }
 
+export const DEFAULT_APP_NAME = "ALL MART DHS";
+
 export const env = {
 	// App
 	get NEXT_PUBLIC_APP_URL() {
 		return required("NEXT_PUBLIC_APP_URL", process.env.NEXT_PUBLIC_APP_URL);
 	},
 	get NEXT_PUBLIC_APP_NAME() {
-		return process.env.NEXT_PUBLIC_APP_NAME ?? "JobPost";
+		return process.env.NEXT_PUBLIC_APP_NAME ?? DEFAULT_APP_NAME;
 	},
 
 	// Database
