@@ -32,7 +32,7 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/jobpost
       DATABASE_URL_MIGRATIONS: postgresql://postgres:postgres@db:5432/jobpost
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
-      NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-ALL MART DHS}
+      NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-Muler Jobs}
       # Forward all secrets from your host .env
       NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}

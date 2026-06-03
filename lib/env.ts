@@ -19,7 +19,7 @@ function optional(value: string | undefined): string | undefined {
 	return value && value.length > 0 ? value : undefined;
 }
 
-export const DEFAULT_APP_NAME = "ALL MART DHS";
+export const DEFAULT_APP_NAME = "Muler Jobs";
 
 export const env = {
 	// App
