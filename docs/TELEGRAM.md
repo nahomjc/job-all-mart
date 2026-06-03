@@ -55,12 +55,12 @@ Before editing `.env`, set up Telegram assets:
 1. Open [@BotFather](https://t.me/BotFather) in Telegram.
 2. Send `/newbot`, follow prompts, copy the **HTTP API token**.
 3. Optional: `/setcommands` for a cleaner command menu.
-4. **Web login widget** (fixes “Bot domain invalid” on `/login`):
-   - Send `/setdomain` → pick your bot.
-   - Enter the **host only** (no `https://`, no path):
-     - Local dev: `localhost`
-     - Production (Vercel): `job-all-mart.vercel.app` (your real `NEXT_PUBLIC_APP_URL` host)
-   - Telegram allows **one** domain per bot; switch it when moving between localhost and production, or test login on the deployed site.
+4. **Web login** (`/login` → “Open Telegram to sign in”):
+   - User opens `https://t.me/<bot>?start=weblogin`
+   - Bot replies with **Confirm website login** (no phone number form).
+   - User taps the button → `GET /api/auth/telegram/bot-confirm?token=…` → dashboard session.
+   - Requires the bot webhook (or `npm run bot:dev` locally) to be running.
+   - Optional legacy widget: `/setdomain` in BotFather if you still use the embedded Telegram Login button.
 
 ### 2. Required membership group/channel
 

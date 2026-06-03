@@ -1,61 +1,17 @@
 "use client";
 
-import { useLayoutEffect, useRef, useSyncExternalStore } from "react";
-import { Send } from "lucide-react";
+import { ExternalLink, Send } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type TelegramAuthButtonProps = {
   mode: "login" | "signup";
 };
 
-function subscribeNoop() {
-  return () => {};
-}
-
-function getClientOrigin(): string {
-  return window.location.origin;
-}
-
-function getServerOrigin(): string {
-  return "";
-}
-
 export function TelegramAuthButton({ mode }: TelegramAuthButtonProps) {
   const botUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME;
-  const containerRef = useRef<HTMLDivElement>(null);
-  const origin = useSyncExternalStore(
-    subscribeNoop,
-    getClientOrigin,
-    getServerOrigin,
-  );
-
-  const callbackUrl = origin
-    ? `${origin}/api/auth/telegram/callback?next=/dashboard`
-    : null;
-
-  useLayoutEffect(() => {
-    const host = containerRef.current;
-    if (!host || !botUsername || !callbackUrl) return;
-
-    host.replaceChildren();
-    const script = document.createElement("script");
-    script.src = "https://telegram.org/js/telegram-widget.js?22";
-    script.async = true;
-    script.setAttribute("data-telegram-login", botUsername);
-    script.setAttribute("data-size", "large");
-    script.setAttribute("data-radius", "8");
-    script.setAttribute("data-userpic", "false");
-    script.setAttribute("data-lang", "en");
-    script.setAttribute("data-auth-url", callbackUrl);
-    script.setAttribute(
-      "data-request-access",
-      mode === "signup" ? "write" : "read",
-    );
-    host.appendChild(script);
-
-    return () => host.replaceChildren();
-  }, [botUsername, callbackUrl, mode]);
-
   if (!botUsername) return null;
+
+  const botLoginUrl = `https://t.me/${botUsername}?start=weblogin`;
 
   return (
     <div className="space-y-4">
@@ -68,20 +24,30 @@ export function TelegramAuthButton({ mode }: TelegramAuthButtonProps) {
             <p className="text-sm font-semibold">Continue with Telegram</p>
             <p className="text-xs text-muted-foreground">
               {mode === "signup"
-                ? "Create an account without email"
-                : "Fast sign-in with your Telegram account"}
+                ? "No email needed — confirm inside the bot chat"
+                : "Opens your bot chat — no phone form on the website"}
             </p>
           </div>
         </div>
 
-        <div
-          ref={containerRef}
-          className="flex min-h-11 w-full items-center justify-center overflow-hidden rounded-lg bg-background py-1 [&_iframe]:mx-auto [&_iframe]:max-w-full"
+        <Button
+          asChild
+          type="button"
+          variant="outline"
+          className="h-11 w-full border-[#2AABEE]/40 bg-background text-[#229ED9] hover:bg-[#2AABEE]/10 hover:text-[#1a8bc4]"
         >
-          {!callbackUrl ? (
-            <div className="h-11 w-full animate-pulse rounded-md bg-muted" />
-          ) : null}
-        </div>
+          <a href={botLoginUrl} target="_blank" rel="noopener noreferrer">
+            <Send className="size-4" />
+            Open Telegram to {mode === "signup" ? "sign up" : "sign in"}
+            <ExternalLink className="size-3.5 opacity-60" />
+          </a>
+        </Button>
+
+        <ol className="mt-3 space-y-1 text-xs text-muted-foreground">
+          <li>1. Tap the button — your Telegram app opens</li>
+          <li>2. In the bot chat, tap <strong>Confirm website login</strong></li>
+          <li>3. You return here, signed in to the dashboard</li>
+        </ol>
       </div>
 
       <div className="relative">

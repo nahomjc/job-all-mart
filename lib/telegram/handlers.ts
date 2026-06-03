@@ -21,6 +21,7 @@ import {
 import { formatSalary, statusLabel } from "@/lib/format";
 import { joinRequiredChannelKeyboard } from "@/lib/telegram/keyboards";
 import { requiredChannelLabel } from "@/lib/telegram/required-channel";
+import { createBotLoginToken } from "@/lib/telegram/bot-login-token";
 
 let registered = false;
 
@@ -35,12 +36,32 @@ export function registerHandlers(bot: Telegraf): void {
   bot.start(async (ctx) => {
     const from = ctx.from;
     if (!from) return;
+
+    const startPayload = (ctx.payload ?? ctx.startPayload ?? "").trim();
+
     await userRepo.upsertFromTelegram({
       telegramId: from.id,
       username: from.username,
       firstName: from.first_name,
       lastName: from.last_name,
     });
+
+    if (startPayload === "weblogin") {
+      const token = createBotLoginToken(from.id);
+      const confirmUrl = `${env.NEXT_PUBLIC_APP_URL}/api/auth/telegram/bot-confirm?token=${encodeURIComponent(token)}&next=/dashboard`;
+      await ctx.reply(
+        `Sign in to ${env.NEXT_PUBLIC_APP_NAME} on the website.\n\nTap the button below to finish login (link expires in 10 minutes).`,
+        {
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: "✅ Confirm website login", url: confirmUrl }],
+            ],
+          },
+        },
+      );
+      return;
+    }
+
     await ctx.reply(
       `Welcome to ${env.NEXT_PUBLIC_APP_NAME}! 👋
 
