@@ -111,8 +111,8 @@ Before posting, join ${requiredChannelLabel()} using the button below.`,
       `💎 Pricing
 
 • Free: 1 post / 30 days
-• Basic ($10/post): goes live in <2h after admin approval
-• Pro ($25/post): featured + pinned for 24h
+• Basic (ETB 500/post): goes live in <2h after admin approval
+• Pro (ETB 1,250/post): featured + pinned for 24h
 • Enterprise: contact admin
 
 Full details: ${env.NEXT_PUBLIC_APP_URL}/pricing`,

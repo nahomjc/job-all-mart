@@ -11,7 +11,7 @@ export const metadata = {
 const tiers = [
   {
     name: "Free",
-    price: "$0",
+    price: "ETB 0",
     cadence: "/post",
     description: "Try us out with a single free post per 30 days.",
     features: [
@@ -23,7 +23,7 @@ const tiers = [
   },
   {
     name: "Basic",
-    price: "$10",
+    price: "ETB 500",
     cadence: "/post",
     description: "For occasional hiring.",
     features: [
@@ -36,7 +36,7 @@ const tiers = [
   },
   {
     name: "Pro",
-    price: "$25",
+    price: "ETB 1,250",
     cadence: "/post",
     description: "For high-priority roles.",
     features: [
