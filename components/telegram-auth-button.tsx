@@ -1,24 +1,37 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import Script from "next/script";
 
 type TelegramAuthButtonProps = {
   mode: "login" | "signup";
 };
 
+function subscribeNoop() {
+  return () => {};
+}
+
+function getClientOrigin(): string {
+  return window.location.origin;
+}
+
+function getServerOrigin(): string {
+  return "";
+}
+
 export function TelegramAuthButton({ mode }: TelegramAuthButtonProps) {
   const botUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME;
-  const [callbackUrl, setCallbackUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Must match the browser origin (BotFather /setdomain). Do not hardcode prod URL on localhost.
-    setCallbackUrl(
-      `${window.location.origin}/api/auth/telegram/callback?next=/dashboard`,
-    );
-  }, []);
+  const origin = useSyncExternalStore(
+    subscribeNoop,
+    getClientOrigin,
+    getServerOrigin,
+  );
 
   if (!botUsername) return null;
+
+  const callbackUrl = origin
+    ? `${origin}/api/auth/telegram/callback?next=/dashboard`
+    : null;
 
   return (
     <div className="space-y-3">
