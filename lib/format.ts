@@ -60,10 +60,10 @@ function salaryAmountFormatter(
 export function formatSalary(
 	min: number | null | undefined,
 	max: number | null | undefined,
-	currency = "USD",
+	currency?: string | null,
 ): string {
 	if (!min && !max) return "Salary not specified";
-	const fmt = salaryAmountFormatter(currency);
+	const fmt = salaryAmountFormatter(currency ?? "USD");
 	if (min && max) return `${fmt(min)} – ${fmt(max)}`;
 	if (min) return `From ${fmt(min)}`;
 	if (max) return `Up to ${fmt(max)}`;
