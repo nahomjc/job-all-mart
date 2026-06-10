@@ -9,12 +9,12 @@ import { Button } from "@/components/ui/button";
 import { DEFAULT_APP_NAME } from "@/lib/env";
 
 const TRUSTED_BRANDS = [
-	"zendesk",
-	"BuzzFeed",
-	"mollie",
-	"Dropbox",
-	"Stripe",
-	"Shopify",
+	"Ethiopian Airlines",
+	"Commercial Bank of Ethiopia",
+	"Ethio Telecom",
+	"Dashen Bank",
+	"Awash Bank",
+	"Safaricom Ethiopia",
 ];
 
 const fadeUp = {
