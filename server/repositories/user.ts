@@ -4,7 +4,7 @@ import { db } from "@/server/db/client";
 import { type NewUser, type User, users } from "@/server/db/schema";
 import { jobRepo } from "@/server/repositories/job";
 import { paymentRepo } from "@/server/repositories/payment";
-import { and, desc, eq, isNotNull } from "drizzle-orm";
+import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
 
 export type AdminUserListRow = {
 	user: User;
@@ -135,21 +135,44 @@ export const userRepo = {
 	},
 
 	list(
-		opts: { limit?: number; offset?: number; onlyWeb?: boolean } = {},
+		opts: {
+			limit?: number;
+			offset?: number;
+			onlyWeb?: boolean;
+			q?: string;
+		} = {},
 	): Promise<User[]> {
-		const { limit = 50, offset = 0, onlyWeb } = opts;
-		const filter = onlyWeb ? isNotNull(users.supabaseUserId) : undefined;
+		const { limit = 50, offset = 0, onlyWeb, q } = opts;
+		const normalizedQ = q?.trim();
 		return db
 			.select()
 			.from(users)
-			.where(filter ? and(filter) : undefined)
+			.where(
+				and(
+					onlyWeb ? isNotNull(users.supabaseUserId) : undefined,
+					normalizedQ
+						? sql`(
+                ${users.displayName} ILIKE ${`%${normalizedQ}%`}
+                OR ${users.email} ILIKE ${`%${normalizedQ}%`}
+                OR ${users.telegramUsername} ILIKE ${`%${normalizedQ}%`}
+                OR ${users.telegramFirstName} ILIKE ${`%${normalizedQ}%`}
+                OR ${users.telegramLastName} ILIKE ${`%${normalizedQ}%`}
+              )`
+						: undefined,
+				),
+			)
 			.orderBy(desc(users.createdAt))
 			.limit(limit)
 			.offset(offset);
 	},
 
 	async listForAdmin(
-		opts: { limit?: number; offset?: number; onlyWeb?: boolean } = {},
+		opts: {
+			limit?: number;
+			offset?: number;
+			onlyWeb?: boolean;
+			q?: string;
+		} = {},
 	): Promise<AdminUserListRow[]> {
 		const rows = await userRepo.list(opts);
 		const ids = rows.map((u) => u.id);

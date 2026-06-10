@@ -71,7 +71,11 @@ export default async function AdminJobsQueuePage(props: {
         description="Review job submissions before they go live on the channels."
       />
 
-      <form className="grid gap-3 rounded-xl border bg-card p-4 md:grid-cols-[1fr_auto_auto_auto]">
+      <form
+        className="grid gap-3 rounded-xl border bg-card p-4 md:grid-cols-[1fr_auto_auto_auto]"
+        method="GET"
+        action="/admin/jobs"
+      >
         <div className="relative">
           <Search className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
           <Input

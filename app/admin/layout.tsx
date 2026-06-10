@@ -99,6 +99,7 @@ export default async function AdminLayout({
 				<AppShellHeader
 					{...sidebarProps}
 					searchPlaceholder="Search jobs, users, payments…"
+					searchAction="/admin/search"
 					userStrip={
 						<UserMenu
 							name={displayName}

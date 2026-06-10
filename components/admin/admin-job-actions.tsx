@@ -10,31 +10,29 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+	AdminJobReviewWizard,
+	type AdminReviewPayment,
+} from "@/components/admin/admin-job-review-wizard";
 import {
 	type AdminActionState,
-	approveJobAction,
 	featureJobAction,
 	markJobPostedAction,
 	rejectJobAction,
 	rejectPaymentAction,
 	republishJobAction,
 	scheduleJobAction,
-	verifyPaymentAction,
 } from "@/server/actions/admin";
-import { statusLabel } from "@/lib/format";
-import { Badge } from "@/components/ui/badge";
 import {
+	Briefcase,
 	CalendarClock,
-	CheckCircle2,
-	ClipboardCheck,
-	Clock,
 	Pin,
-	Receipt,
 	Rocket,
 	Send,
-	ShieldAlert,
+	Settings2,
+	ShieldCheck,
 	XCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -45,46 +43,20 @@ const initial: AdminActionState = { ok: false };
 
 interface AdminJobActionsProps {
 	jobId: string;
-	paymentId?: string;
-	paymentStatus?: string;
+	jobTitle: string;
+	jobCompany: string;
 	jobStatus: string;
+	payment: AdminReviewPayment | null;
+	jobDetails: React.ReactNode;
 }
 
 export function AdminJobActions(props: AdminJobActionsProps) {
 	const router = useRouter();
 	const [pending, startTransition] = useTransition();
 
-	const needsPaymentVerify =
-		Boolean(props.paymentId) && props.paymentStatus !== "verified";
 	const isStuckAtApproved =
 		props.jobStatus === "approved" || props.jobStatus === "scheduled";
 	const isPosted = props.jobStatus === "posted";
-
-	const runApprove = () => {
-		startTransition(async () => {
-			const r = await approveJobAction(props.jobId);
-			if (r.ok) {
-				toast.success("Approved and published to Telegram");
-				router.refresh();
-			} else {
-				toast.error(r.error ?? "Approval failed");
-			}
-		});
-	};
-
-	const runVerifyPayment = () => {
-		const paymentId = props.paymentId;
-		if (!paymentId) return;
-		startTransition(async () => {
-			const r = await verifyPaymentAction(paymentId);
-			if (r.ok) {
-				toast.success("Payment verified");
-				router.refresh();
-			} else {
-				toast.error(r.error ?? "Failed to verify payment");
-			}
-		});
-	};
 
 	const runRepublish = () => {
 		startTransition(async () => {
@@ -113,29 +85,57 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 	return (
 		<Card className="min-w-0 overflow-hidden border-primary/15 shadow-sm">
 			<CardHeader className="border-b bg-muted/30 p-3 sm:p-4 md:p-6">
-				<div className="flex min-w-0 items-start gap-3">
-					<span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
-						<ShieldAlert className="size-5" />
-					</span>
-					<div className="min-w-0">
-						<CardTitle className="text-base sm:text-lg">Moderation</CardTitle>
-						<CardDescription className="mt-1 text-xs sm:text-sm">
-							Verify payment proof, then approve to publish the job to Telegram
-							and the website.
-						</CardDescription>
-					</div>
-				</div>
+				<CardTitle className="text-base sm:text-lg">Moderation</CardTitle>
+				<CardDescription className="text-xs sm:text-sm">
+					Verify payment, approve the job, or use secondary actions.
+				</CardDescription>
 			</CardHeader>
 
-			<CardContent className="space-y-4 p-3 sm:space-y-6 sm:p-4 md:p-6">
-				{needsPaymentVerify && props.paymentId && (
-					<PaymentAwaitingVerification
-						paymentId={props.paymentId}
-						paymentStatus={props.paymentStatus ?? "pending"}
-						onVerify={runVerifyPayment}
-						verifyPending={pending}
-					/>
-				)}
+			<CardContent className="p-3 sm:p-4 md:p-6">
+				<Tabs defaultValue="verify" className="min-w-0">
+					<TabsList className="mb-4 grid h-auto w-full grid-cols-1 gap-1 p-1 sm:grid-cols-3">
+						<TabsTrigger
+							value="details"
+							className="h-10 gap-2 px-2 text-xs sm:px-3 sm:text-sm"
+						>
+							<Briefcase className="size-4 shrink-0" />
+							Job details
+						</TabsTrigger>
+						<TabsTrigger
+							value="verify"
+							className="h-10 gap-2 px-2 text-xs sm:px-3 sm:text-sm"
+						>
+							<ShieldCheck className="size-4 shrink-0" />
+							<span className="truncate">Verification</span>
+						</TabsTrigger>
+						<TabsTrigger
+							value="actions"
+							className="h-10 gap-2 px-2 text-xs sm:px-3 sm:text-sm"
+						>
+							<Settings2 className="size-4 shrink-0" />
+							<span className="truncate">More actions</span>
+						</TabsTrigger>
+					</TabsList>
+
+					<TabsContent value="details" className="mt-0 min-w-0">
+						{props.jobDetails}
+					</TabsContent>
+
+					<TabsContent value="verify" className="mt-0 min-w-0">
+						<AdminJobReviewWizard
+							embedded
+							jobId={props.jobId}
+							jobTitle={props.jobTitle}
+							jobCompany={props.jobCompany}
+							jobStatus={props.jobStatus}
+							payment={props.payment}
+						/>
+					</TabsContent>
+
+					<TabsContent value="actions" className="mt-0 min-w-0 space-y-4 sm:space-y-6">
+						<p className="text-sm text-muted-foreground">
+							Reject, schedule, feature, or recover a failed Telegram publish.
+						</p>
 
 				{isStuckAtApproved && (
 					<div className="rounded-xl border border-primary/25 bg-primary/5 p-3 sm:p-4">
@@ -169,25 +169,6 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 					</div>
 				)}
 
-				<div className="flex flex-col gap-3">
-					<Button
-						className="h-11 w-full sm:w-auto sm:min-w-[12rem]"
-						onClick={runApprove}
-						disabled={pending || isPosted || needsPaymentVerify}
-						variant="success"
-					>
-						<CheckCircle2 className="size-4" />
-						{pending ? "Processing…" : "Approve & publish"}
-					</Button>
-					{isPosted && (
-						<p className="text-xs text-muted-foreground sm:text-sm">
-							This job is already live.
-						</p>
-					)}
-				</div>
-
-				<Separator />
-
 				<div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 md:gap-6">
 					<ActionBlock
 						icon={XCircle}
@@ -197,6 +178,17 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 					>
 						<RejectJobForm jobId={props.jobId} disabled={isPosted} />
 					</ActionBlock>
+
+					{props.payment && (
+						<ActionBlock
+							icon={XCircle}
+							title="Reject payment"
+							description="Invalid or mismatched proof — blocks approval."
+							tone="destructive"
+						>
+							<RejectPaymentForm paymentId={props.payment.id} />
+						</ActionBlock>
+					)}
 
 					<ActionBlock
 						icon={CalendarClock}
@@ -217,125 +209,10 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 						<FeatureJobForm jobId={props.jobId} />
 					</ActionBlock>
 				</div>
+					</TabsContent>
+				</Tabs>
 			</CardContent>
 		</Card>
-	);
-}
-
-const VERIFICATION_STEPS = [
-	{
-		title: "Review payment proof",
-		description:
-			"Open the Payment proof panel below. Confirm the screenshot, amount, and reference match the submission.",
-	},
-	{
-		title: "Check the reference",
-		description:
-			"Use the Leul verifier in that panel to validate the transaction reference before you mark the payment verified.",
-	},
-	{
-		title: "Mark payment verified",
-		description:
-			"Once proof and reference checks pass, confirm verification here to unlock Approve & publish.",
-	},
-] as const;
-
-function PaymentAwaitingVerification({
-	paymentId,
-	paymentStatus,
-	onVerify,
-	verifyPending,
-}: {
-	paymentId: string;
-	paymentStatus: string;
-	onVerify: () => void;
-	verifyPending: boolean;
-}) {
-	const statusBadgeVariant =
-		paymentStatus === "rejected" ? "destructive" : "warning";
-
-	return (
-		<section
-			aria-labelledby="payment-verify-heading"
-			className="min-w-0 overflow-hidden rounded-xl border border-amber-500/25 bg-linear-to-b from-amber-50/80 to-card shadow-sm dark:from-amber-950/30 dark:to-card"
-		>
-			<header className="flex flex-col gap-3 border-b border-amber-500/20 bg-amber-500/5 p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4 md:px-5">
-				<div className="flex min-w-0 items-start gap-3">
-					<span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-300">
-						<Receipt className="size-5" />
-					</span>
-					<div className="min-w-0">
-						<h3
-							id="payment-verify-heading"
-							className="text-sm font-semibold tracking-tight"
-						>
-							Payment verification required
-						</h3>
-						<p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-							<Clock className="size-3.5 shrink-0" />
-							Complete all steps before approving this job
-						</p>
-					</div>
-				</div>
-				<Badge variant={statusBadgeVariant} className="w-fit shrink-0 capitalize">
-					{statusLabel(paymentStatus)}
-				</Badge>
-			</header>
-
-			<div className="space-y-4 p-3 sm:space-y-5 sm:p-4 md:px-5">
-				<ol className="space-y-3">
-					{VERIFICATION_STEPS.map((step, index) => (
-						<li key={step.title} className="flex gap-3">
-							<span className="flex size-7 shrink-0 items-center justify-center rounded-full border bg-background text-xs font-semibold text-muted-foreground shadow-sm">
-								{index + 1}
-							</span>
-							<div className="min-w-0 pt-0.5">
-								<p className="text-sm font-medium leading-snug">{step.title}</p>
-								<p className="mt-1.5 text-xs leading-relaxed break-words text-muted-foreground">
-									{step.description}
-								</p>
-							</div>
-						</li>
-					))}
-				</ol>
-
-				<div className="rounded-lg border bg-background/80 p-3 shadow-sm sm:p-4">
-					<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-						<div className="flex min-w-0 items-start gap-2.5">
-							<ClipboardCheck className="mt-0.5 size-4 shrink-0 text-primary" />
-							<div className="min-w-0">
-								<p className="text-sm font-medium">Ready to confirm?</p>
-								<p className="text-xs text-muted-foreground">
-									This records the payment as verified in your system.
-								</p>
-							</div>
-						</div>
-						<Button
-							variant="success"
-							className="h-11 w-full shrink-0 sm:w-auto"
-							onClick={onVerify}
-							disabled={verifyPending}
-						>
-							<CheckCircle2 className="size-3.5" />
-							{verifyPending ? "Verifying…" : "Mark payment verified"}
-						</Button>
-					</div>
-				</div>
-
-				<div className="rounded-lg border border-destructive/20 bg-destructive/3 p-3 sm:p-4">
-					<p className="text-xs font-semibold uppercase tracking-wider text-destructive">
-						Reject payment
-					</p>
-					<p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-						Use only if the proof is invalid, duplicated, or does not match the
-						job fee.
-					</p>
-					<div className="mt-3">
-						<RejectPaymentForm paymentId={paymentId} />
-					</div>
-				</div>
-			</div>
-		</section>
 	);
 }
 

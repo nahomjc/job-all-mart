@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { ArrowRight, Users } from "lucide-react";
+import { ArrowRight, Search, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -10,7 +12,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { AdminUserCell } from "@/components/admin/admin-user-cell";
 import { userRepo } from "@/server/repositories/user";
@@ -18,8 +19,16 @@ import { formatRelativeTime } from "@/lib/format";
 
 export const metadata = { title: "Users" };
 
-export default async function AdminUsersPage() {
-  const rows = await userRepo.listForAdmin({ limit: 100 });
+interface SearchParams {
+  q?: string;
+}
+
+export default async function AdminUsersPage(props: {
+  searchParams: Promise<SearchParams>;
+}) {
+  const sp = await props.searchParams;
+  const q = (sp.q ?? "").trim();
+  const rows = await userRepo.listForAdmin({ q: q || undefined, limit: 100 });
   return (
     <div className="space-y-6">
       <PageHeader
@@ -27,6 +36,30 @@ export default async function AdminUsersPage() {
         title="Users"
         description="Everyone who has ever signed up via the web or linked their Telegram."
       />
+
+      <form
+        className="flex gap-2 rounded-xl border bg-card p-4"
+        method="GET"
+        action="/admin/users"
+      >
+        <div className="relative min-w-0 flex-1">
+          <Search className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+          <Input
+            name="q"
+            defaultValue={q}
+            placeholder="Search name, email, Telegram username..."
+            className="pl-8"
+          />
+        </div>
+        <Button type="submit" size="sm">
+          Search
+        </Button>
+        {q ? (
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/admin/users">Reset</Link>
+          </Button>
+        ) : null}
+      </form>
 
       <Card>
         <CardContent className="p-0">

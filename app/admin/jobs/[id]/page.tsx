@@ -1,17 +1,14 @@
 import { AdminJobActions } from "@/components/admin/admin-job-actions";
-import { VerifyPaymentReference } from "@/components/admin/verify-payment-reference";
+import { AdminJobDetailsPanel } from "@/components/admin/admin-job-details-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
-	CardDescription,
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { formatRelativeTime, formatSalary, statusLabel } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { formatRelativeTime, statusLabel } from "@/lib/format";
 import { paymentMethodLabel } from "@/lib/payment-methods";
 import { jobRepo } from "@/server/repositories/job";
 import { paymentRepo } from "@/server/repositories/payment";
@@ -20,12 +17,8 @@ import type { LucideIcon } from "lucide-react";
 import {
 	ArrowLeft,
 	AtSign,
-	Briefcase,
 	Building2,
-	Calendar,
-	ExternalLink,
 	Mail,
-	MapPin,
 	Receipt,
 	Send,
 	Shield,
@@ -143,76 +136,41 @@ export default async function AdminJobReviewPage(props: {
 				<div className="min-w-0 space-y-4 sm:space-y-6">
 					<AdminJobActions
 						jobId={job.id}
-						paymentId={payment?.id}
-						paymentStatus={payment?.status}
+						jobTitle={job.title}
+						jobCompany={job.company}
 						jobStatus={job.status}
+						payment={
+							payment
+								? {
+										id: payment.id,
+										status: payment.status,
+										amount: payment.amount,
+										currency: payment.currency,
+										method: payment.method,
+										referenceCode: payment.referenceCode,
+										accountSuffix: payment.accountSuffix,
+										phoneNumber: payment.phoneNumber,
+										screenshotUrl: payment.screenshotUrl,
+									}
+								: null
+						}
+						jobDetails={
+							<AdminJobDetailsPanel
+								title={job.title}
+								company={job.company}
+								categoryName={category?.name ?? "Uncategorized"}
+								logoUrl={job.logoUrl}
+								employmentType={job.employmentType}
+								location={job.location}
+								salaryMin={job.salaryMin}
+								salaryMax={job.salaryMax}
+								salaryCurrency={job.salaryCurrency}
+								createdAt={job.createdAt}
+								applyUrl={job.applyUrl}
+								description={job.description}
+							/>
+						}
 					/>
-
-					<Card className="min-w-0 overflow-hidden">
-						<CardHeader className="border-b bg-muted/20 p-3 sm:p-4 md:p-6">
-							<CardTitle className="text-base sm:text-lg">
-								Job details
-							</CardTitle>
-							<CardDescription className="text-xs sm:text-sm">
-								Full submission content and metadata.
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="space-y-4 p-3 sm:space-y-6 sm:p-4 md:p-6">
-							<div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2">
-								<DetailItem
-									icon={Briefcase}
-									label="Employment type"
-									value={statusLabel(job.employmentType)}
-								/>
-								<DetailItem
-									icon={MapPin}
-									label="Location"
-									value={job.location}
-								/>
-								<DetailItem
-									label="Salary"
-									value={formatSalary(
-										job.salaryMin,
-										job.salaryMax,
-										job.salaryCurrency,
-									)}
-								/>
-								<DetailItem
-									icon={Calendar}
-									label="Submitted"
-									value={formatRelativeTime(job.createdAt)}
-								/>
-								{job.applyUrl && (
-									<DetailItem
-										label="Apply link"
-										value={
-											<a
-												href={job.applyUrl}
-												target="_blank"
-												rel="noopener noreferrer"
-												className="inline-flex max-w-full min-w-0 items-start gap-1 break-all text-primary hover:underline sm:items-center"
-											>
-												<span className="min-w-0">{job.applyUrl}</span>
-												<ExternalLink className="mt-0.5 size-3.5 shrink-0 sm:mt-0" />
-											</a>
-										}
-										className="min-[480px]:col-span-2"
-									/>
-								)}
-							</div>
-
-							<Separator />
-
-							<div className="min-w-0">
-								<p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground sm:text-xs">
-									Description
-								</p>
-								<div className="mt-2 max-w-full overflow-hidden rounded-xl border bg-muted/20 p-3 text-sm leading-relaxed break-words whitespace-pre-line sm:mt-3 sm:p-4">
-									{job.description}
-								</div>
-							</div>
-						</CardContent>
-					</Card>
 				</div>
 
 				<aside className="min-w-0 space-y-3 sm:space-y-4 xl:sticky xl:top-20 xl:self-start">
@@ -300,13 +258,6 @@ export default async function AdminJobReviewPage(props: {
 									)}
 								</dl>
 
-								<VerifyPaymentReference
-									paymentId={payment.id}
-									defaultReference={payment.referenceCode}
-									defaultMethod={payment.method}
-									defaultAccountSuffix={payment.accountSuffix}
-									defaultPhoneNumber={payment.phoneNumber}
-								/>
 								{payment.screenshotUrl ? (
 									<a
 										href={payment.screenshotUrl}
@@ -411,30 +362,6 @@ function SnapshotTile({
 				>
 					{value}
 				</Badge>
-			</div>
-		</div>
-	);
-}
-
-function DetailItem({
-	label,
-	value,
-	icon: Icon,
-	className,
-}: {
-	label: string;
-	value: React.ReactNode;
-	icon?: LucideIcon;
-	className?: string;
-}) {
-	return (
-		<div className={cn("min-w-0", className)}>
-			<p className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground sm:text-xs">
-				{Icon && <Icon className="size-3.5 shrink-0" />}
-				{label}
-			</p>
-			<div className="mt-1 break-words text-sm font-medium sm:mt-1.5">
-				{value}
 			</div>
 		</div>
 	);

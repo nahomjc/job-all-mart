@@ -14,6 +14,7 @@ interface AppShellHeaderProps {
 	footer?: React.ReactNode;
 	promo?: boolean;
 	searchPlaceholder?: string;
+	searchAction?: string;
 	actions?: React.ReactNode;
 	userStrip?: React.ReactNode;
 }
@@ -26,6 +27,7 @@ export function AppShellHeader({
 	footer,
 	promo,
 	searchPlaceholder,
+	searchAction,
 	actions,
 	userStrip,
 }: AppShellHeaderProps) {
@@ -41,7 +43,11 @@ export function AppShellHeader({
 					promo={promo}
 				/>
 
-				<ShellSearch placeholder={searchPlaceholder} className="max-w-xl" />
+				<ShellSearch
+					placeholder={searchPlaceholder}
+					action={searchAction}
+					className="max-w-xl"
+				/>
 
 				<div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
 					<Button

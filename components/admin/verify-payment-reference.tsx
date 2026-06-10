@@ -41,6 +41,7 @@ interface VerifyPaymentReferenceProps {
 	defaultMethod?: string;
 	defaultAccountSuffix?: string | null;
 	defaultPhoneNumber?: string | null;
+	onVerifiedChange?: (verified: boolean) => void;
 }
 
 export function VerifyPaymentReference({
@@ -49,6 +50,7 @@ export function VerifyPaymentReference({
 	defaultMethod = "telebirr",
 	defaultAccountSuffix,
 	defaultPhoneNumber,
+	onVerifiedChange,
 }: VerifyPaymentReferenceProps) {
 	const [state, action, pending] = useActionState(
 		verifyPaymentReferenceAction,
@@ -62,13 +64,17 @@ export function VerifyPaymentReference({
 	const [method, setMethod] = useState<PaymentVerifyMethod>(initialMethod);
 	const [verified, setVerified] = useState<VerificationResult | null>(null);
 
-	const clearVerification = () => setVerified(null);
+	const clearVerification = () => {
+		setVerified(null);
+		onVerifiedChange?.(false);
+	};
 
 	useEffect(() => {
 		if (!state.ok && !state.error) return;
 		if (state.ok) {
 			const d = (state.data ?? {}) as VerificationResult;
 			setVerified(d);
+			onVerifiedChange?.(true);
 			const parts = [
 				d.provider ? `Provider: ${d.provider}` : null,
 				d.status ? `Status: ${d.status}` : null,
@@ -82,9 +88,10 @@ export function VerifyPaymentReference({
 			);
 		} else if (state.error) {
 			setVerified(null);
+			onVerifiedChange?.(false);
 			toast.error(state.error);
 		}
-	}, [state]);
+	}, [state, onVerifiedChange]);
 
 	const showSuffix = methodNeedsAccountSuffix(method);
 	const showPhone = methodNeedsPhoneNumber(method);
