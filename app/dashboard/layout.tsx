@@ -69,10 +69,10 @@ export default async function DashboardLayout({
 	};
 
 	return (
-		<div className="flex min-h-screen overflow-x-hidden shell-canvas">
+		<div className="min-h-svh shell-canvas">
 			<AppSidebar {...sidebarProps} />
 
-			<div className="flex min-w-0 flex-1 flex-col">
+			<div className="flex min-h-svh min-w-0 flex-col md:pl-[260px]">
 				<AppShellHeader
 					{...sidebarProps}
 					searchPlaceholder="Search your jobs, payments…"

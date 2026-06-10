@@ -23,7 +23,7 @@ export function AppSidebar({
 	promo = true,
 }: AppSidebarProps) {
 	return (
-		<aside className="sticky top-0 hidden h-screen w-[260px] shrink-0 border-r border-sidebar-border bg-sidebar md:flex md:flex-col">
+		<aside className="fixed inset-y-0 left-0 z-40 hidden h-svh w-[260px] flex-col border-r border-sidebar-border bg-sidebar md:flex">
 			<SidebarNavContent
 				brand={brand}
 				homeHref={homeHref}
