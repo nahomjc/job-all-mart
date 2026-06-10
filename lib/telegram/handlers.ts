@@ -5,10 +5,8 @@ import { userRepo } from "@/server/repositories/user";
 import { jobRepo } from "@/server/repositories/job";
 import {
   clearDraft,
-  ensureCanPost,
   handleCategoryPick,
   handleWizardMessage,
-  startDraft,
 } from "@/lib/telegram/wizard";
 import {
   handleChatId,
@@ -19,7 +17,16 @@ import {
   isSetupAdmin,
 } from "@/lib/telegram/admin-setup";
 import { formatSalary, statusLabel } from "@/lib/format";
-import { joinRequiredChannelKeyboard } from "@/lib/telegram/keyboards";
+import {
+  isMainMenuButton,
+  joinRequiredChannelKeyboard,
+  mainMenuKeyboard,
+} from "@/lib/telegram/keyboards";
+import {
+  handleMainMenuButton,
+  runPostJobFlow,
+  sendHelpMessage,
+} from "@/lib/telegram/menu-actions";
 import { requiredChannelLabel } from "@/lib/telegram/required-channel";
 import { createBotLoginToken } from "@/lib/telegram/bot-login-token";
 
@@ -67,37 +74,29 @@ export function registerHandlers(bot: Telegraf): void {
 
 I help you post jobs to our Telegram channels.
 
-Available commands:
-• /postjob – submit a new job
-• /myjobs – view your submissions
-• /pricing – view our plans
-• /help – show this message
+Before posting, join ${requiredChannelLabel()} using the button below.
 
-Before posting, join ${requiredChannelLabel()} using the button below.`,
+Then use the menu under the text box — Post a job, Help, or Contact.`,
       joinRequiredChannelKeyboard(),
     );
+    await ctx.reply("👇 Quick actions", mainMenuKeyboard());
   });
 
   bot.help(async (ctx) => {
-    const lines = [
-      "Commands:",
-      "/postjob – guided job submission",
-      "/myjobs – list your posts and their status",
-      "/pricing – view our plans",
-      "/cancel – cancel an in-progress submission",
-      "/myid – your Telegram user id (for .env setup)",
-    ];
+    await sendHelpMessage(ctx);
     if (ctx.from && isSetupAdmin(ctx.from.id)) {
-      lines.push(
-        "",
-        "Setup (admin):",
-        "/chatid – chat id for channel / notify",
-        "/topicid – forum topic id (run inside a topic)",
-        "/setupids – all ids + suggested .env block",
-        "/testnotify – send a test admin alert",
+      await ctx.reply(
+        [
+          "Setup (admin):",
+          "/chatid – chat id for channel / notify",
+          "/topicid – forum topic id (run inside a topic)",
+          "/setupids – all ids + suggested .env block",
+          "/testnotify – send a test admin alert",
+          "/myid – your Telegram user id",
+        ].join("\n"),
+        mainMenuKeyboard(),
       );
     }
-    await ctx.reply(lines.join("\n"));
   });
 
   bot.command("myid", handleMyId);
@@ -116,26 +115,21 @@ Before posting, join ${requiredChannelLabel()} using the button below.`,
 • Enterprise: contact admin
 
 Full details: ${env.NEXT_PUBLIC_APP_URL}/pricing`,
+      mainMenuKeyboard(),
     );
   });
 
   bot.command("cancel", async (ctx) => {
     if (!ctx.from) return;
     clearDraft(ctx.from.id);
-    await ctx.reply("Cancelled. Run /postjob to start over.");
+    await ctx.reply(
+      "Cancelled. Tap Post a job below to start again.",
+      mainMenuKeyboard(),
+    );
   });
 
   bot.command("postjob", async (ctx) => {
-    if (!ctx.from) return;
-    const check = await ensureCanPost(ctx);
-    if (!check.ok) {
-      await ctx.reply(check.reason, joinRequiredChannelKeyboard());
-      return;
-    }
-    startDraft(ctx.from.id);
-    await ctx.reply(
-      "Let's create a job post. ✏️\n\nFirst — what's the job title?",
-    );
+    await runPostJobFlow(ctx);
   });
 
   bot.command("myjobs", async (ctx) => {
@@ -147,7 +141,10 @@ Full details: ${env.NEXT_PUBLIC_APP_URL}/pricing`,
     }
     const rows = await jobRepo.listByUser(user.id);
     if (rows.length === 0) {
-      await ctx.reply("You haven't submitted any jobs yet. Use /postjob.");
+      await ctx.reply(
+        "You haven't submitted any jobs yet. Tap Post a job below.",
+        mainMenuKeyboard(),
+      );
       return;
     }
     const lines = rows.slice(0, 10).map(({ job }) => {
@@ -159,7 +156,10 @@ Full details: ${env.NEXT_PUBLIC_APP_URL}/pricing`,
       );
       return `• <b>${escapeHtml(job.title)}</b> – ${status} – ${escapeHtml(salary)}`;
     });
-    await ctx.reply(lines.join("\n"), { parse_mode: "HTML" });
+    await ctx.reply(lines.join("\n"), {
+      parse_mode: "HTML",
+      ...mainMenuKeyboard(),
+    });
   });
 
   bot.on("callback_query", async (ctx) => {
@@ -174,9 +174,17 @@ Full details: ${env.NEXT_PUBLIC_APP_URL}/pricing`,
   });
 
   bot.on("message", async (ctx) => {
-    // Ignore commands here — they're handled above.
     const msg = ctx.message;
     if (msg && "text" in msg && msg.text?.startsWith("/")) return;
+
+    const text =
+      msg && "text" in msg ? (msg.text?.trim() ?? "") : "";
+
+    if (text && isMainMenuButton(text)) {
+      await handleMainMenuButton(ctx, text);
+      return;
+    }
+
     await handleWizardMessage(ctx);
   });
 

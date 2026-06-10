@@ -13,6 +13,12 @@ import { slugify } from "@/lib/format";
 import { checkRequiredChannelMembership } from "@/lib/telegram/client";
 import { requiredChannelLabel } from "@/lib/telegram/required-channel";
 import { notifyAdminsNewSubmission } from "@/lib/telegram/publisher";
+import {
+  isMainMenuButton,
+  mainMenuKeyboard,
+  removeMainMenuKeyboard,
+} from "@/lib/telegram/keyboards";
+import { handleMainMenuButton } from "@/lib/telegram/menu-actions";
 
 /**
  * In-memory wizard state. For a single-instance deployment this is fine; for
@@ -87,6 +93,11 @@ export async function handleWizardMessage(ctx: Context): Promise<boolean> {
   const text = (ctx.message && "text" in ctx.message ? ctx.message.text : "")?.trim() ?? "";
   const photo =
     ctx.message && "photo" in ctx.message ? ctx.message.photo : undefined;
+
+  if (text && isMainMenuButton(text)) {
+    await handleMainMenuButton(ctx, text);
+    return true;
+  }
 
   switch (draft.step) {
     case "awaiting_title": {
@@ -286,6 +297,7 @@ export async function handleWizardMessage(ctx: Context): Promise<boolean> {
 
       await ctx.reply(
         "✅ Submission received! It is now in admin review.\nYou'll get a Telegram message when it's approved or rejected.\nUse /myjobs to track status.",
+        mainMenuKeyboard(),
       );
       await notifyAdminsNewSubmission(jobId);
 
@@ -386,7 +398,7 @@ function getDraftJobFields(draft: Draft): {
 }
 
 async function askAgain(ctx: Context, msg: string): Promise<boolean> {
-  await ctx.reply(msg);
+  await ctx.reply(msg, removeMainMenuKeyboard());
   return true;
 }
 
