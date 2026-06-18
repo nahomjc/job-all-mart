@@ -5,9 +5,11 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { DEFAULT_APP_NAME } from "@/lib/env";
 
-const INTRO_KEY = "mak-advert-intro-v2";
-const HOLD_MS = 2600;
-const EXIT_MS = 1000;
+const INTRO_KEY = "mak-advert-intro-v3";
+/** Last text finishes ~3.2s after mount; curtain waits until then + extra hold */
+const REVEAL_MS = 3200;
+const HOLD_AFTER_REVEAL_MS = 4000;
+const EXIT_MS = 1500;
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 const EASE_CURTAIN = [0.76, 0, 0.24, 1] as const;
@@ -23,10 +25,11 @@ function IntroLoader({ onComplete }: { onComplete: () => void }) {
 			doneRef.current();
 			return;
 		}
-		const exitTimer = window.setTimeout(() => setPhase("out"), HOLD_MS);
+		const exitAt = REVEAL_MS + HOLD_AFTER_REVEAL_MS;
+		const exitTimer = window.setTimeout(() => setPhase("out"), exitAt);
 		const doneTimer = window.setTimeout(
 			() => doneRef.current(),
-			HOLD_MS + EXIT_MS,
+			exitAt + EXIT_MS,
 		);
 		return () => {
 			window.clearTimeout(exitTimer);
@@ -63,7 +66,7 @@ function IntroLoader({ onComplete }: { onComplete: () => void }) {
 						className="mx-auto mb-8 h-px w-16 bg-linear-to-r from-transparent via-sky-300 to-transparent sm:w-24"
 						initial={{ scaleX: 0, opacity: 0 }}
 						animate={{ scaleX: 1, opacity: 1 }}
-						transition={{ duration: 1, ease: EASE_OUT }}
+						transition={{ duration: 1.2, ease: EASE_OUT }}
 					/>
 
 					<div className="overflow-hidden">
@@ -71,7 +74,7 @@ function IntroLoader({ onComplete }: { onComplete: () => void }) {
 							className="text-[11px] font-semibold uppercase tracking-[0.35em] text-sky-200/80"
 							initial={{ y: 24, opacity: 0 }}
 							animate={{ y: 0, opacity: 1 }}
-							transition={{ duration: 0.7, delay: 0.25, ease: EASE_OUT }}
+							transition={{ duration: 0.9, delay: 0.5, ease: EASE_OUT }}
 						>
 							Welcome to
 						</motion.p>
@@ -82,7 +85,7 @@ function IntroLoader({ onComplete }: { onComplete: () => void }) {
 							className="text-5xl font-bold leading-none tracking-tight text-white sm:text-6xl md:text-7xl"
 							initial={{ y: "110%" }}
 							animate={{ y: 0 }}
-							transition={{ duration: 0.9, delay: 0.45, ease: EASE_OUT }}
+							transition={{ duration: 1.1, delay: 1.1, ease: EASE_OUT }}
 						>
 							{first}
 						</motion.h1>
@@ -94,7 +97,7 @@ function IntroLoader({ onComplete }: { onComplete: () => void }) {
 								className="bg-linear-to-r from-sky-200 via-white to-blue-200 bg-clip-text text-4xl font-bold tracking-tight text-transparent sm:text-5xl md:text-6xl"
 								initial={{ y: "110%" }}
 								animate={{ y: 0 }}
-								transition={{ duration: 0.9, delay: 0.7, ease: EASE_OUT }}
+								transition={{ duration: 1.1, delay: 1.75, ease: EASE_OUT }}
 							>
 								{second}
 							</motion.p>
@@ -105,7 +108,7 @@ function IntroLoader({ onComplete }: { onComplete: () => void }) {
 						className="mt-6 text-sm text-white/50 sm:text-base"
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
-						transition={{ duration: 0.65, delay: 1.05, ease: EASE_OUT }}
+						transition={{ duration: 0.9, delay: 2.5, ease: EASE_OUT }}
 					>
 						Jobs & adverts across Ethiopia
 					</motion.p>

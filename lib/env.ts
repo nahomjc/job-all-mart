@@ -21,13 +21,28 @@ function optional(value: string | undefined): string | undefined {
 
 export const DEFAULT_APP_NAME = "Mak Advert";
 
+/** Old deploy env values — map to current brand on read */
+const LEGACY_APP_NAMES = new Set([
+	"muler jobs",
+	"jobpost",
+	"all mart dhs",
+	"job post",
+]);
+
+export function resolveAppName(raw?: string): string {
+	const name = (raw ?? DEFAULT_APP_NAME).trim();
+	if (!name) return DEFAULT_APP_NAME;
+	if (LEGACY_APP_NAMES.has(name.toLowerCase())) return DEFAULT_APP_NAME;
+	return name;
+}
+
 export const env = {
 	// App
 	get NEXT_PUBLIC_APP_URL() {
 		return required("NEXT_PUBLIC_APP_URL", process.env.NEXT_PUBLIC_APP_URL);
 	},
 	get NEXT_PUBLIC_APP_NAME() {
-		return process.env.NEXT_PUBLIC_APP_NAME ?? DEFAULT_APP_NAME;
+		return resolveAppName(process.env.NEXT_PUBLIC_APP_NAME);
 	},
 
 	// Database
