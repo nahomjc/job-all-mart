@@ -13,8 +13,8 @@ export default async function NewJobPage() {
       <div>
         <h1 className="text-2xl font-bold">Post a job</h1>
         <p className="text-sm text-muted-foreground">
-          Fill in the details. After submitting you&apos;ll upload a payment screenshot
-          and an admin will review your post before it goes live.
+          Work through each step — job details first, then payment proof. An admin
+          will review your post before it goes live.
         </p>
       </div>
       <Card>

@@ -62,7 +62,6 @@ export default async function DashboardLayout({
 
 	const sidebarProps = {
 		brand: brandName,
-		homeHref: "/dashboard" as const,
 		sections,
 		footer: sidebarFooter,
 		promo: true,

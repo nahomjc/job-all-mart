@@ -32,8 +32,9 @@ export default async function PaymentPage(props: {
         title="Upload payment proof"
         description={
           <>
-            For <span className="font-medium text-foreground">{job.title}</span>{" "}
-            at {job.company}
+            Step-by-step payment for{" "}
+            <span className="font-medium text-foreground">{job.title}</span> at{" "}
+            {job.company}
           </>
         }
         actions={

@@ -29,6 +29,22 @@ export const paymentSubmitSchema = z.object({
 
 export type PaymentSubmitInput = z.infer<typeof paymentSubmitSchema>;
 
+export const paymentFormStepSchemas = {
+	amount: paymentSubmitSchema.pick({
+		amount: true,
+		currency: true,
+	}),
+	reference: paymentSubmitSchema.pick({
+		method: true,
+		referenceCode: true,
+		accountSuffix: true,
+		phoneNumber: true,
+	}),
+	proof: paymentSubmitSchema.pick({
+		screenshotKey: true,
+	}),
+} as const;
+
 export const verifyPaymentReferenceSchema = z.object({
 	paymentId: z.string().uuid(),
 	reference: optionalTrimmed(64),

@@ -11,8 +11,7 @@ export const jobSubmitSchema = z.object({
 		.max(200, "Company name too long"),
 	description: z
 		.string()
-		.min(80, "Description must be at least 80 characters")
-		.max(6000, "Description must be at most 6000 characters"),
+		.min(80, "Description must be at least 80 characters"),
 	categoryId: z.string().uuid("Pick a category"),
 	employmentType: z.enum([
 		"full_time",
@@ -40,6 +39,29 @@ export const jobSubmitSchema = z.object({
 });
 
 export type JobSubmitInput = z.infer<typeof jobSubmitSchema>;
+
+export const jobFormStepSchemas = {
+	basics: jobSubmitSchema.pick({
+		title: true,
+		company: true,
+		description: true,
+	}),
+	details: jobSubmitSchema.pick({
+		categoryId: true,
+		employmentType: true,
+		location: true,
+	}),
+	compensation: jobSubmitSchema.pick({
+		salaryMin: true,
+		salaryMax: true,
+		salaryCurrency: true,
+	}),
+	apply: jobSubmitSchema.pick({
+		applyUrl: true,
+		contactInfo: true,
+		logoKey: true,
+	}),
+} as const;
 
 export const jobUpdateSchema = jobSubmitSchema.partial().extend({
 	id: z.string().uuid(),
