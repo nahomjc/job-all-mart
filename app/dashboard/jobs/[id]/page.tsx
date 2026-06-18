@@ -360,10 +360,10 @@ function StatusBanner({
 
   if (job.status === "posted") {
     return (
-      <div className="flex items-start gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
-        <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+      <div className="flex items-start gap-3 rounded-xl border border-sky-500/30 bg-sky-500/10 p-4">
+        <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-sky-600 dark:text-sky-400" />
         <div>
-          <p className="font-semibold text-emerald-800 dark:text-emerald-300">
+          <p className="font-semibold text-sky-800 dark:text-sky-300">
             Your job is live
           </p>
           <p className="mt-1 text-sm text-muted-foreground">

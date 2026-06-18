@@ -103,7 +103,7 @@ export function VerifyPaymentReference({
 			className={cn(
 				"min-w-0 space-y-3 rounded-xl border p-3 transition-colors duration-300 sm:p-4",
 				verified
-					? "border-emerald-500/50 bg-emerald-50/80 shadow-sm shadow-emerald-500/10 dark:bg-emerald-950/25"
+					? "border-sky-500/50 bg-sky-50/80 shadow-sm shadow-sky-500/10 dark:bg-sky-950/25"
 					: "bg-muted/20",
 			)}
 		>
@@ -127,7 +127,7 @@ export function VerifyPaymentReference({
 					</p>
 				</div>
 				{verified && (
-					<span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+					<span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-sky-500/15 px-2.5 py-1 text-xs font-medium text-sky-700 dark:text-sky-300">
 						<CheckCircle2 className="size-3.5" />
 						Verified
 					</span>
@@ -221,10 +221,10 @@ export function VerifyPaymentReference({
 			)}
 
 			{verified && (
-				<div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-800 dark:text-emerald-200">
+				<div className="rounded-lg border border-sky-500/30 bg-sky-500/10 px-3 py-2 text-sm text-sky-800 dark:text-sky-200">
 					<p className="font-medium">Reference verified successfully</p>
 					{(verified.status || verified.amount != null) && (
-						<p className="mt-0.5 text-xs text-emerald-700/90 dark:text-emerald-300/90">
+						<p className="mt-0.5 text-xs text-sky-700/90 dark:text-sky-300/90">
 							{[
 								verified.status,
 								verified.amount != null ? `Amount: ${verified.amount}` : null,

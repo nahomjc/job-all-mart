@@ -93,13 +93,13 @@ export function HowItWorksSection({ appName }: { appName: string }) {
 						delay={0.2}
 						className="absolute -left-4 bottom-10 flex items-center gap-3 rounded-2xl border bg-background p-3 pr-5 shadow-xl"
 					>
-						<span className="flex size-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+						<span className="flex size-10 items-center justify-center rounded-xl bg-sky-100 text-sky-600">
 							<TrendingUp className="size-5" />
 						</span>
 						<div>
 							<p className="text-base font-bold leading-none">12,567</p>
 							<p className="mt-1 text-xs text-muted-foreground">
-								Views <span className="font-medium text-emerald-600">+50%</span>
+								Views <span className="font-medium text-sky-600">+50%</span>
 							</p>
 						</div>
 					</FloatingCard>

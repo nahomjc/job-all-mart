@@ -31,7 +31,7 @@ const THEMES = [
 	{ accent: "bg-sky-400", iconBg: "bg-sky-100 text-sky-700", icon: TrendingUp },
 	{ accent: "bg-orange-400", iconBg: "bg-orange-100 text-orange-700", icon: Users },
 	{ accent: "bg-violet-400", iconBg: "bg-violet-100 text-violet-700", icon: Globe },
-	{ accent: "bg-emerald-400", iconBg: "bg-emerald-100 text-emerald-700", icon: Sparkles },
+	{ accent: "bg-sky-400", iconBg: "bg-sky-100 text-sky-700", icon: Sparkles },
 ] as const;
 
 type CategoryItem = { id: string; name: string; slug: string };

@@ -197,11 +197,11 @@ export function AdminJobReviewWizard({
 
 	if (isPosted) {
 		return (
-			<div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 sm:p-6">
+			<div className="rounded-xl border border-sky-500/30 bg-sky-500/5 p-4 sm:p-6">
 				<div className="flex items-start gap-3">
-					<CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600" />
+					<CheckCircle2 className="mt-0.5 size-5 shrink-0 text-sky-600" />
 					<div>
-						<p className="font-semibold text-emerald-800 dark:text-emerald-200">
+						<p className="font-semibold text-sky-800 dark:text-sky-200">
 							This job is already live
 						</p>
 						<p className="mt-1 text-sm text-muted-foreground">
@@ -269,7 +269,7 @@ export function AdminJobReviewWizard({
 												"border-primary bg-primary/10 text-primary shadow-sm",
 											done &&
 												!active &&
-												"border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+												"border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300",
 											!active &&
 												!done &&
 												"border-border text-muted-foreground",
@@ -280,7 +280,7 @@ export function AdminJobReviewWizard({
 											className={cn(
 												"flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold",
 												active && "bg-primary text-primary-foreground",
-												done && !active && "bg-emerald-600 text-white",
+												done && !active && "bg-sky-600 text-white",
 												!active && !done && "bg-muted text-muted-foreground",
 											)}
 										>
@@ -484,9 +484,9 @@ export function AdminJobReviewWizard({
 
 				{currentStep?.id === "publish" && (
 					<div className="space-y-4">
-						<div className="rounded-xl border border-emerald-500/25 bg-emerald-500/5 p-4">
+						<div className="rounded-xl border border-sky-500/25 bg-sky-500/5 p-4">
 							<div className="flex items-start gap-3">
-								<Rocket className="mt-0.5 size-5 shrink-0 text-emerald-600" />
+								<Rocket className="mt-0.5 size-5 shrink-0 text-sky-600" />
 								<div>
 									<p className="font-semibold">Ready to go live</p>
 									<p className="mt-1 text-sm text-muted-foreground">
@@ -499,12 +499,12 @@ export function AdminJobReviewWizard({
 									<ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
 										{hasPayment && (
 											<li className="flex items-center gap-2">
-												<Check className="size-3.5 text-emerald-600" />
+												<Check className="size-3.5 text-sky-600" />
 												Payment verified
 											</li>
 										)}
 										<li className="flex items-center gap-2">
-											<Check className="size-3.5 text-emerald-600" />
+											<Check className="size-3.5 text-sky-600" />
 											Job content reviewed
 										</li>
 									</ul>

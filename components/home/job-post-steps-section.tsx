@@ -30,7 +30,7 @@ const STEPS = [
 		description:
 			"Sign up with email or Telegram in under a minute. No lengthy onboarding — just name and you're in.",
 		icon: Briefcase,
-		color: "from-emerald-500 to-teal-600",
+		color: "from-sky-500 to-blue-600",
 	},
 	{
 		id: "details",
@@ -121,7 +121,7 @@ function StepVisual({ stepId }: { stepId: (typeof STEPS)[number]["id"] }) {
 							initial={{ opacity: 0 }}
 							animate={{ opacity: 1 }}
 							transition={{ delay: 0.7 }}
-							className="mt-4 flex items-center gap-2 text-sm text-emerald-600"
+							className="mt-4 flex items-center gap-2 text-sm text-sky-600"
 						>
 							<CheckCircle2 className="size-4" />
 							Account ready
@@ -247,7 +247,7 @@ function StepVisual({ stepId }: { stepId: (typeof STEPS)[number]["id"] }) {
 											<CheckCircle2
 												className={cn(
 													"size-4",
-													i < 2 ? "text-emerald-500" : "text-muted-foreground/40",
+													i < 2 ? "text-sky-500" : "text-muted-foreground/40",
 												)}
 											/>
 										</motion.span>
@@ -275,7 +275,7 @@ function StepVisual({ stepId }: { stepId: (typeof STEPS)[number]["id"] }) {
 							className="rounded-2xl border bg-card p-4 shadow-xl"
 						>
 							<div className="flex items-center gap-2">
-								<span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+								<span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold text-sky-700">
 									POSTED
 								</span>
 								<p className="text-sm font-semibold">Senior Software Engineer</p>
@@ -300,7 +300,7 @@ function StepVisual({ stepId }: { stepId: (typeof STEPS)[number]["id"] }) {
 							initial={{ scale: 0 }}
 							animate={{ scale: 1 }}
 							transition={{ delay: 0.6, type: "spring" }}
-							className="absolute -right-2 -top-2 flex size-12 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg"
+							className="absolute -right-2 -top-2 flex size-12 items-center justify-center rounded-full bg-sky-500 text-white shadow-lg"
 						>
 							<CheckCircle2 className="size-6" />
 						</motion.div>

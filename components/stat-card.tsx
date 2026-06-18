@@ -15,7 +15,7 @@ type StatTone =
 const TONE_TILE: Record<StatTone, string> = {
   default: "bg-muted text-foreground",
   primary: "bg-primary/12 text-primary",
-  success: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400",
+  success: "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-400",
   warning: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
   destructive:
     "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-400",
@@ -106,7 +106,7 @@ export function StatCard({
             {trend && (
               <span
                 className={cn(
-                  trend.direction === "up" && "text-emerald-600",
+                  trend.direction === "up" && "text-sky-600",
                   trend.direction === "down" && "text-rose-600",
                 )}
               >

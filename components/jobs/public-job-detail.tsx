@@ -95,7 +95,7 @@ export function PublicJobDetail({ job, category, employer }: PublicJobDetailProp
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge
                     variant="secondary"
-                    className="gap-1 border-emerald-500/20 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300"
+                    className="gap-1 border-sky-500/20 bg-sky-500/10 text-sky-800 dark:text-sky-300"
                   >
                     <Shield className="size-3" />
                     Verified listing

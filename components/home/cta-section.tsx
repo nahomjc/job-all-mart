@@ -19,7 +19,7 @@ export function CtaSection({ telegramJoinUrl }: { telegramJoinUrl: string }) {
 				<motion.div
 					animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
 					transition={{ duration: 8, repeat: Number.POSITIVE_INFINITY }}
-					className="pointer-events-none absolute -right-20 -top-20 size-80 rounded-full bg-emerald-400/30 blur-3xl"
+					className="pointer-events-none absolute -right-20 -top-20 size-80 rounded-full bg-sky-400/30 blur-3xl"
 				/>
 				<motion.div
 					animate={{ x: [0, 30, 0], y: [0, -20, 0] }}

@@ -89,7 +89,7 @@ export default function PricingPage() {
               <ul className="mb-6 space-y-2 text-sm">
                 {t.features.map((f) => (
                   <li key={f} className="flex items-start gap-2">
-                    <Check className="mt-0.5 size-4 text-emerald-600" />
+                    <Check className="mt-0.5 size-4 text-sky-600" />
                     {f}
                   </li>
                 ))}
