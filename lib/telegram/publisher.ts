@@ -60,20 +60,28 @@ async function recordTelegramPost(args: {
 	});
 }
 
+const TELEGRAM_CAPTION_LIMIT = 1024;
+const TELEGRAM_MESSAGE_LIMIT = 4096;
+
 /**
  * Build the public Telegram message body for a job.
  * Uses HTML parse mode for safer escaping than Markdown.
+ *
+ * `maxLength` must reflect the send mode: photo captions are capped at 1024
+ * characters while plain messages allow up to 4096. The job description is
+ * trimmed to whatever budget remains so we never blow past the limit.
  */
 export function formatJobMessage(args: {
   job: Job;
   category: Category | null;
   employer: User | null;
+  maxLength?: number;
 }): string {
-  const { job, category, employer } = args;
+  const { job, category, employer, maxLength = TELEGRAM_MESSAGE_LIMIT } = args;
   const url = `${env.NEXT_PUBLIC_APP_URL}/jobs/${job.slug}`;
   const employmentLabel = statusLabel(job.employmentType);
 
-  const lines = [
+  const header = [
     "🚀 <b>New Job Opportunity</b>",
     "",
     `🏢 <b>Company:</b> ${escapeHtml(job.company)}`,
@@ -84,29 +92,44 @@ export function formatJobMessage(args: {
     )}`,
   ];
 
-  if (category) lines.push(`🏷️ <b>Category:</b> ${escapeHtml(category.name)}`);
+  if (category) header.push(`🏷️ <b>Category:</b> ${escapeHtml(category.name)}`);
 
-  lines.push("", "📝 <b>Description:</b>");
-  lines.push(escapeHtml(truncateForTelegram(job.description, 800)));
-
+  const footer: string[] = [];
   if (job.applyUrl) {
     const applyUrl = job.applyUrl.trim();
     if (canUseTelegramInlineUrl(applyUrl)) {
-      lines.push("", "👉 Use the <b>Apply now</b> button below to apply.");
+      footer.push("", "👉 Use the <b>Apply now</b> button below to apply.");
     } else {
-      lines.push("", `👉 <b>Apply:</b> ${escapeHtml(applyUrl)}`);
+      footer.push("", `👉 <b>Apply:</b> ${escapeHtml(applyUrl)}`);
     }
   } else if (job.contactInfo) {
-    lines.push("", `📨 <b>Contact:</b> ${escapeHtml(job.contactInfo)}`);
+    footer.push("", `📨 <b>Contact:</b> ${escapeHtml(job.contactInfo)}`);
   }
 
-  lines.push("", `🔗 ${escapeHtml(url)}`);
+  footer.push("", `🔗 ${escapeHtml(url)}`);
 
   if (employer?.telegramUsername) {
-    lines.push(`👤 Posted by @${escapeHtml(employer.telegramUsername)}`);
+    footer.push(`👤 Posted by @${escapeHtml(employer.telegramUsername)}`);
   }
 
-  return lines.join("\n");
+  // Everything except the description body is fixed overhead. Give the rest of
+  // the budget to the description so the caption/message fits. We trim the raw
+  // text (not the escaped form) so we never split an HTML entity like &amp;.
+  const descriptionLabel = ["", "📝 <b>Description:</b>"];
+  const fixedParts = [...header, ...descriptionLabel, "", ...footer];
+  const fixedLength = fixedParts.join("\n").length;
+  // Escaping can expand the description, so budget on raw length with a safety
+  // margin to keep the escaped result under maxLength.
+  const rawBudget = Math.max(0, Math.floor((maxLength - fixedLength - 8) / 1.2));
+
+  const rawDescription = job.description;
+  const descriptionBody = escapeHtml(
+    rawDescription.length > rawBudget
+      ? `${rawDescription.slice(0, Math.max(0, rawBudget - 1)).trimEnd()}…`
+      : rawDescription,
+  );
+
+  return [...header, ...descriptionLabel, descriptionBody, ...footer].join("\n");
 }
 
 export async function publishJobToTelegram(jobId: string): Promise<{
@@ -126,7 +149,12 @@ export async function publishJobToTelegram(jobId: string): Promise<{
 
   const topicId = category?.telegramTopicId ?? null;
   const chatId = env.TELEGRAM_CHANNEL_ID;
-  const text = formatJobMessage({ job, category, employer });
+  const text = formatJobMessage({
+    job,
+    category,
+    employer,
+    maxLength: job.logoUrl ? TELEGRAM_CAPTION_LIMIT : TELEGRAM_MESSAGE_LIMIT,
+  });
   const replyMarkup = buildJobPostReplyMarkup(job);
 
   let message: { message_id: number };
@@ -327,11 +355,6 @@ export function buildJobPostReplyMarkup(job: Job):
 
 function isImageUrl(url: string): boolean {
   return url.startsWith("http://") || url.startsWith("https://");
-}
-
-function truncateForTelegram(text: string, max: number): string {
-  if (text.length <= max) return text;
-  return `${text.slice(0, max - 3)}...`;
 }
 
 function escapeHtml(input: string): string {
