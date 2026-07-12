@@ -13,10 +13,12 @@ import { verifyPaymentReferenceSchema } from "@/lib/validations/payment";
 import { telegramClient } from "@/lib/telegram/client";
 import { notifyAdmins, publishJobToTelegram } from "@/lib/telegram/publisher";
 import { categoryInputSchema } from "@/lib/validators/category";
+import { telegramBroadcastSettingsSchema } from "@/lib/validators/settings";
 import { auditLogRepo } from "@/server/repositories/auditLog";
 import { categoryRepo } from "@/server/repositories/category";
 import { jobRepo } from "@/server/repositories/job";
 import { paymentRepo } from "@/server/repositories/payment";
+import { settingsRepo } from "@/server/repositories/settings";
 import { userRepo } from "@/server/repositories/user";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -597,6 +599,45 @@ export async function updateCategoryFormAction(
 			"Could not update category (topic ID may already be in use)",
 		);
 	}
+}
+
+/* ──────────────────────────────────────────────
+ * Telegram broadcast channel (admin settings)
+ * ────────────────────────────────────────────── */
+export async function updateTelegramBroadcastAction(
+	_prev: AdminActionState,
+	formData: FormData,
+): Promise<AdminActionState> {
+	const admin = await requireAdmin();
+	const parsed = telegramBroadcastSettingsSchema.safeParse(
+		Object.fromEntries(formData),
+	);
+	if (!parsed.success) {
+		const msg = parsed.error.issues[0]?.message ?? "Invalid settings";
+		return failState(msg);
+	}
+
+	const channelId = parsed.data.channelId.trim() || null;
+	await settingsRepo.setTelegramBroadcast({
+		channelId,
+		enabled: parsed.data.enabled,
+	});
+
+	await auditLogRepo.log({
+		actorId: admin.id,
+		action: "settings.update",
+		targetType: "settings",
+		targetId: null,
+		metadata: {
+			telegramBroadcastChannelId: channelId,
+			telegramBroadcastEnabled: parsed.data.enabled,
+		},
+		ip: null,
+		userAgent: null,
+	});
+
+	revalidatePath("/admin/settings");
+	return okState();
 }
 
 /* ──────────────────────────────────────────────

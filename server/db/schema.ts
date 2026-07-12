@@ -77,6 +77,7 @@ export const auditActionEnum = pgEnum("audit_action", [
   "category.create",
   "category.update",
   "category.delete",
+  "settings.update",
 ]);
 
 export const subscriptionTierEnum = pgEnum("subscription_tier", [
@@ -403,6 +404,19 @@ export const subscriptions = pgTable(
 );
 
 // ──────────────────────────────────────────────
+// app_settings
+// Key/value store for admin-configurable options (e.g. broadcast channel).
+// ──────────────────────────────────────────────
+
+export const appSettings = pgTable("app_settings", {
+  key: text("key").primaryKey(),
+  value: text("value"),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+// ──────────────────────────────────────────────
 // Relations
 // ──────────────────────────────────────────────
 
@@ -462,3 +476,4 @@ export type Category = typeof categories.$inferSelect;
 export type TelegramPost = typeof telegramPosts.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type Subscription = typeof subscriptions.$inferSelect;
+export type AppSetting = typeof appSettings.$inferSelect;

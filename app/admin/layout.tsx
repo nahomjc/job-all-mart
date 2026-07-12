@@ -28,6 +28,7 @@ const sections: SidebarNavSection[] = [
 	{
 		title: "GENERAL",
 		items: [
+			{ href: "/admin/settings", label: "Settings", icon: "settings" },
 			{ href: "/admin/audit", label: "Audit logs", icon: "scroll-text" },
 			{ href: "/", label: "View site", icon: "circle-help" },
 		],

@@ -10,6 +10,55 @@ import type { Category, Job, User } from "@/server/db/schema";
 import { telegramPostRepo } from "@/server/repositories/telegramPost";
 import { jobRepo } from "@/server/repositories/job";
 import { paymentRepo } from "@/server/repositories/payment";
+import { settingsRepo } from "@/server/repositories/settings";
+
+type JobPostReplyMarkup =
+	| { inline_keyboard: { text: string; url: string }[][] }
+	| undefined;
+
+async function sendJobToTelegramChat(args: {
+	chatId: string;
+	text: string;
+	replyMarkup: JobPostReplyMarkup;
+	logoUrl: string | null;
+	topicId?: number | null;
+}): Promise<{ message_id: number }> {
+	const { chatId, text, replyMarkup, logoUrl, topicId } = args;
+	const threadOpts = topicId ? { message_thread_id: topicId } : {};
+
+	if (logoUrl) {
+		return telegramClient.sendPhoto(chatId, logoUrl, {
+			caption: text,
+			parse_mode: "HTML",
+			...(replyMarkup ? { reply_markup: replyMarkup } : {}),
+			...threadOpts,
+		});
+	}
+
+	return telegramClient.sendMessage(chatId, text, {
+		parse_mode: "HTML",
+		link_preview_options: { is_disabled: false },
+		...(replyMarkup ? { reply_markup: replyMarkup } : {}),
+		...threadOpts,
+	});
+}
+
+async function recordTelegramPost(args: {
+	jobId: string;
+	chatId: string | number;
+	messageId: number;
+	topicId: number | null;
+}): Promise<void> {
+	const numericChatId = String(args.chatId);
+	await telegramPostRepo.create({
+		jobId: args.jobId,
+		chatId: numericChatId,
+		messageId: args.messageId,
+		topicId: args.topicId,
+		messageUrl: buildMessageUrl(args.chatId, args.messageId),
+		clickCount: 0,
+	});
+}
 
 /**
  * Build the public Telegram message body for a job.
@@ -82,31 +131,22 @@ export async function publishJobToTelegram(jobId: string): Promise<{
 
   let message: { message_id: number };
   try {
-    message = job.logoUrl
-      ? await telegramClient.sendPhoto(chatId, job.logoUrl, {
-          caption: text,
-          parse_mode: "HTML",
-          ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
-          ...(topicId ? { message_thread_id: topicId } : {}),
-        })
-      : await telegramClient.sendMessage(chatId, text, {
-          parse_mode: "HTML",
-          link_preview_options: { is_disabled: false },
-          ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
-          ...(topicId ? { message_thread_id: topicId } : {}),
-        });
+    message = await sendJobToTelegramChat({
+      chatId,
+      text,
+      replyMarkup,
+      logoUrl: job.logoUrl,
+      topicId,
+    });
   } catch (err) {
     throw new Error(describePublishError(err, chatId, topicId));
   }
 
-  const numericChatId = String(chatId);
-  await telegramPostRepo.create({
+  await recordTelegramPost({
     jobId: job.id,
-    chatId: numericChatId,
+    chatId,
     messageId: message.message_id,
     topicId: topicId ?? null,
-    messageUrl: buildMessageUrl(chatId, message.message_id),
-    clickCount: 0,
   });
 
   await jobRepo.update(job.id, {
@@ -116,7 +156,60 @@ export async function publishJobToTelegram(jobId: string): Promise<{
       job.expiresAt ?? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
   });
 
-  return { chatId: numericChatId, messageId: message.message_id, topicId };
+  await publishToBroadcastChannel({
+    job,
+    text,
+    replyMarkup,
+    groupChatId: String(chatId),
+  });
+
+  return {
+    chatId: String(chatId),
+    messageId: message.message_id,
+    topicId,
+  };
+}
+
+async function publishToBroadcastChannel(args: {
+  job: Job;
+  text: string;
+  replyMarkup: JobPostReplyMarkup;
+  groupChatId: string;
+}): Promise<void> {
+  const broadcast = await settingsRepo.getTelegramBroadcast();
+  if (!broadcast.enabled || !broadcast.channelId) return;
+  if (broadcast.channelId === args.groupChatId) return;
+
+  try {
+    const channelMessage = await sendJobToTelegramChat({
+      chatId: broadcast.channelId,
+      text: args.text,
+      replyMarkup: args.replyMarkup,
+      logoUrl: args.job.logoUrl,
+    });
+
+    await recordTelegramPost({
+      jobId: args.job.id,
+      chatId: broadcast.channelId,
+      messageId: channelMessage.message_id,
+      topicId: null,
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    const adminLink = `${env.NEXT_PUBLIC_APP_URL}/admin/jobs/${args.job.id}`;
+    await notifyAdmins(
+      [
+        "⚠️ Job posted to the forum group but broadcast channel failed",
+        `Job: ${escapeHtml(args.job.title)}`,
+        `Channel: ${escapeHtml(broadcast.channelId)}`,
+        adminLink,
+        `Error: ${escapeHtml(message)}`,
+        "",
+        "Check Admin → Settings: bot must be an admin of the channel with post permission.",
+      ].join("\n"),
+    );
+    console.warn("[telegram] broadcast channel publish failed:", message);
+  }
 }
 
 export async function notifyAdmins(text: string): Promise<void> {

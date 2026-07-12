@@ -3,7 +3,7 @@
 This app uses Telegram in three ways:
 
 1. **Bot (Telegraf)** — employers submit jobs via `/postjob`, check status with `/myjobs`, and get onboarding via `/start`.
-2. **Channel publishing** — after admin approval, jobs are posted to a **forum supergroup** (one topic per category).
+2. **Channel publishing** — after admin approval, jobs are posted to a **forum supergroup** (one topic per category). Optionally, the same job is also posted to a **broadcast channel** (configured in Admin → Settings).
 3. **Membership gate** — users must join a **required channel** before they can post from the bot.
 
 The web app and the bot share the same database (`users`, `jobs`, `payments`, `telegram_posts`).
@@ -105,6 +105,20 @@ If `telegramTopicId` is empty, posts go to the **General** topic / main chat.
 
 - Can be your personal user id, a private group, or a dedicated admin channel.
 - Get your user id from [@userinfobot](https://t.me/userinfobot) or from bot updates.
+
+### 6. Broadcast channel (optional, dual publish)
+
+In addition to the forum supergroup, you can mirror every approved job to a **public or private channel**. Channels have no forum topics — all jobs go to the main channel feed.
+
+1. Create a Telegram **channel** (or use an existing one).
+2. Add your bot as an **administrator** with **Post messages** permission.
+3. In the channel, send any message (or forward one) so the bot can read the chat, then run **`/chatid`** from an admin account (same bot commands work when the bot is channel admin).
+4. Copy the channel id (`-100…` or use `@channel_username`).
+5. In the web app: **Admin → Settings → Telegram broadcast channel** — paste the id and enable **Also post approved jobs to the broadcast channel**.
+
+Settings are stored in the database (`app_settings`); no redeploy is required to change the channel.
+
+If the broadcast fails (wrong id, bot not admin), the job still publishes to the forum group and admins receive a warning notification.
 
 ---
 
@@ -365,6 +379,7 @@ Fix: complete payment → admin verify → **Approve & publish**, or use **Mark 
 | Error symptom | Fix |
 |---------------|-----|
 | `chat not found` | Wrong `TELEGRAM_CHANNEL_ID`; bot not in group |
+| Broadcast channel failed (admin warning) | Wrong channel id in **Admin → Settings**; bot not channel admin; or broadcast disabled |
 | `not enough rights` | Make bot admin with **Post messages** |
 | `message thread not found` | Wrong **topic id** on category |
 | `401 Unauthorized` | Invalid `TELEGRAM_BOT_TOKEN` |
