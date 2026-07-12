@@ -640,6 +640,43 @@ export async function updateTelegramBroadcastAction(
 	return okState();
 }
 
+export async function testTelegramBroadcastAction(): Promise<AdminActionState> {
+	await requireAdmin();
+	const broadcast = await settingsRepo.getTelegramBroadcast();
+	if (!broadcast.channelId) {
+		return failState("Save a broadcast channel ID first.");
+	}
+
+	const text = [
+		"✅ <b>Broadcast channel test</b>",
+		"",
+		`This is a test message from ${escapeHtml(env.NEXT_PUBLIC_APP_NAME)}.`,
+		"If you can see this, the bot can post to this channel.",
+	].join("\n");
+
+	try {
+		const message = await telegramClient.sendMessage(broadcast.channelId, text, {
+			parse_mode: "HTML",
+			link_preview_options: { is_disabled: true },
+		});
+		return okState({ messageId: message.message_id });
+	} catch (err) {
+		const message = err instanceof Error ? err.message : String(err);
+		const lower = message.toLowerCase();
+		if (lower.includes("chat not found")) {
+			return failState(
+				`Chat not found for '${broadcast.channelId}'. Double-check the channel ID (should look like -100…) or @username.`,
+			);
+		}
+		if (lower.includes("not enough rights") || lower.includes("administrator")) {
+			return failState(
+				"The bot is not allowed to post here. Add it as a channel admin with 'Post messages' permission.",
+			);
+		}
+		return failState(`Telegram error: ${message}`);
+	}
+}
+
 /* ──────────────────────────────────────────────
  * Helpers
  * ────────────────────────────────────────────── */

@@ -6,7 +6,10 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { updateTelegramBroadcastAction } from "@/server/actions/admin";
+import {
+	testTelegramBroadcastAction,
+	updateTelegramBroadcastAction,
+} from "@/server/actions/admin";
 import type { TelegramBroadcastSettings } from "@/server/repositories/settings";
 
 interface TelegramBroadcastFormProps {
@@ -20,6 +23,7 @@ export function TelegramBroadcastForm({
 }: TelegramBroadcastFormProps) {
 	const router = useRouter();
 	const [pending, startTransition] = useTransition();
+	const [testing, startTest] = useTransition();
 
 	const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -34,6 +38,17 @@ export function TelegramBroadcastForm({
 				router.refresh();
 			} else {
 				toast.error(result.error ?? "Failed to save settings");
+			}
+		});
+	};
+
+	const onTest = () => {
+		startTest(async () => {
+			const result = await testTelegramBroadcastAction();
+			if (result.ok) {
+				toast.success("Test message sent — check your channel");
+			} else {
+				toast.error(result.error ?? "Test failed");
 			}
 		});
 	};
@@ -79,11 +94,28 @@ export function TelegramBroadcastForm({
 				</div>
 			</div>
 
-			<div className="flex justify-end">
+			<div className="flex flex-wrap justify-end gap-2">
+				<Button
+					type="button"
+					variant="outline"
+					onClick={onTest}
+					disabled={testing || !initial.channelId}
+					title={
+						initial.channelId
+							? "Send a test message to the saved channel"
+							: "Save a channel ID first"
+					}
+				>
+					{testing ? "Sending…" : "Send test message"}
+				</Button>
 				<Button type="submit" disabled={pending}>
 					{pending ? "Saving…" : "Save settings"}
 				</Button>
 			</div>
+			<p className="text-xs text-muted-foreground">
+				The test uses the <strong>saved</strong> channel ID. If you just changed
+				it, click <strong>Save settings</strong> first, then test.
+			</p>
 		</form>
 	);
 }
