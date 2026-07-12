@@ -8,6 +8,13 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,6 +35,7 @@ import {
 import {
 	Briefcase,
 	CalendarClock,
+	Eye,
 	Pin,
 	Rocket,
 	Send,
@@ -88,15 +96,40 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 			className="min-w-0 overflow-hidden border-primary/15 shadow-sm"
 		>
 			<CardHeader className="border-b bg-muted/30 p-3 sm:p-4 md:p-6">
-				<CardTitle className="text-base sm:text-lg">Moderation</CardTitle>
-				<CardDescription className="text-xs sm:text-sm">
-					Verify payment, approve the job, or use secondary actions.
-				</CardDescription>
+				<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+					<div className="min-w-0">
+						<CardTitle className="text-base sm:text-lg">Moderation</CardTitle>
+						<CardDescription className="text-xs sm:text-sm">
+							Verify payment, approve the job, or use secondary actions.
+						</CardDescription>
+					</div>
+					<Dialog>
+						<DialogTrigger asChild>
+							<Button
+								variant="outline"
+								className="h-10 w-full shrink-0 sm:w-auto"
+								data-tour="job-review-view-details"
+							>
+								<Eye className="size-4" />
+								View job details
+							</Button>
+						</DialogTrigger>
+						<DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
+							<DialogHeader>
+								<DialogTitle className="flex items-center gap-2">
+									<Briefcase className="size-4 text-primary" />
+									Job details
+								</DialogTitle>
+							</DialogHeader>
+							<div className="min-w-0">{props.jobDetails}</div>
+						</DialogContent>
+					</Dialog>
+				</div>
 			</CardHeader>
 
 			<CardContent className="p-3 sm:p-4 md:p-6">
 				<Tabs defaultValue="verify" className="min-w-0">
-					<TabsList className="mb-4 grid h-auto w-full grid-cols-1 gap-1 p-1 sm:grid-cols-3">
+					<TabsList className="mb-4 grid h-auto w-full grid-cols-1 gap-1 p-1 sm:grid-cols-2">
 						<TabsTrigger
 							value="verify"
 							data-tour="job-review-tab-verify"
@@ -104,14 +137,6 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 						>
 							<ShieldCheck className="size-4 shrink-0" />
 							<span className="truncate">Verification</span>
-						</TabsTrigger>
-						<TabsTrigger
-							value="details"
-							data-tour="job-review-tab-details"
-							className="h-10 gap-2 px-2 text-xs sm:px-3 sm:text-sm"
-						>
-							<Briefcase className="size-4 shrink-0" />
-							Job details
 						</TabsTrigger>
 						<TabsTrigger
 							value="actions"
@@ -132,10 +157,6 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 							jobStatus={props.jobStatus}
 							payment={props.payment}
 						/>
-					</TabsContent>
-
-					<TabsContent value="details" className="mt-0 min-w-0">
-						{props.jobDetails}
 					</TabsContent>
 
 					<TabsContent value="actions" className="mt-0 min-w-0 space-y-4 sm:space-y-6">
