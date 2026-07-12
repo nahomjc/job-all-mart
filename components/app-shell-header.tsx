@@ -49,7 +49,10 @@ export function AppShellHeader({
 					className="max-w-xl"
 				/>
 
-				<div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+				<div
+					data-tour="header-actions"
+					className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2"
+				>
 					<Button
 						variant="ghost"
 						size="icon"

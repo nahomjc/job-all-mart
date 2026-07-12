@@ -14,6 +14,7 @@ import {
 	Rocket,
 	Search,
 	ShieldCheck,
+	XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { VerifyPaymentReference } from "@/components/admin/verify-payment-reference";
@@ -21,10 +22,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { statusLabel } from "@/lib/format";
 import { paymentMethodLabel } from "@/lib/payment-methods";
 import { cn } from "@/lib/utils";
-import { approveJobAction, verifyPaymentAction } from "@/server/actions/admin";
+import {
+	approveJobAction,
+	rejectJobAction,
+	verifyPaymentAction,
+} from "@/server/actions/admin";
 
 export type AdminReviewPayment = {
 	id: string;
@@ -102,6 +108,7 @@ export function AdminJobReviewWizard({
 }: AdminJobReviewWizardProps) {
 	const router = useRouter();
 	const [pending, startTransition] = useTransition();
+	const [rejectPending, startRejectTransition] = useTransition();
 	const [stepIndex, setStepIndex] = useState(0);
 	const [referenceChecked, setReferenceChecked] = useState(false);
 	const [checks, setChecks] = useState<Record<ReviewCheckId, boolean>>({
@@ -109,6 +116,7 @@ export function AdminJobReviewWizard({
 		amount: false,
 		details: false,
 	});
+	const [rejectReason, setRejectReason] = useState("");
 
 	const isPosted = jobStatus === "posted";
 	const paymentVerified = payment?.status === "verified";
@@ -195,6 +203,23 @@ export function AdminJobReviewWizard({
 		});
 	};
 
+	const runReject = () => {
+		const formData = new FormData();
+		formData.set("jobId", jobId);
+		formData.set("reason", rejectReason.trim());
+		startRejectTransition(async () => {
+			const r = await rejectJobAction({ ok: false }, formData);
+			if (r.ok) {
+				toast.success("Job rejected");
+				router.refresh();
+			} else {
+				toast.error(r.error ?? "Rejection failed");
+			}
+		});
+	};
+
+	const actionBusy = pending || rejectPending;
+
 	if (isPosted) {
 		return (
 			<div className="rounded-xl border border-sky-500/30 bg-sky-500/5 p-4 sm:p-6">
@@ -250,7 +275,11 @@ export function AdminJobReviewWizard({
 					</p>
 				)}
 
-				<nav aria-label="Review progress" className="flex flex-col gap-3">
+				<nav
+					aria-label="Review progress"
+					data-tour="job-review-wizard"
+					className="flex flex-col gap-3"
+				>
 					<ol className="flex flex-wrap items-center gap-2">
 						{steps.map((step, i) => {
 							const done = i < stepIndex || (i === stepIndex && stepComplete(i));
@@ -511,19 +540,47 @@ export function AdminJobReviewWizard({
 								</div>
 							</div>
 						</div>
-						<Button
-							variant="success"
-							className="h-11 w-full sm:min-w-[14rem] sm:w-auto"
-							onClick={runApprove}
-							disabled={
-								pending ||
-								(hasPayment && !paymentVerified) ||
-								(hasPayment && !reviewComplete)
-							}
-						>
-							<CheckCircle2 className="size-4" />
-							{pending ? "Publishing…" : "Approve & publish"}
-						</Button>
+						<div className="space-y-2">
+							<Label
+								htmlFor={`wizard-reject-reason-${jobId}`}
+								className="text-xs text-muted-foreground"
+							>
+								Rejection reason <span className="text-destructive">*</span>
+							</Label>
+							<Textarea
+								id={`wizard-reject-reason-${jobId}`}
+								value={rejectReason}
+								onChange={(e) => setRejectReason(e.target.value)}
+								rows={2}
+								placeholder="e.g. Payment screenshot unclear, job content violates policy…"
+								disabled={actionBusy}
+								className="min-w-0 resize-none"
+							/>
+						</div>
+						<div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+							<Button
+								variant="success"
+								className="h-11 w-full sm:min-w-[14rem] sm:flex-1"
+								onClick={runApprove}
+								disabled={
+									actionBusy ||
+									(hasPayment && !paymentVerified) ||
+									(hasPayment && !reviewComplete)
+								}
+							>
+								<CheckCircle2 className="size-4" />
+								{pending ? "Publishing…" : "Approve & publish"}
+							</Button>
+							<Button
+								variant="destructive"
+								className="h-11 w-full sm:min-w-[10rem] sm:flex-1"
+								onClick={runReject}
+								disabled={actionBusy}
+							>
+								<XCircle className="size-4" />
+								{rejectPending ? "Rejecting…" : "Reject job"}
+							</Button>
+						</div>
 						{hasPayment && !paymentVerified && (
 							<p className="text-xs text-amber-700 dark:text-amber-300">
 								Complete payment verification steps before approving.
@@ -540,7 +597,7 @@ export function AdminJobReviewWizard({
 						variant="outline"
 						className="h-11 w-full sm:w-auto"
 						onClick={goBack}
-						disabled={stepIndex === 0 || pending}
+						disabled={stepIndex === 0 || actionBusy}
 					>
 						<ArrowLeft className="size-4" />
 						Back
@@ -550,7 +607,7 @@ export function AdminJobReviewWizard({
 							type="button"
 							className="h-11 w-full sm:w-auto"
 							onClick={goNext}
-							disabled={!canProceed || pending}
+							disabled={!canProceed || actionBusy}
 						>
 							Continue
 							<ArrowRight className="size-4" />

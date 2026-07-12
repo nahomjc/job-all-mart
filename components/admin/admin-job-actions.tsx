@@ -83,7 +83,10 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 	};
 
 	return (
-		<Card className="min-w-0 overflow-hidden border-primary/15 shadow-sm">
+		<Card
+			data-tour="job-review-moderation"
+			className="min-w-0 overflow-hidden border-primary/15 shadow-sm"
+		>
 			<CardHeader className="border-b bg-muted/30 p-3 sm:p-4 md:p-6">
 				<CardTitle className="text-base sm:text-lg">Moderation</CardTitle>
 				<CardDescription className="text-xs sm:text-sm">
@@ -95,31 +98,30 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 				<Tabs defaultValue="verify" className="min-w-0">
 					<TabsList className="mb-4 grid h-auto w-full grid-cols-1 gap-1 p-1 sm:grid-cols-3">
 						<TabsTrigger
-							value="details"
-							className="h-10 gap-2 px-2 text-xs sm:px-3 sm:text-sm"
-						>
-							<Briefcase className="size-4 shrink-0" />
-							Job details
-						</TabsTrigger>
-						<TabsTrigger
 							value="verify"
+							data-tour="job-review-tab-verify"
 							className="h-10 gap-2 px-2 text-xs sm:px-3 sm:text-sm"
 						>
 							<ShieldCheck className="size-4 shrink-0" />
 							<span className="truncate">Verification</span>
 						</TabsTrigger>
 						<TabsTrigger
+							value="details"
+							data-tour="job-review-tab-details"
+							className="h-10 gap-2 px-2 text-xs sm:px-3 sm:text-sm"
+						>
+							<Briefcase className="size-4 shrink-0" />
+							Job details
+						</TabsTrigger>
+						<TabsTrigger
 							value="actions"
+							data-tour="job-review-tab-actions"
 							className="h-10 gap-2 px-2 text-xs sm:px-3 sm:text-sm"
 						>
 							<Settings2 className="size-4 shrink-0" />
 							<span className="truncate">More actions</span>
 						</TabsTrigger>
 					</TabsList>
-
-					<TabsContent value="details" className="mt-0 min-w-0">
-						{props.jobDetails}
-					</TabsContent>
 
 					<TabsContent value="verify" className="mt-0 min-w-0">
 						<AdminJobReviewWizard
@@ -130,6 +132,10 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 							jobStatus={props.jobStatus}
 							payment={props.payment}
 						/>
+					</TabsContent>
+
+					<TabsContent value="details" className="mt-0 min-w-0">
+						{props.jobDetails}
 					</TabsContent>
 
 					<TabsContent value="actions" className="mt-0 min-w-0 space-y-4 sm:space-y-6">

@@ -1,5 +1,7 @@
 import { AdminJobActions } from "@/components/admin/admin-job-actions";
 import { AdminJobDetailsPanel } from "@/components/admin/admin-job-details-panel";
+import { AdminJobHeaderActions } from "@/components/admin/admin-job-header-actions";
+import { AdminJobReviewTourBar } from "@/components/onboarding/admin-job-review-tour-bar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -86,20 +88,31 @@ export default async function AdminJobReviewPage(props: {
 						</p>
 					</div>
 				</div>
-				<Button
-					asChild
-					variant="outline"
-					className="h-11 w-full shrink-0 sm:w-auto sm:self-end"
-				>
-					<Link href="/admin/jobs">
-						<ArrowLeft className="size-4" />
-						Back to queue
-					</Link>
-				</Button>
+				<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
+					<AdminJobHeaderActions
+						jobId={job.id}
+						jobTitle={job.title}
+						jobStatus={job.status}
+						hasPayment={Boolean(payment)}
+						paymentVerified={payment?.status === "verified"}
+					/>
+					<Button
+						asChild
+						variant="outline"
+						className="h-11 w-full shrink-0 sm:w-auto"
+					>
+						<Link href="/admin/jobs">
+							<ArrowLeft className="size-4" />
+							Back to queue
+						</Link>
+					</Button>
+					<AdminJobReviewTourBar />
+				</div>
 			</header>
 
 			<section
 				aria-label="Status overview"
+				data-tour="job-review-status"
 				className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-4"
 			>
 				<SnapshotTile
@@ -174,7 +187,8 @@ export default async function AdminJobReviewPage(props: {
 				</div>
 
 				<aside className="min-w-0 space-y-3 sm:space-y-4 xl:sticky xl:top-20 xl:self-start">
-					<SidebarCard title="Employer" icon={User}>
+					<div data-tour="job-review-employer">
+						<SidebarCard title="Employer" icon={User}>
 						{employer ? (
 							<div className="space-y-3">
 								<p className="break-words font-semibold">
@@ -205,8 +219,10 @@ export default async function AdminJobReviewPage(props: {
 							</p>
 						)}
 					</SidebarCard>
+					</div>
 
-					<SidebarCard title="Payment proof" icon={Receipt}>
+					<div data-tour="job-review-payment">
+						<SidebarCard title="Payment proof" icon={Receipt}>
 						{payment ? (
 							<div className="space-y-4">
 								<dl className="space-y-3 text-sm">
@@ -291,6 +307,7 @@ export default async function AdminJobReviewPage(props: {
 							</p>
 						)}
 					</SidebarCard>
+					</div>
 
 					{tgPosts.length > 0 && (
 						<SidebarCard title="Telegram delivery" icon={Send}>
@@ -318,7 +335,10 @@ export default async function AdminJobReviewPage(props: {
 						</SidebarCard>
 					)}
 
-					<Card className="border-dashed bg-muted/20">
+					<Card
+						data-tour="job-review-telegram-hint"
+						className="border-dashed bg-muted/20"
+					>
 						<CardContent className="flex items-start gap-3 p-3 text-sm sm:p-4">
 							<Shield className="mt-0.5 size-4 shrink-0 text-primary" />
 							<p className="min-w-0 break-words text-muted-foreground">

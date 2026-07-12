@@ -4,6 +4,8 @@ import { AlertCircle, ExternalLink, LogOut, Shield } from "lucide-react";
 import { AppSidebar } from "@/components/app-sidebar";
 import type { SidebarNavSection } from "@/components/sidebar-nav-content";
 import { AppShellHeader } from "@/components/app-shell-header";
+import { AdminTour } from "@/components/onboarding/admin-tour";
+import { TourReplayButton } from "@/components/onboarding/tour-replay-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 import { Button } from "@/components/ui/button";
@@ -14,13 +16,14 @@ const sections: SidebarNavSection[] = [
 	{
 		title: "MENU",
 		items: [
-			{ href: "/admin", label: "Dashboard", icon: "gauge", exact: true },
+			{ href: "/admin", label: "Dashboard", icon: "gauge", exact: true, dataTour: "nav-dashboard" },
 			{
 				href: "/admin/jobs",
 				label: "Approval queue",
 				icon: "briefcase",
+				dataTour: "nav-queue",
 			},
-			{ href: "/admin/payments", label: "Payments", icon: "receipt" },
+			{ href: "/admin/payments", label: "Payments", icon: "receipt", dataTour: "nav-payments" },
 			{ href: "/admin/users", label: "Users", icon: "users" },
 			{ href: "/admin/categories", label: "Categories", icon: "folder-kanban" },
 		],
@@ -28,7 +31,7 @@ const sections: SidebarNavSection[] = [
 	{
 		title: "GENERAL",
 		items: [
-			{ href: "/admin/settings", label: "Settings", icon: "settings" },
+			{ href: "/admin/settings", label: "Settings", icon: "settings", dataTour: "nav-settings" },
 			{ href: "/admin/audit", label: "Audit logs", icon: "scroll-text" },
 			{ href: "/", label: "View site", icon: "circle-help" },
 		],
@@ -94,6 +97,7 @@ export default async function AdminLayout({
 
 	return (
 		<div className="min-h-svh shell-canvas">
+			<AdminTour />
 			<AppSidebar {...sidebarProps} />
 
 			<div className="flex min-h-svh min-w-0 flex-col md:pl-[260px]">
@@ -127,6 +131,7 @@ export default async function AdminLayout({
 									Review queue
 								</Link>
 							</Button>
+							<TourReplayButton tourKey="admin" />
 							<ThemeToggle />
 						</>
 					}

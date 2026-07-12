@@ -35,7 +35,10 @@ function ShellSearchForm({
 
 	if (!action) {
 		return (
-			<div className={cn("relative hidden min-w-0 flex-1 md:block", className)}>
+			<div
+				data-tour="search"
+				className={cn("relative hidden min-w-0 flex-1 md:block", className)}
+			>
 				<Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 				<Input
 					type="search"
@@ -51,6 +54,7 @@ function ShellSearchForm({
 		<form
 			action={action}
 			method="GET"
+			data-tour="search"
 			className={cn("relative hidden min-w-0 flex-1 md:block", className)}
 		>
 			<Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />

@@ -4,6 +4,8 @@ import { LogOut, Plus, Upload } from "lucide-react";
 import { AppSidebar } from "@/components/app-sidebar";
 import type { SidebarNavSection } from "@/components/sidebar-nav-content";
 import { AppShellHeader } from "@/components/app-shell-header";
+import { DashboardTour } from "@/components/onboarding/dashboard-tour";
+import { TourReplayButton } from "@/components/onboarding/tour-replay-button";
 import { logoutAction } from "@/server/actions/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
@@ -20,9 +22,20 @@ const sections: SidebarNavSection[] = [
 				label: "Dashboard",
 				icon: "layout-dashboard",
 				exact: true,
+				dataTour: "nav-dashboard",
 			},
-			{ href: "/dashboard/jobs", label: "My jobs", icon: "briefcase" },
-			{ href: "/dashboard/jobs/new", label: "Post a job", icon: "plus" },
+			{
+				href: "/dashboard/jobs",
+				label: "My jobs",
+				icon: "briefcase",
+				dataTour: "nav-jobs",
+			},
+			{
+				href: "/dashboard/jobs/new",
+				label: "Post a job",
+				icon: "plus",
+				dataTour: "nav-post-job",
+			},
 			{ href: "/dashboard/payments", label: "Payments", icon: "receipt" },
 			{ href: "/dashboard/analytics", label: "Analytics", icon: "trending-up" },
 		],
@@ -69,6 +82,7 @@ export default async function DashboardLayout({
 
 	return (
 		<div className="min-h-svh shell-canvas">
+			<DashboardTour />
 			<AppSidebar {...sidebarProps} />
 
 			<div className="flex min-h-svh min-w-0 flex-col md:pl-[260px]">
@@ -103,6 +117,7 @@ export default async function DashboardLayout({
 									<span className="sm:hidden">New</span>
 								</Link>
 							</Button>
+							<TourReplayButton tourKey="dashboard" />
 							<ThemeToggle />
 						</>
 					}

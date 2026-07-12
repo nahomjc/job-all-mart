@@ -42,6 +42,7 @@ export interface SidebarNavItem {
 	icon: SidebarIconName;
 	exact?: boolean;
 	badge?: string;
+	dataTour?: string;
 }
 
 export interface SidebarNavSection {
@@ -73,6 +74,7 @@ function NavLink({
 		<Link
 			href={item.href}
 			onClick={onNavigate}
+			data-tour={item.dataTour}
 			className={cn(
 				"group flex min-h-10 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
 				active
@@ -120,6 +122,7 @@ export function SidebarNavContent({
 				<Link
 					href={homeHref}
 					onClick={onNavigate}
+					data-tour="brand"
 					className="flex min-w-0 items-center gap-3"
 				>
 					<span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md shadow-primary/30">
