@@ -116,6 +116,23 @@ export function SidebarNavContent({
 }: SidebarNavContentProps) {
 	const pathname = usePathname();
 
+	const itemMatches = (item: SidebarNavItem) =>
+		item.exact
+			? pathname === item.href
+			: pathname === item.href ||
+				(item.href !== "/" && pathname.startsWith(`${item.href}/`));
+
+	// When multiple items match (e.g. "/dashboard/jobs" and
+	// "/dashboard/jobs/new"), only the most specific (longest href) wins.
+	const activeHref = sections
+		.flatMap((section) => section.items)
+		.filter(itemMatches)
+		.reduce<string | null>(
+			(best, item) =>
+				best === null || item.href.length > best.length ? item.href : best,
+			null,
+		);
+
 	return (
 		<div className="flex min-h-0 flex-1 flex-col">
 			<div className="shrink-0 px-5 pb-4 pt-6">
@@ -141,10 +158,7 @@ export function SidebarNavContent({
 						</p>
 						<div className="space-y-1">
 							{section.items.map((item) => {
-								const active = item.exact
-									? pathname === item.href
-									: pathname === item.href ||
-										(item.href !== "/" && pathname.startsWith(`${item.href}/`));
+								const active = item.href === activeHref;
 								return (
 									<NavLink
 										key={item.href}

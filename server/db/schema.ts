@@ -111,6 +111,12 @@ export const users = pgTable(
       .notNull()
       .default(false),
 
+    // Telegram account-linking (for web users connecting their Telegram)
+    telegramLinkCode: varchar("telegram_link_code", { length: 64 }),
+    telegramLinkExpiresAt: timestamp("telegram_link_expires_at", {
+      withTimezone: true,
+    }),
+
     // Profile
     displayName: varchar("display_name", { length: 128 }),
     avatarUrl: text("avatar_url"),

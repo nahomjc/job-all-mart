@@ -12,8 +12,12 @@ import { jobRepo } from "@/server/repositories/job";
 import { paymentRepo } from "@/server/repositories/payment";
 import { settingsRepo } from "@/server/repositories/settings";
 
+type InlineButton =
+	| { text: string; url: string }
+	| { text: string; callback_data: string };
+
 type JobPostReplyMarkup =
-	| { inline_keyboard: { text: string; url: string }[][] }
+	| { inline_keyboard: InlineButton[][] }
 	| undefined;
 
 async function sendJobToTelegramChat(args: {
@@ -155,7 +159,7 @@ export async function publishJobToTelegram(jobId: string): Promise<{
     employer,
     maxLength: job.logoUrl ? TELEGRAM_CAPTION_LIMIT : TELEGRAM_MESSAGE_LIMIT,
   });
-  const replyMarkup = buildJobPostReplyMarkup(job);
+  const replyMarkup = buildJobPostReplyMarkup(job, await getFooterLinkRows());
 
   let message: { message_id: number };
   try {
@@ -341,16 +345,44 @@ export async function notifyAdminsNewSubmission(jobId: string): Promise<void> {
   });
 }
 
-/** Inline keyboard for channel job posts when an apply URL is set. */
-export function buildJobPostReplyMarkup(job: Job):
-  | { inline_keyboard: { text: string; url: string }[][] }
-  | undefined {
-  const applyUrl = job.applyUrl?.trim();
-  if (!applyUrl || !canUseTelegramInlineUrl(applyUrl)) return undefined;
+/**
+ * Inline keyboard for channel job posts. Includes an "Apply now" button when
+ * an apply URL is set, followed by any configured footer buttons
+ * (TikTok/Facebook/etc.), each on its own row.
+ */
+export function buildJobPostReplyMarkup(
+  job: Job,
+  footerRows: InlineButton[][] = [],
+): JobPostReplyMarkup {
+  const rows: InlineButton[][] = [];
 
-  return {
-    inline_keyboard: [[{ text: "Apply now", url: applyUrl }]],
-  };
+  const applyUrl = job.applyUrl?.trim();
+  if (applyUrl && canUseTelegramInlineUrl(applyUrl)) {
+    rows.push([{ text: "Apply now", url: applyUrl }]);
+  }
+
+  rows.push(...footerRows);
+
+  return rows.length > 0 ? { inline_keyboard: rows } : undefined;
+}
+
+/**
+ * Reads the admin-configured footer buttons as inline-keyboard rows. Entries
+ * with a valid URL become link buttons; entries with only popup text become
+ * callback buttons (handled by the bot to show a popup alert).
+ */
+export async function getFooterLinkRows(): Promise<InlineButton[][]> {
+  const links = await settingsRepo.getFooterLinks();
+  const rows: InlineButton[][] = [];
+  links.forEach((link, i) => {
+    const url = link.url.trim();
+    if (url && canUseTelegramInlineUrl(url)) {
+      rows.push([{ text: link.label, url }]);
+    } else if (link.popup?.trim()) {
+      rows.push([{ text: link.label, callback_data: `fp:${i}` }]);
+    }
+  });
+  return rows;
 }
 
 function isImageUrl(url: string): boolean {

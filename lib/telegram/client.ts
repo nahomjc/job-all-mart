@@ -54,6 +54,35 @@ export async function isUserInRequiredChannel(
   return result.status === "member";
 }
 
+let _botUsername: string | null = null;
+
+/**
+ * Resolves the bot's @username from its token via getMe(), cached for the
+ * lifetime of the process. Falls back to NEXT_PUBLIC_TELEGRAM_BOT_USERNAME.
+ * Returns null when neither is available.
+ */
+export async function getBotUsername(): Promise<string | null> {
+  if (_botUsername) return _botUsername;
+  const fromEnv = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME;
+  if (fromEnv) {
+    _botUsername = fromEnv;
+    return _botUsername;
+  }
+  try {
+    const me = await tg().getMe();
+    if (me.username) {
+      _botUsername = me.username;
+      return _botUsername;
+    }
+  } catch (err) {
+    console.warn(
+      "[telegram] getMe failed while resolving bot username:",
+      err instanceof Error ? err.message : String(err),
+    );
+  }
+  return null;
+}
+
 export const telegramClient = {
   get raw() {
     return tg();

@@ -29,3 +29,27 @@ export const telegramBroadcastSettingsSchema = z
 export type TelegramBroadcastSettingsInput = z.infer<
 	typeof telegramBroadcastSettingsSchema
 >;
+
+const footerLinkUrlSchema = z
+	.string()
+	.trim()
+	.refine(
+		(v) => v.length === 0 || /^https?:\/\/.+/i.test(v),
+		"Enter a full URL starting with http:// or https://",
+	);
+
+export const telegramFooterLinksSchema = z.object({
+	links: z
+		.array(
+			z.object({
+				label: z.string().trim().max(64, "Label is too long"),
+				url: footerLinkUrlSchema,
+				popup: z.string().trim().max(200, "Popup text is too long").optional(),
+			}),
+		)
+		.max(8, "Too many buttons"),
+});
+
+export type TelegramFooterLinksInput = z.infer<
+	typeof telegramFooterLinksSchema
+>;

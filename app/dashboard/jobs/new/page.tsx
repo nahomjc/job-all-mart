@@ -9,7 +9,7 @@ export default async function NewJobPage() {
   await requireUser();
   const categories = await categoryRepo.list();
   return (
-    <div className="mx-auto max-w-3xl space-y-4">
+    <div className="mx-auto max-w-5xl space-y-4">
       <div>
         <h1 className="text-2xl font-bold">Post a job</h1>
         <p className="text-sm text-muted-foreground">
@@ -18,7 +18,7 @@ export default async function NewJobPage() {
         </p>
       </div>
       <Card>
-        <CardContent className="p-6">
+        <CardContent className="p-6 sm:p-8">
           <JobForm
             categories={categories.map((c) => ({ id: c.id, name: c.name }))}
           />

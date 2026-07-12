@@ -3,6 +3,7 @@ import type { Telegraf } from "telegraf";
 import { env } from "@/lib/env";
 import { userRepo } from "@/server/repositories/user";
 import { jobRepo } from "@/server/repositories/job";
+import { settingsRepo } from "@/server/repositories/settings";
 import {
   clearDraft,
   handleCategoryPick,
@@ -45,6 +46,42 @@ export function registerHandlers(bot: Telegraf): void {
     if (!from) return;
 
     const startPayload = (ctx.payload ?? ctx.startPayload ?? "").trim();
+
+    // Account linking: attach this Telegram to an existing website account.
+    // Handled before the upsert below so we don't create a separate row.
+    if (startPayload.startsWith("link_")) {
+      const code = startPayload.slice("link_".length);
+      const target = code ? await userRepo.byTelegramLinkCode(code) : null;
+      if (
+        !target ||
+        !target.telegramLinkExpiresAt ||
+        target.telegramLinkExpiresAt.getTime() < Date.now()
+      ) {
+        await ctx.reply(
+          "This connection link is invalid or has expired. Open Settings on the website and tap Connect Telegram again.",
+        );
+        return;
+      }
+
+      const linked = await userRepo.attachTelegram(target.id, {
+        telegramId: from.id,
+        username: from.username,
+        firstName: from.first_name,
+        lastName: from.last_name,
+      });
+      if (!linked) {
+        await ctx.reply(
+          "This Telegram account is already connected to a different account. Please use another Telegram account or contact support.",
+        );
+        return;
+      }
+
+      await ctx.reply(
+        `✅ Your Telegram is now connected to ${env.NEXT_PUBLIC_APP_NAME}!\n\nYou'll receive submission and approval updates here, and you can post jobs straight from this chat.`,
+        mainMenuKeyboard(),
+      );
+      return;
+    }
 
     await userRepo.upsertFromTelegram({
       telegramId: from.id,
@@ -169,6 +206,16 @@ Full details: ${env.NEXT_PUBLIC_APP_URL}/pricing`,
     if (data.startsWith("pickcat:")) {
       const categoryId = data.slice("pickcat:".length);
       await handleCategoryPick(ctx, categoryId);
+      return;
+    }
+    // Footer button popup (e.g. "MAK Adverts services") on posted jobs.
+    if (data.startsWith("fp:")) {
+      const index = Number(data.slice("fp:".length));
+      const links = await settingsRepo.getFooterLinks();
+      const popup = Number.isFinite(index) ? links[index]?.popup : undefined;
+      await ctx.answerCbQuery(popup?.slice(0, 200) ?? "", {
+        show_alert: true,
+      });
       return;
     }
   });

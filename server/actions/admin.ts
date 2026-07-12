@@ -13,7 +13,10 @@ import { verifyPaymentReferenceSchema } from "@/lib/validations/payment";
 import { telegramClient } from "@/lib/telegram/client";
 import { notifyAdmins, publishJobToTelegram } from "@/lib/telegram/publisher";
 import { categoryInputSchema } from "@/lib/validators/category";
-import { telegramBroadcastSettingsSchema } from "@/lib/validators/settings";
+import {
+	telegramBroadcastSettingsSchema,
+	telegramFooterLinksSchema,
+} from "@/lib/validators/settings";
 import { auditLogRepo } from "@/server/repositories/auditLog";
 import { categoryRepo } from "@/server/repositories/category";
 import { jobRepo } from "@/server/repositories/job";
@@ -675,6 +678,31 @@ export async function testTelegramBroadcastAction(): Promise<AdminActionState> {
 		}
 		return failState(`Telegram error: ${message}`);
 	}
+}
+
+export async function updateTelegramFooterLinksAction(
+	links: { label: string; url: string; popup?: string }[],
+): Promise<AdminActionState> {
+	const admin = await requireAdmin();
+	const parsed = telegramFooterLinksSchema.safeParse({ links });
+	if (!parsed.success) {
+		return failState(parsed.error.issues[0]?.message ?? "Invalid buttons");
+	}
+
+	await settingsRepo.setFooterLinks(parsed.data.links);
+
+	await auditLogRepo.log({
+		actorId: admin.id,
+		action: "settings.update",
+		targetType: "settings",
+		targetId: null,
+		metadata: { telegramFooterLinks: parsed.data.links.length },
+		ip: null,
+		userAgent: null,
+	});
+
+	revalidatePath("/admin/settings");
+	return okState();
 }
 
 /* ──────────────────────────────────────────────

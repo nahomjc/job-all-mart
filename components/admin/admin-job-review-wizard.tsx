@@ -20,6 +20,14 @@ import { toast } from "sonner";
 import { VerifyPaymentReference } from "@/components/admin/verify-payment-reference";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
@@ -117,6 +125,7 @@ export function AdminJobReviewWizard({
 		details: false,
 	});
 	const [rejectReason, setRejectReason] = useState("");
+	const [rejectOpen, setRejectOpen] = useState(false);
 
 	const isPosted = jobStatus === "posted";
 	const paymentVerified = payment?.status === "verified";
@@ -211,6 +220,8 @@ export function AdminJobReviewWizard({
 			const r = await rejectJobAction({ ok: false }, formData);
 			if (r.ok) {
 				toast.success("Job rejected");
+				setRejectOpen(false);
+				setRejectReason("");
 				router.refresh();
 			} else {
 				toast.error(r.error ?? "Rejection failed");
@@ -541,45 +552,30 @@ export function AdminJobReviewWizard({
 							</div>
 						</div>
 						<div className="space-y-2">
-							<Label
-								htmlFor={`wizard-reject-reason-${jobId}`}
-								className="text-xs text-muted-foreground"
-							>
-								Rejection reason <span className="text-destructive">*</span>
-							</Label>
-							<Textarea
-								id={`wizard-reject-reason-${jobId}`}
-								value={rejectReason}
-								onChange={(e) => setRejectReason(e.target.value)}
-								rows={2}
-								placeholder="e.g. Payment screenshot unclear, job content violates policy…"
-								disabled={actionBusy}
-								className="min-w-0 resize-none"
-							/>
-						</div>
-						<div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-							<Button
-								variant="success"
-								className="h-11 w-full sm:min-w-[14rem] sm:flex-1"
-								onClick={runApprove}
-								disabled={
-									actionBusy ||
-									(hasPayment && !paymentVerified) ||
-									(hasPayment && !reviewComplete)
-								}
-							>
-								<CheckCircle2 className="size-4" />
-								{pending ? "Publishing…" : "Approve & publish"}
-							</Button>
-							<Button
-								variant="destructive"
-								className="h-11 w-full sm:min-w-[10rem] sm:flex-1"
-								onClick={runReject}
-								disabled={actionBusy}
-							>
-								<XCircle className="size-4" />
-								{rejectPending ? "Rejecting…" : "Reject job"}
-							</Button>
+							<div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+								<Button
+									variant="success"
+									className="h-11 w-full sm:min-w-[14rem] sm:flex-1"
+									onClick={runApprove}
+									disabled={
+										actionBusy ||
+										(hasPayment && !paymentVerified) ||
+										(hasPayment && !reviewComplete)
+									}
+								>
+									<CheckCircle2 className="size-4" />
+									{pending ? "Publishing…" : "Approve & publish"}
+								</Button>
+								<Button
+									variant="destructive"
+									className="h-11 w-full sm:min-w-[10rem] sm:flex-1"
+									onClick={() => setRejectOpen(true)}
+									disabled={actionBusy}
+								>
+									<XCircle className="size-4" />
+									Reject job
+								</Button>
+							</div>
 						</div>
 						{hasPayment && !paymentVerified && (
 							<p className="text-xs text-amber-700 dark:text-amber-300">
@@ -615,6 +611,58 @@ export function AdminJobReviewWizard({
 					) : null}
 				</div>
 			</div>
+
+			<Dialog
+				open={rejectOpen}
+				onOpenChange={(o) => !rejectPending && setRejectOpen(o)}
+			>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Reject job</DialogTitle>
+						<DialogDescription>
+							Add a reason for rejecting{" "}
+							<span className="font-medium text-foreground">{jobTitle}</span>.
+							The employer will be notified.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="space-y-2">
+						<Label
+							htmlFor={`wizard-reject-reason-${jobId}`}
+							className="text-xs text-muted-foreground"
+						>
+							Rejection reason <span className="text-destructive">*</span>
+						</Label>
+						<Textarea
+							id={`wizard-reject-reason-${jobId}`}
+							value={rejectReason}
+							onChange={(e) => setRejectReason(e.target.value)}
+							rows={4}
+							placeholder="e.g. Payment screenshot unclear, job content violates policy…"
+							disabled={rejectPending}
+							className="min-w-0 resize-none"
+						/>
+					</div>
+					<DialogFooter>
+						<Button
+							variant="outline"
+							className="h-11"
+							onClick={() => setRejectOpen(false)}
+							disabled={rejectPending}
+						>
+							Cancel
+						</Button>
+						<Button
+							variant="destructive"
+							className="h-11"
+							onClick={runReject}
+							disabled={rejectPending}
+						>
+							<XCircle className="size-4" />
+							{rejectPending ? "Rejecting…" : "Send & reject"}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

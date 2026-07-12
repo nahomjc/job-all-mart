@@ -117,6 +117,69 @@ export const userRepo = {
 			.where(eq(users.id, userId));
 	},
 
+	async updateDisplayName(userId: string, displayName: string): Promise<void> {
+		await db
+			.update(users)
+			.set({ displayName, updatedAt: new Date() })
+			.where(eq(users.id, userId));
+	},
+
+	async setTelegramLinkCode(
+		userId: string,
+		code: string,
+		expiresAt: Date,
+	): Promise<void> {
+		await db
+			.update(users)
+			.set({
+				telegramLinkCode: code,
+				telegramLinkExpiresAt: expiresAt,
+				updatedAt: new Date(),
+			})
+			.where(eq(users.id, userId));
+	},
+
+	byTelegramLinkCode(code: string): Promise<User | null> {
+		return db
+			.select()
+			.from(users)
+			.where(eq(users.telegramLinkCode, code))
+			.limit(1)
+			.then((r) => r[0] ?? null);
+	},
+
+	/**
+	 * Attaches a Telegram identity to an existing (web) user account and clears
+	 * the pending link code. Returns false when the Telegram id is already tied
+	 * to a different account.
+	 */
+	async attachTelegram(
+		userId: string,
+		tg: {
+			telegramId: number;
+			username?: string | null;
+			firstName?: string | null;
+			lastName?: string | null;
+		},
+	): Promise<boolean> {
+		const existing = await userRepo.byTelegramId(tg.telegramId);
+		if (existing && existing.id !== userId) return false;
+
+		await db
+			.update(users)
+			.set({
+				telegramId: tg.telegramId,
+				telegramUsername: tg.username ?? null,
+				telegramFirstName: tg.firstName ?? null,
+				telegramLastName: tg.lastName ?? null,
+				telegramLinkCode: null,
+				telegramLinkExpiresAt: null,
+				updatedAt: new Date(),
+			})
+			.where(eq(users.id, userId));
+		return true;
+	},
+
 	/** Allows a Telegram-only user to add web credentials later. */
 	async linkSupabase(
 		userId: string,
