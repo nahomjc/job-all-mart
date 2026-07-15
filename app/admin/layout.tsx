@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { AlertCircle, ExternalLink, LogOut, Shield } from "lucide-react";
+import { AlertCircle, LogOut, Shield } from "lucide-react";
 import { AppSidebar } from "@/components/app-sidebar";
 import type { SidebarNavSection } from "@/components/sidebar-nav-content";
 import { AppShellHeader } from "@/components/app-shell-header";
@@ -11,27 +11,44 @@ import { UserMenu } from "@/components/user-menu";
 import { Button } from "@/components/ui/button";
 import { logoutAction } from "@/server/actions/auth";
 import { getCurrentUser } from "@/lib/auth";
+import { env } from "@/lib/env";
 
 const sections: SidebarNavSection[] = [
 	{
-		title: "MENU",
+		title: "Overview",
 		items: [
-			{ href: "/admin", label: "Dashboard", icon: "gauge", exact: true, dataTour: "nav-dashboard" },
+			{
+				href: "/admin",
+				label: "Dashboard",
+				icon: "gauge",
+				exact: true,
+				dataTour: "nav-dashboard",
+			},
 			{
 				href: "/admin/jobs",
 				label: "Approval queue",
 				icon: "briefcase",
 				dataTour: "nav-queue",
 			},
-			{ href: "/admin/payments", label: "Payments", icon: "receipt", dataTour: "nav-payments" },
+			{
+				href: "/admin/payments",
+				label: "Payments",
+				icon: "receipt",
+				dataTour: "nav-payments",
+			},
 			{ href: "/admin/users", label: "Users", icon: "users" },
 			{ href: "/admin/categories", label: "Categories", icon: "folder-kanban" },
 		],
 	},
 	{
-		title: "GENERAL",
+		title: "System",
 		items: [
-			{ href: "/admin/settings", label: "Settings", icon: "settings", dataTour: "nav-settings" },
+			{
+				href: "/admin/settings",
+				label: "Settings",
+				icon: "settings",
+				dataTour: "nav-settings",
+			},
 			{ href: "/admin/audit", label: "Audit logs", icon: "scroll-text" },
 			{ href: "/", label: "View site", icon: "circle-help" },
 		],
@@ -48,11 +65,11 @@ export default async function AdminLayout({
 	if (user.role !== "admin" && user.role !== "owner") {
 		return (
 			<div className="flex min-h-screen items-center justify-center shell-canvas p-4 sm:p-6">
-				<div className="w-full max-w-md rounded-2xl border bg-card p-8 text-center shadow-lg">
+				<div className="w-full max-w-md rounded-2xl border bg-card p-8 text-center shadow-sm">
 					<span className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
 						<AlertCircle className="size-7" />
 					</span>
-					<h1 className="mt-4 text-xl font-bold sm:text-2xl">Access denied</h1>
+					<h1 className="mt-4 text-xl font-semibold sm:text-2xl">Access denied</h1>
 					<p className="mt-1 text-sm text-muted-foreground sm:text-base">
 						Your account does not have admin access.
 					</p>
@@ -65,10 +82,11 @@ export default async function AdminLayout({
 	}
 
 	const displayName = user.displayName ?? user.email ?? "Administrator";
+	const brandName = env.NEXT_PUBLIC_APP_NAME;
 
 	const roleBadge = (
-		<span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
-			<Shield className="size-3" />
+		<span className="inline-flex items-center gap-1.5 rounded-md border border-border/80 bg-muted/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+			<Shield className="size-3 text-primary" />
 			{user.role}
 		</span>
 	);
@@ -87,7 +105,7 @@ export default async function AdminLayout({
 	);
 
 	const sidebarProps = {
-		brand: "Admin",
+		brand: brandName,
 		homeHref: "/admin" as const,
 		badge: roleBadge,
 		sections,
@@ -115,21 +133,8 @@ export default async function AdminLayout({
 					}
 					actions={
 						<>
-							<Button
-								asChild
-								variant="outline"
-								size="sm"
-								className="hidden h-10 rounded-xl sm:inline-flex"
-							>
-								<Link href="/">
-									<ExternalLink className="size-4" />
-									View site
-								</Link>
-							</Button>
-							<Button asChild size="sm" className="h-10 rounded-xl">
-								<Link href="/admin/jobs?status=pending_review">
-									Review queue
-								</Link>
+							<Button asChild size="sm" className="h-9 rounded-lg px-3">
+								<Link href="/admin/jobs?status=pending_review">Review queue</Link>
 							</Button>
 							<TourReplayButton tourKey="admin" />
 							<ThemeToggle />
@@ -138,7 +143,7 @@ export default async function AdminLayout({
 				/>
 
 				<main className="flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8">
-					<div className="mx-auto w-full max-w-[1400px] min-w-0">{children}</div>
+					<div className="mx-auto w-full max-w-[1200px] min-w-0">{children}</div>
 				</main>
 			</div>
 		</div>

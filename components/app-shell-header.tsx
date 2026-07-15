@@ -1,10 +1,8 @@
 "use client";
 
-import { Bell, MessageSquare } from "lucide-react";
 import { MobileSidebar } from "@/components/mobile-sidebar";
 import { ShellSearch } from "@/components/shell-search";
 import type { SidebarNavSection } from "@/components/sidebar-nav-content";
-import { Button } from "@/components/ui/button";
 
 interface AppShellHeaderProps {
 	brand: string;
@@ -32,7 +30,7 @@ export function AppShellHeader({
 	userStrip,
 }: AppShellHeaderProps) {
 	return (
-		<header className="sticky top-0 z-30 shrink-0 border-b border-border/60 bg-card/90 px-4 py-3 backdrop-blur-md supports-[backdrop-filter]:bg-card/80 sm:px-6 lg:px-8">
+		<header className="sticky top-0 z-30 shrink-0 border-b border-border/50 bg-card/90 px-4 py-3 backdrop-blur-md supports-[backdrop-filter]:bg-card/80 sm:px-6 lg:px-8">
 			<div className="flex items-center gap-3 lg:gap-6">
 				<MobileSidebar
 					brand={brand}
@@ -51,30 +49,13 @@ export function AppShellHeader({
 
 				<div
 					data-tour="header-actions"
-					className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2"
+					className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2"
 				>
-					<Button
-						variant="ghost"
-						size="icon"
-						className="hidden size-10 rounded-xl text-muted-foreground sm:inline-flex"
-						aria-label="Messages"
-					>
-						<MessageSquare className="size-5" />
-					</Button>
-					<Button
-						variant="ghost"
-						size="icon"
-						className="size-10 rounded-xl text-muted-foreground"
-						aria-label="Notifications"
-					>
-						<Bell className="size-5" />
-					</Button>
-
 					{actions}
 
 					{userStrip && (
 						<>
-							<span className="mx-1 hidden h-8 w-px bg-border sm:block" />
+							<span className="mx-1 hidden h-7 w-px bg-border sm:block" />
 							{userStrip}
 						</>
 					)}

@@ -15,10 +15,18 @@ export const metadata: Metadata = {
   },
   description:
     "Post jobs on our Telegram channels. Moderated submissions, verified payments, instant publishing.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: "/apple-icon.png",
+  },
   openGraph: {
     type: "website",
     title: appName,
     description: "Reach thousands of job seekers on Telegram.",
+    images: [{ url: "/logo.png" }],
   },
   robots: { index: true, follow: true },
 };
