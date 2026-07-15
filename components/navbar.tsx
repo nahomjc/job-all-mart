@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
 import { CategoriesNav } from "@/components/categories-nav";
+import { MobileNav } from "@/components/mobile-nav";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
@@ -13,26 +14,35 @@ export async function Navbar() {
     getCurrentUser(),
     categoryRepo.list(),
   ]);
+  const topCategories = categories.slice(0, 8);
+  const brandName = env.NEXT_PUBLIC_APP_NAME;
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur-sm">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2 font-bold">
-          <BrandLogo size={32} priority />
-          <span className="text-lg tracking-tight">
-            {env.NEXT_PUBLIC_APP_NAME}
-          </span>
-        </Link>
+      <div className="container mx-auto flex h-16 items-center justify-between gap-3 px-4">
+        <div className="flex min-w-0 items-center gap-2">
+          <MobileNav
+            brandName={brandName}
+            categories={topCategories}
+            signedIn={Boolean(user)}
+          />
+          <Link href="/" className="flex min-w-0 items-center gap-2 font-bold">
+            <BrandLogo size={32} priority />
+            <span className="truncate text-lg tracking-tight">{brandName}</span>
+          </Link>
+        </div>
+
         <nav className="hidden items-center gap-6 text-sm md:flex">
-          <CategoriesNav categories={categories.slice(0, 8)} />
-          <Link href="/pricing" className="hover:text-primary transition-colors">
+          <CategoriesNav categories={topCategories} />
+          <Link href="/pricing" className="transition-colors hover:text-primary">
             Pricing
           </Link>
-          <Link href="/jobs" className="hover:text-primary transition-colors">
+          <Link href="/jobs" className="transition-colors hover:text-primary">
             Jobs
           </Link>
         </nav>
-        <div className="flex items-center gap-2">
+
+        <div className="flex shrink-0 items-center gap-2">
           <ThemeToggle />
           {user ? (
             <UserMenu
@@ -43,10 +53,10 @@ export async function Navbar() {
             />
           ) : (
             <>
-              <Button asChild variant="ghost" size="sm">
+              <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
                 <Link href="/login">Sign in</Link>
               </Button>
-              <Button asChild size="sm">
+              <Button asChild size="sm" className="hidden sm:inline-flex">
                 <Link href="/login?mode=signup">Post a job</Link>
               </Button>
             </>
