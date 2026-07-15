@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { History, Search, Sparkles } from "lucide-react";
-import { JobsBrowseCard } from "@/components/jobs/jobs-browse-card";
+import { FeaturedJobCard } from "@/components/jobs/featured-job-card";
 import { JobsFilterSidebar } from "@/components/jobs/jobs-filter-sidebar";
 import { jobRepo } from "@/server/repositories/job";
 import { categoryRepo } from "@/server/repositories/category";
@@ -178,9 +178,9 @@ export default async function JobsPage(props: {
 								No jobs match your filters yet.
 							</div>
 						) : (
-							<div className="grid gap-4 sm:grid-cols-2">
+							<div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 xl:gap-6">
 								{rows.map(({ job, category: cat }) => (
-									<JobsBrowseCard key={job.id} job={job} category={cat} />
+									<FeaturedJobCard key={job.id} job={job} category={cat} />
 								))}
 							</div>
 						)}

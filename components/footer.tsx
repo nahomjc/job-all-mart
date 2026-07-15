@@ -37,8 +37,21 @@ export function Footer() {
         </div>
       </div>
       <div className="border-t py-4 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()}{" "}
-        {env.NEXT_PUBLIC_APP_NAME}. All rights reserved.
+        <p>
+          © {new Date().getFullYear()} {env.NEXT_PUBLIC_APP_NAME}. All rights
+          reserved.
+        </p>
+        <p className="mt-1.5">
+          Powered by{" "}
+          <a
+            href="https://build-with-nahom.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-foreground/80 underline-offset-2 transition-colors hover:text-foreground hover:underline"
+          >
+            Kingdom Code
+          </a>
+        </p>
       </div>
     </footer>
   );

@@ -10,7 +10,7 @@ import { requiredChannelJoinUrl } from "@/lib/telegram/required-channel";
 import { env } from "@/lib/env";
 
 export default async function HomePage() {
-	const recent = await jobRepo.listPublic({ limit: 6 });
+	const recent = await jobRepo.listPublic({ limit: 4 });
 
 	const appName = env.NEXT_PUBLIC_APP_NAME;
 
@@ -20,10 +20,10 @@ export default async function HomePage() {
 				telegramJoinUrl={requiredChannelJoinUrl()}
 				appName={appName}
 			/>
+			<LatestJobsSection jobs={recent} />
 			<JobPostStepsSection />
 			<PipelineSection />
 			<HowItWorksSection appName={appName} />
-			<LatestJobsSection jobs={recent} />
 			<WhyUsSection />
 			<CtaSection telegramJoinUrl={requiredChannelJoinUrl()} />
 		</div>
