@@ -77,6 +77,9 @@ export const auditActionEnum = pgEnum("audit_action", [
   "category.create",
   "category.update",
   "category.delete",
+  "plan.create",
+  "plan.update",
+  "plan.delete",
   "settings.update",
 ]);
 
@@ -423,6 +426,36 @@ export const appSettings = pgTable("app_settings", {
 });
 
 // ──────────────────────────────────────────────
+// pricing_plans
+// Public /pricing cards — editable from admin.
+// ──────────────────────────────────────────────
+
+export const pricingPlans = pgTable(
+  "pricing_plans",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    slug: varchar("slug", { length: 64 }).notNull().unique(),
+    name: varchar("name", { length: 128 }).notNull(),
+    description: text("description"),
+    priceLabel: varchar("price_label", { length: 64 }).notNull(),
+    cadence: varchar("cadence", { length: 32 }).notNull().default("/post"),
+    features: jsonb("features").$type<string[]>().notNull().default([]),
+    ctaLabel: varchar("cta_label", { length: 64 }).notNull().default("Post a job"),
+    ctaHref: varchar("cta_href", { length: 256 }).notNull().default("/post/new"),
+    highlight: boolean("highlight").notNull().default(false),
+    sortOrder: integer("sort_order").notNull().default(0),
+    active: boolean("active").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [uniqueIndex("pricing_plans_slug_idx").on(t.slug)],
+);
+
+// ──────────────────────────────────────────────
 // Relations
 // ──────────────────────────────────────────────
 
@@ -483,3 +516,5 @@ export type TelegramPost = typeof telegramPosts.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type Subscription = typeof subscriptions.$inferSelect;
 export type AppSetting = typeof appSettings.$inferSelect;
+export type PricingPlan = typeof pricingPlans.$inferSelect;
+export type NewPricingPlan = typeof pricingPlans.$inferInsert;

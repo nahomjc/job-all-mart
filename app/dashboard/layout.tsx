@@ -94,31 +94,32 @@ export default async function DashboardLayout({
 							name={displayName}
 							email={user.email}
 							role={user.role}
+							variant="capsule"
 							showProfile
 						/>
 					}
 					actions={
 						<>
+							<ThemeToggle className="rounded-full text-black hover:bg-black/5 dark:text-white dark:hover:bg-white/10 dark:hover:text-white" />
+							<TourReplayButton tourKey="dashboard" />
 							<Button
 								asChild
 								variant="outline"
 								size="sm"
-								className="hidden h-10 rounded-xl sm:inline-flex"
+								className="hidden h-9 rounded-full sm:inline-flex"
 							>
 								<Link href="/dashboard/jobs">
 									<Upload className="size-4" />
 									Import
 								</Link>
 							</Button>
-							<Button asChild size="sm" className="h-10 rounded-xl px-4">
-								<Link href="/dashboard/jobs/new">
+							<Button asChild size="sm" className="h-9 rounded-full px-4">
+								<Link href="/post/new">
 									<Plus className="size-4" />
-									<span className="hidden sm:inline">New job</span>
-									<span className="sm:hidden">New</span>
+									<span className="hidden sm:inline">Post a job</span>
+									<span className="sm:hidden">Post</span>
 								</Link>
 							</Button>
-							<TourReplayButton tourKey="dashboard" />
-							<ThemeToggle />
 						</>
 					}
 				/>

@@ -13,6 +13,7 @@ import { verifyPaymentReferenceSchema } from "@/lib/validations/payment";
 import { telegramClient } from "@/lib/telegram/client";
 import { notifyAdmins, publishJobToTelegram } from "@/lib/telegram/publisher";
 import { categoryInputSchema } from "@/lib/validators/category";
+import { pricingPlanInputSchema } from "@/lib/validators/pricing-plan";
 import {
 	telegramBroadcastSettingsSchema,
 	telegramFooterLinksSchema,
@@ -21,6 +22,7 @@ import { auditLogRepo } from "@/server/repositories/auditLog";
 import { categoryRepo } from "@/server/repositories/category";
 import { jobRepo } from "@/server/repositories/job";
 import { paymentRepo } from "@/server/repositories/payment";
+import { pricingPlanRepo } from "@/server/repositories/pricing-plan";
 import { settingsRepo } from "@/server/repositories/settings";
 import { userRepo } from "@/server/repositories/user";
 import { revalidatePath } from "next/cache";
@@ -49,7 +51,7 @@ function normalizeAccountSuffixForMethod(
 }
 
 /* ──────────────────────────────────────────────
- * Approve job — guards against unverified payment, then publishes.
+ * Approve job — publishes to Telegram.
  * ────────────────────────────────────────────── */
 export async function approveJobAction(
 	jobId: string,
@@ -57,12 +59,6 @@ export async function approveJobAction(
 	const admin = await requireAdmin();
 	const job = await jobRepo.byId(jobId);
 	if (!job) return failState("Job not found");
-
-	// Submission lock: payment must be verified.
-	const payment = await paymentRepo.byJobId(jobId);
-	if (payment && payment.status !== "verified") {
-		return failState("Cannot approve: payment is not verified.");
-	}
 
 	await jobRepo.setStatus(jobId, "approved");
 	await auditLogRepo.log({
@@ -602,6 +598,111 @@ export async function updateCategoryFormAction(
 			"Could not update category (topic ID may already be in use)",
 		);
 	}
+}
+
+/* ──────────────────────────────────────────────
+ * Pricing plans
+ * ────────────────────────────────────────────── */
+export async function createPricingPlanAction(
+	_prev: AdminActionState,
+	formData: FormData,
+): Promise<AdminActionState> {
+	const admin = await requireAdmin();
+	const obj = Object.fromEntries(formData);
+	const parsed = pricingPlanInputSchema.safeParse({
+		...obj,
+		active: obj.active ?? true,
+		highlight: obj.highlight ?? false,
+	});
+	if (!parsed.success) {
+		return failState(parsed.error.issues[0]?.message ?? "Invalid plan");
+	}
+
+	const slugTaken = await pricingPlanRepo.bySlug(parsed.data.slug);
+	if (slugTaken) return failState("Slug is already in use");
+
+	try {
+		const created = await pricingPlanRepo.create(parsed.data);
+		await auditLogRepo.log({
+			actorId: admin.id,
+			action: "plan.create",
+			targetType: "pricing_plan",
+			targetId: created.id,
+			metadata: parsed.data,
+			ip: null,
+			userAgent: null,
+		});
+		revalidatePath("/admin/pricing");
+		revalidatePath("/pricing");
+		return okState();
+	} catch {
+		return failState("Could not create pricing plan");
+	}
+}
+
+export async function updatePricingPlanAction(
+	_prev: AdminActionState,
+	formData: FormData,
+): Promise<AdminActionState> {
+	const admin = await requireAdmin();
+	const id = formData.get("id");
+	if (typeof id !== "string" || id.length === 0) {
+		return failState("Missing plan id");
+	}
+
+	const existing = await pricingPlanRepo.byId(id);
+	if (!existing) return failState("Plan not found");
+
+	const obj = Object.fromEntries(formData);
+	const parsed = pricingPlanInputSchema.safeParse(obj);
+	if (!parsed.success) {
+		return failState(parsed.error.issues[0]?.message ?? "Invalid plan");
+	}
+
+	const slugTaken = await pricingPlanRepo.bySlug(parsed.data.slug);
+	if (slugTaken && slugTaken.id !== id) {
+		return failState("Slug is already in use");
+	}
+
+	try {
+		await pricingPlanRepo.update(id, parsed.data);
+		await auditLogRepo.log({
+			actorId: admin.id,
+			action: "plan.update",
+			targetType: "pricing_plan",
+			targetId: id,
+			metadata: parsed.data,
+			ip: null,
+			userAgent: null,
+		});
+		revalidatePath("/admin/pricing");
+		revalidatePath("/pricing");
+		return okState();
+	} catch {
+		return failState("Could not update pricing plan");
+	}
+}
+
+export async function deletePricingPlanAction(
+	id: string,
+): Promise<AdminActionState> {
+	const admin = await requireAdmin();
+	const existing = await pricingPlanRepo.byId(id);
+	if (!existing) return failState("Plan not found");
+
+	await pricingPlanRepo.delete(id);
+	await auditLogRepo.log({
+		actorId: admin.id,
+		action: "plan.delete",
+		targetType: "pricing_plan",
+		targetId: id,
+		metadata: { slug: existing.slug, name: existing.name },
+		ip: null,
+		userAgent: null,
+	});
+	revalidatePath("/admin/pricing");
+	revalidatePath("/pricing");
+	return okState();
 }
 
 /* ──────────────────────────────────────────────

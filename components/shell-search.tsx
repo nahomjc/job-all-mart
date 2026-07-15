@@ -44,7 +44,7 @@ function ShellSearchForm({
 					type="search"
 					placeholder={placeholder}
 					disabled
-					className="h-11 rounded-xl border-border/60 bg-muted/50 pl-10 pr-16 shadow-none"
+					className="h-10 rounded-full border-border/50 bg-muted/40 pl-10 pr-14 shadow-none dark:bg-white/5"
 				/>
 			</div>
 		);
@@ -65,9 +65,9 @@ function ShellSearchForm({
 				key={q}
 				defaultValue={q}
 				placeholder={placeholder}
-				className="h-11 rounded-xl border-border/60 bg-muted/50 pl-10 pr-16 shadow-none focus-visible:ring-primary/30"
+				className="h-10 rounded-full border-border/50 bg-muted/40 pl-10 pr-14 shadow-none focus-visible:ring-primary/30 dark:bg-white/5"
 			/>
-			<kbd className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded-md border bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground lg:inline">
+			<kbd className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded-md border bg-background/80 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground lg:inline">
 				⌘F
 			</kbd>
 		</form>
@@ -89,7 +89,7 @@ export function ShellSearch(props: ShellSearchProps) {
 						type="search"
 						placeholder={props.placeholder}
 						disabled
-						className="h-11 rounded-xl border-border/60 bg-muted/50 pl-10 pr-16 shadow-none"
+						className="h-10 rounded-full border-border/50 bg-muted/40 pl-10 pr-14 shadow-none dark:bg-white/5"
 					/>
 				</div>
 			}

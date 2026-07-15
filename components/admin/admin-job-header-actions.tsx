@@ -21,33 +21,32 @@ type AdminJobHeaderActionsProps = {
 	jobId: string;
 	jobTitle: string;
 	jobStatus: string;
-	hasPayment: boolean;
-	paymentVerified: boolean;
+	hasPayment?: boolean;
+	paymentVerified?: boolean;
 };
 
 export function AdminJobHeaderActions({
 	jobId,
 	jobTitle,
 	jobStatus,
-	hasPayment,
-	paymentVerified,
 }: AdminJobHeaderActionsProps) {
 	const router = useRouter();
 	const [approvePending, startApprove] = useTransition();
 	const [rejectPending, startReject] = useTransition();
+	const [approveOpen, setApproveOpen] = useState(false);
 	const [rejectOpen, setRejectOpen] = useState(false);
 	const [reason, setReason] = useState("");
 
 	if (jobStatus === "posted") return null;
 
 	const busy = approvePending || rejectPending;
-	const approveBlocked = hasPayment && !paymentVerified;
 
 	const runApprove = () => {
 		startApprove(async () => {
 			const r = await approveJobAction(jobId);
 			if (r.ok) {
 				toast.success("Approved and published to Telegram");
+				setApproveOpen(false);
 				router.refresh();
 			} else {
 				toast.error(r.error ?? "Approval failed");
@@ -77,16 +76,11 @@ export function AdminJobHeaderActions({
 			<Button
 				variant="success"
 				className="h-11 w-full shrink-0 sm:w-auto"
-				onClick={runApprove}
-				disabled={busy || approveBlocked}
-				title={
-					approveBlocked
-						? "Verify payment before approving"
-						: undefined
-				}
+				onClick={() => setApproveOpen(true)}
+				disabled={busy}
 			>
 				<CheckCircle2 className="size-4" />
-				{approvePending ? "Publishing…" : "Approve & publish"}
+				Approve & publish
 			</Button>
 			<Button
 				variant="destructive"
@@ -97,6 +91,41 @@ export function AdminJobHeaderActions({
 				<XCircle className="size-4" />
 				Reject
 			</Button>
+
+			<Dialog
+				open={approveOpen}
+				onOpenChange={(o) => !approvePending && setApproveOpen(o)}
+			>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Approve & publish?</DialogTitle>
+						<DialogDescription>
+							This will approve{" "}
+							<span className="font-medium text-foreground">{jobTitle}</span>{" "}
+							and publish it to Telegram. Continue?
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<Button
+							variant="outline"
+							className="h-11"
+							onClick={() => setApproveOpen(false)}
+							disabled={approvePending}
+						>
+							Cancel
+						</Button>
+						<Button
+							variant="success"
+							className="h-11"
+							onClick={runApprove}
+							disabled={approvePending}
+						>
+							<CheckCircle2 className="size-4" />
+							{approvePending ? "Publishing…" : "Yes, publish"}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 
 			<Dialog open={rejectOpen} onOpenChange={(o) => !rejectPending && setRejectOpen(o)}>
 				<DialogContent>

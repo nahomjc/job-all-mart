@@ -14,7 +14,7 @@ export function TourReplayButton({ tourKey }: TourReplayButtonProps) {
 			type="button"
 			variant="ghost"
 			size="icon"
-			className="size-10 rounded-xl text-muted-foreground"
+			className="size-10 rounded-full text-black hover:bg-black/5 dark:text-white dark:hover:bg-white/10"
 			aria-label="Replay guided tour"
 			title="Replay guided tour"
 			onClick={() => startProductTour(tourKey)}

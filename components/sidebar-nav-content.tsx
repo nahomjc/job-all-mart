@@ -13,6 +13,7 @@ import {
 	Receipt,
 	ScrollText,
 	Settings,
+	Tags,
 	TrendingUp,
 	Users,
 } from "lucide-react";
@@ -29,6 +30,7 @@ export const ICON_MAP = {
 	receipt: Receipt,
 	"scroll-text": ScrollText,
 	settings: Settings,
+	tags: Tags,
 	"trending-up": TrendingUp,
 	users: Users,
 	"circle-help": CircleHelp,

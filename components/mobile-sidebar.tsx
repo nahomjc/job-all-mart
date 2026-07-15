@@ -36,7 +36,7 @@ export function MobileSidebar({
 				type="button"
 				variant="outline"
 				size="icon"
-				className="size-10 shrink-0 rounded-xl md:hidden"
+				className="size-10 shrink-0 rounded-full border-black/10 bg-black/5 md:hidden dark:border-white/15 dark:bg-white/10"
 				onClick={() => setOpen(true)}
 				aria-label="Open navigation menu"
 			>

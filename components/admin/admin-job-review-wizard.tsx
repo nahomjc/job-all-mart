@@ -126,6 +126,7 @@ export function AdminJobReviewWizard({
 	});
 	const [rejectReason, setRejectReason] = useState("");
 	const [rejectOpen, setRejectOpen] = useState(false);
+	const [approveOpen, setApproveOpen] = useState(false);
 
 	const isPosted = jobStatus === "posted";
 	const paymentVerified = payment?.status === "verified";
@@ -205,6 +206,7 @@ export function AdminJobReviewWizard({
 			const r = await approveJobAction(jobId);
 			if (r.ok) {
 				toast.success("Approved and published to Telegram");
+				setApproveOpen(false);
 				router.refresh();
 			} else {
 				toast.error(r.error ?? "Approval failed");
@@ -556,15 +558,11 @@ export function AdminJobReviewWizard({
 								<Button
 									variant="success"
 									className="h-11 w-full sm:min-w-[14rem] sm:flex-1"
-									onClick={runApprove}
-									disabled={
-										actionBusy ||
-										(hasPayment && !paymentVerified) ||
-										(hasPayment && !reviewComplete)
-									}
+									onClick={() => setApproveOpen(true)}
+									disabled={actionBusy}
 								>
 									<CheckCircle2 className="size-4" />
-									{pending ? "Publishing…" : "Approve & publish"}
+									Approve & publish
 								</Button>
 								<Button
 									variant="destructive"
@@ -577,11 +575,6 @@ export function AdminJobReviewWizard({
 								</Button>
 							</div>
 						</div>
-						{hasPayment && !paymentVerified && (
-							<p className="text-xs text-amber-700 dark:text-amber-300">
-								Complete payment verification steps before approving.
-							</p>
-						)}
 					</div>
 				)}
 
@@ -611,6 +604,41 @@ export function AdminJobReviewWizard({
 					) : null}
 				</div>
 			</div>
+
+			<Dialog
+				open={approveOpen}
+				onOpenChange={(o) => !pending && setApproveOpen(o)}
+			>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Approve & publish?</DialogTitle>
+						<DialogDescription>
+							This will approve{" "}
+							<span className="font-medium text-foreground">{jobTitle}</span>{" "}
+							and publish it to Telegram. Continue?
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<Button
+							variant="outline"
+							className="h-11"
+							onClick={() => setApproveOpen(false)}
+							disabled={pending}
+						>
+							Cancel
+						</Button>
+						<Button
+							variant="success"
+							className="h-11"
+							onClick={runApprove}
+							disabled={pending}
+						>
+							<CheckCircle2 className="size-4" />
+							{pending ? "Publishing…" : "Yes, publish"}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 
 			<Dialog
 				open={rejectOpen}

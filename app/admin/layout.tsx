@@ -38,6 +38,7 @@ const sections: SidebarNavSection[] = [
 			},
 			{ href: "/admin/users", label: "Users", icon: "users" },
 			{ href: "/admin/categories", label: "Categories", icon: "folder-kanban" },
+			{ href: "/admin/pricing", label: "Pricing", icon: "tags" },
 		],
 	},
 	{
@@ -128,16 +129,17 @@ export default async function AdminLayout({
 							name={displayName}
 							email={user.email}
 							role={user.role}
+							variant="capsule"
 							showProfile
 						/>
 					}
 					actions={
 						<>
-							<Button asChild size="sm" className="h-9 rounded-lg px-3">
+							<ThemeToggle className="rounded-full text-black hover:bg-black/5 dark:text-white dark:hover:bg-white/10 dark:hover:text-white" />
+							<TourReplayButton tourKey="admin" />
+							<Button asChild size="sm" className="h-9 rounded-full px-4">
 								<Link href="/admin/jobs?status=pending_review">Review queue</Link>
 							</Button>
-							<TourReplayButton tourKey="admin" />
-							<ThemeToggle />
 						</>
 					}
 				/>
