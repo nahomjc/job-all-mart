@@ -44,7 +44,7 @@ export function FormStepper({
 										"border-primary bg-primary/10 text-primary shadow-sm",
 									done &&
 										!active &&
-										"border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300",
+										"border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300",
 									!active && !done && "border-border text-muted-foreground",
 									clickable && "hover:bg-muted/60",
 								)}
@@ -53,7 +53,7 @@ export function FormStepper({
 									className={cn(
 										"flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold",
 										active && "bg-primary text-primary-foreground",
-										done && !active && "bg-sky-600 text-white",
+										done && !active && "bg-amber-600 text-white",
 										!active && !done && "bg-muted text-muted-foreground",
 									)}
 								>

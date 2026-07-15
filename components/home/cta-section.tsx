@@ -14,12 +14,12 @@ export function CtaSection({ telegramJoinUrl }: { telegramJoinUrl: string }) {
 				whileInView={{ opacity: 1, scale: 1, y: 0 }}
 				viewport={{ once: true }}
 				transition={{ duration: 0.75, ease: EASE }}
-				className="relative overflow-hidden rounded-[2rem] bg-brand-deep p-10 text-primary-foreground md:p-16"
+				className="relative overflow-hidden rounded-[2rem] bg-brand-deep p-10 text-white md:p-16"
 			>
 				<motion.div
 					animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
 					transition={{ duration: 8, repeat: Number.POSITIVE_INFINITY }}
-					className="pointer-events-none absolute -right-20 -top-20 size-80 rounded-full bg-sky-400/30 blur-3xl"
+					className="pointer-events-none absolute -right-20 -top-20 size-80 rounded-full bg-amber-400/30 blur-3xl"
 				/>
 				<motion.div
 					animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
@@ -38,14 +38,14 @@ export function CtaSection({ telegramJoinUrl }: { telegramJoinUrl: string }) {
 						viewport={{ once: true }}
 						transition={{ delay: 0.15, duration: 0.6, ease: EASE }}
 					>
-						<span className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-medium">
+						<span className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-white">
 							<Handshake className="size-3.5" />
 							Hiring
 						</span>
-						<h2 className="mt-4 text-balance text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">
+						<h2 className="mt-4 text-balance text-3xl font-bold tracking-tight text-white md:text-4xl lg:text-5xl">
 							Ready to post a job?
 						</h2>
-						<p className="mt-4 max-w-xl text-pretty text-lg text-primary-foreground/85">
+						<p className="mt-4 max-w-xl text-pretty text-lg text-white/85">
 							Create an account, submit your job, and we&apos;ll publish it after
 							review.
 						</p>
@@ -74,7 +74,7 @@ export function CtaSection({ telegramJoinUrl }: { telegramJoinUrl: string }) {
 								asChild
 								size="lg"
 								variant="outline"
-								className="h-12 w-full rounded-full border-white/40 bg-transparent text-primary-foreground hover:bg-white/10 sm:w-auto md:w-full"
+								className="h-12 w-full rounded-full border-white/40 bg-transparent text-white hover:bg-white/10 sm:w-auto md:w-full"
 							>
 								<a
 									href={telegramJoinUrl}

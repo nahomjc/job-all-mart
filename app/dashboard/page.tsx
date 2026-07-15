@@ -88,7 +88,7 @@ export default async function DashboardPage() {
             items={[
               { label: "Posted", value: stats.posted, color: "bg-emerald-500/90" },
               { label: "Review", value: stats.inReview, color: "bg-amber-400" },
-              { label: "Payment", value: stats.pendingPay, color: "bg-sky-400" },
+              { label: "Payment", value: stats.pendingPay, color: "bg-amber-400" },
               { label: "Rejected", value: stats.rejected, color: "bg-rose-400/90" },
             ]}
           />
@@ -203,7 +203,7 @@ export default async function DashboardPage() {
               {
                 label: "Awaiting pay",
                 value: stats.pendingPay,
-                className: "bg-sky-400",
+                className: "bg-amber-400",
               },
               {
                 label: "Rejected",

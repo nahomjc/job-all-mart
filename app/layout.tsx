@@ -45,7 +45,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <NextTopLoader color="#3b82f6" height={3} showSpinner={false} />
+          <NextTopLoader color="#e6c84a" height={3} showSpinner={false} />
           {children}
           <Toaster />
         </ThemeProvider>

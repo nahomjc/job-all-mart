@@ -54,7 +54,7 @@ export function FeaturedJobCard({
 			href={href}
 			aria-label={`View ${job.title} at ${job.company}`}
 			className={cn(
-				"group relative flex h-full min-h-[400px] flex-col overflow-hidden rounded-[1.75rem] bg-white p-6 text-zinc-900 shadow-[0_20px_50px_-24px_rgba(15,40,80,0.45)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_60px_-28px_rgba(15,40,80,0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:min-h-[420px] sm:p-7 xl:min-h-[440px]",
+				"group relative flex h-full min-h-[400px] flex-col overflow-hidden rounded-[1.75rem] bg-white p-6 text-zinc-900 shadow-[0_20px_50px_-24px_rgba(15,40,80,0.45)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_60px_-28px_rgba(15,40,80,0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:min-h-[420px] sm:p-7 xl:min-h-[440px]",
 				className,
 			)}
 		>
@@ -130,7 +130,7 @@ export function FeaturedJobCard({
 						)}
 					</div>
 
-					<span className="inline-flex h-11 w-full items-center justify-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-[0_10px_24px_-10px_rgba(37,99,235,0.65)] transition group-hover:bg-brand-deep">
+					<span className="inline-flex h-11 w-full items-center justify-center rounded-full border border-transparent bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-[0_10px_24px_-10px_rgba(234,179,8,0.55)] transition group-hover:border-brand-deep/20 group-hover:bg-white group-hover:text-brand-deep group-hover:shadow-none">
 						Apply now
 					</span>
 				</div>

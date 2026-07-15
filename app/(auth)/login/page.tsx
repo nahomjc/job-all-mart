@@ -161,7 +161,7 @@ export default async function LoginPage(props: {
                   </span>
                 </p>
               </div>
-              <span className="rounded-full bg-sky-200/30 px-2 py-0.5 text-xs font-semibold">
+              <span className="rounded-full bg-amber-200/30 px-2 py-0.5 text-xs font-semibold">
                 ▲ +50%
               </span>
             </div>

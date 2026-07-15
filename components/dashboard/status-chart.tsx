@@ -32,7 +32,7 @@ export function StatusChart({
 					items={[
 						{ label: "Posted", value: posted, color: "bg-emerald-500/90" },
 						{ label: "Review", value: inReview, color: "bg-amber-400" },
-						{ label: "Payment", value: pendingPay, color: "bg-sky-400" },
+						{ label: "Payment", value: pendingPay, color: "bg-amber-400" },
 						{ label: "Rejected", value: rejected, color: "bg-rose-400/90" },
 					]}
 				/>

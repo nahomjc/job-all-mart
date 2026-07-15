@@ -31,7 +31,7 @@ const STEPS = [
 		description:
 			"Sign up with email or Telegram. Takes about a minute.",
 		icon: Briefcase,
-		color: "from-sky-500 to-blue-600",
+		color: "from-amber-400 to-yellow-600",
 	},
 	{
 		id: "details",
@@ -40,7 +40,7 @@ const STEPS = [
 		description:
 			"Add title, company, category, salary, description, and an optional logo.",
 		icon: FileText,
-		color: "from-sky-500 to-blue-600",
+		color: "from-amber-400 to-yellow-600",
 	},
 	{
 		id: "payment",
@@ -99,7 +99,7 @@ function StepVisual({
 					/>
 					<motion.span
 						aria-hidden
-						className="absolute bottom-[14%] right-[10%] size-36 rounded-full bg-sky-400/10 blur-3xl"
+						className="absolute bottom-[14%] right-[10%] size-36 rounded-full bg-amber-400/10 blur-3xl"
 						animate={{ scale: [1.1, 0.9, 1.1], opacity: [0.25, 0.5, 0.25] }}
 						transition={{ duration: 5, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
 					/>
@@ -180,7 +180,7 @@ function StepVisual({
 							initial={reduce ? false : { opacity: 0, y: 8 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: 0.85 }}
-							className="mt-4 flex items-center gap-2 text-sm font-medium text-sky-600"
+							className="mt-4 flex items-center gap-2 text-sm font-medium text-amber-600"
 						>
 							<motion.span
 								initial={reduce ? false : { scale: 0 }}
@@ -377,7 +377,7 @@ function StepVisual({
 										<CheckCircle2
 											className={cn(
 												"size-4",
-												item.done ? "text-sky-500" : "text-muted-foreground/35",
+												item.done ? "text-amber-500" : "text-muted-foreground/35",
 											)}
 										/>
 									</motion.span>
@@ -415,7 +415,7 @@ function StepVisual({
 								<motion.span
 									key={`ring-${i}`}
 									aria-hidden
-									className="absolute -right-1 -top-1 size-14 rounded-full border border-sky-400/40"
+									className="absolute -right-1 -top-1 size-14 rounded-full border border-amber-400/40"
 									animate={{ scale: [1, 1.8 + i * 0.2], opacity: [0.5, 0] }}
 									transition={{
 										duration: 2,
@@ -437,7 +437,7 @@ function StepVisual({
 									initial={reduce ? false : { scale: 0 }}
 									animate={{ scale: 1 }}
 									transition={{ delay: 0.25, type: "spring" }}
-									className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold text-sky-700 dark:bg-sky-500/20 dark:text-sky-300"
+									className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-500/20 dark:text-amber-300"
 								>
 									POSTED
 								</motion.span>
@@ -474,7 +474,7 @@ function StepVisual({
 							initial={reduce ? false : { scale: 0, rotate: -20 }}
 							animate={{ scale: 1, rotate: 0 }}
 							transition={{ delay: 0.55, type: "spring", stiffness: 280 }}
-							className="absolute -right-2 -top-2 z-10 flex size-12 items-center justify-center rounded-full bg-sky-500 text-white shadow-lg shadow-sky-500/40"
+							className="absolute -right-2 -top-2 z-10 flex size-12 items-center justify-center rounded-full bg-amber-500 text-white shadow-lg shadow-amber-500/40"
 						>
 							<CheckCircle2 className="size-6" />
 						</motion.div>

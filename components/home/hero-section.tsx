@@ -43,7 +43,7 @@ function BrandMarquee() {
 				{items.map(({ id, brand }) => (
 					<span
 						key={id}
-						className="text-base font-bold tracking-tight text-primary-foreground/80 md:text-lg"
+						className="text-base font-bold tracking-tight text-white/85 md:text-lg"
 					>
 						{brand}
 					</span>
@@ -61,7 +61,7 @@ function HeroParticles({ reduce }: { reduce: boolean }) {
 			{dots.map((i) => (
 				<motion.span
 					key={i}
-					className="absolute size-1 rounded-full bg-sky-300/60"
+					className="absolute size-1 rounded-full bg-amber-300/60"
 					style={{
 						left: `${8 + (i * 7) % 85}%`,
 						top: `${10 + (i * 11) % 80}%`,
@@ -95,7 +95,7 @@ export function HeroSection({
 	const reduceMotion = useReducedMotion();
 
 	return (
-		<section className="relative isolate min-h-[90vh] overflow-hidden bg-brand-deep text-primary-foreground">
+		<section className="relative isolate min-h-[90vh] overflow-hidden bg-brand-deep text-white">
 			<div
 				aria-hidden
 				className="pointer-events-none absolute inset-0 opacity-[0.4] mix-blend-overlay"
@@ -107,7 +107,7 @@ export function HeroSection({
 
 			<motion.div
 				aria-hidden
-				className="pointer-events-none absolute left-[-25%] top-[-10%] h-[80%] w-[80%] rounded-full bg-sky-400/25 blur-[100px]"
+				className="pointer-events-none absolute left-[-25%] top-[-10%] h-[80%] w-[80%] rounded-full bg-amber-400/25 blur-[100px]"
 				animate={
 					reduceMotion
 						? undefined
@@ -117,7 +117,7 @@ export function HeroSection({
 			/>
 			<motion.div
 				aria-hidden
-				className="pointer-events-none absolute right-[-20%] bottom-[-10%] h-[70%] w-[65%] rounded-full bg-blue-300/20 blur-[90px]"
+				className="pointer-events-none absolute right-[-20%] bottom-[-10%] h-[70%] w-[65%] rounded-full bg-yellow-300/25 blur-[90px]"
 				animate={
 					reduceMotion ? undefined : { x: [0, -35, 0], y: [0, 25, 0] }
 				}
@@ -125,7 +125,7 @@ export function HeroSection({
 			/>
 			<motion.div
 				aria-hidden
-				className="pointer-events-none absolute left-[30%] top-[40%] h-64 w-64 rounded-full bg-cyan-300/10 blur-3xl"
+				className="pointer-events-none absolute left-[30%] top-[40%] h-64 w-64 rounded-full bg-amber-200/20 blur-3xl"
 				animate={reduceMotion ? undefined : { scale: [1, 1.3, 1], opacity: [0.3, 0.6, 0.3] }}
 				transition={{ duration: 9, repeat: Number.POSITIVE_INFINITY }}
 			/>
@@ -135,7 +135,7 @@ export function HeroSection({
 				className="pointer-events-none absolute inset-0 opacity-25"
 				style={{
 					background:
-						"radial-gradient(ellipse 90% 60% at 75% 35%, rgba(255,255,255,0.4), transparent 50%), radial-gradient(ellipse 50% 40% at 15% 85%, rgba(56,189,248,0.35), transparent 45%)",
+						"radial-gradient(ellipse 90% 60% at 75% 35%, rgba(255,255,255,0.4), transparent 50%), radial-gradient(ellipse 50% 40% at 15% 85%, rgba(234,179,8,0.35), transparent 45%)",
 				}}
 			/>
 
@@ -147,9 +147,9 @@ export function HeroSection({
 							variants={fadeUp}
 							initial="hidden"
 							animate="show"
-							className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-xs font-medium backdrop-blur-md"
+							className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-xs font-medium text-white backdrop-blur-md"
 						>
-							<Sparkles className="size-3.5 text-sky-200" />
+							<Sparkles className="size-3.5 text-amber-200" />
 							Live on Telegram and the web
 						</motion.span>
 
@@ -158,12 +158,12 @@ export function HeroSection({
 							variants={fadeUp}
 							initial="hidden"
 							animate="show"
-							className="mt-7 text-balance text-4xl font-bold leading-[1.05] tracking-tight md:text-6xl lg:text-[4rem]"
+							className="mt-7 text-balance text-4xl font-bold leading-[1.05] tracking-tight text-white md:text-6xl lg:text-[4rem]"
 						>
 							Post jobs.
 							<br />
 							<motion.span
-								className="bg-linear-to-r from-sky-200 via-white to-blue-200 bg-clip-text text-transparent"
+								className="bg-linear-to-r from-amber-200 via-white to-yellow-200 bg-clip-text text-transparent"
 								animate={
 									reduceMotion
 										? undefined
@@ -181,7 +181,7 @@ export function HeroSection({
 							variants={fadeUp}
 							initial="hidden"
 							animate="show"
-							className="mx-auto mt-6 max-w-lg text-pretty text-lg leading-relaxed text-primary-foreground/75 lg:mx-0"
+							className="mx-auto mt-6 max-w-lg text-pretty text-lg leading-relaxed text-white/85 lg:mx-0"
 						>
 							Post jobs on {appName}, get them reviewed by our team, then
 							publish to Telegram and the website.
@@ -209,7 +209,7 @@ export function HeroSection({
 							<Button
 								asChild
 								variant="ghost"
-								className="h-12 text-primary-foreground/90 hover:bg-white/10 hover:text-white"
+								className="h-12 text-white/90 hover:bg-white/10 hover:text-white"
 							>
 								<Link href="/post/new">
 									Post a job <ArrowRight className="size-4" />
@@ -226,7 +226,7 @@ export function HeroSection({
 						>
 							<div className="flex items-center gap-4">
 								<div className="flex -space-x-3">
-									{["bg-sky-400", "bg-blue-500", "bg-cyan-500", "bg-indigo-500"].map(
+									{["bg-amber-400", "bg-yellow-500", "bg-amber-500", "bg-yellow-600"].map(
 										(bg, i) => (
 											<motion.span
 												key={bg}
@@ -241,7 +241,7 @@ export function HeroSection({
 										),
 									)}
 								</div>
-								<p className="text-left text-sm font-medium text-primary-foreground/90">
+								<p className="text-left text-sm font-medium text-white/90">
 									<span className="text-lg font-bold text-white">250K+</span>
 									<br />
 									people have joined
@@ -250,7 +250,7 @@ export function HeroSection({
 							<Button
 								asChild
 								variant="link"
-								className="h-auto p-0 text-primary-foreground/70 hover:text-white"
+								className="h-auto p-0 text-white/80 hover:text-white"
 							>
 								<a href={telegramJoinUrl} target="_blank" rel="noopener noreferrer">
 									<MessageSquare className="size-3.5" />
@@ -272,7 +272,7 @@ export function HeroSection({
 					<motion.div
 						animate={reduceMotion ? undefined : { y: [0, 8, 0] }}
 						transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-						className="flex flex-col items-center gap-2 text-primary-foreground/50"
+						className="flex flex-col items-center gap-2 text-white/60"
 					>
 						<span className="text-xs">Scroll down</span>
 						<span className="h-8 w-px bg-linear-to-b from-white/50 to-transparent" />

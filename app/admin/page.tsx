@@ -130,7 +130,7 @@ export default async function AdminOverviewPage() {
             items={[
               { label: "Posted", value: postedJobs, color: "bg-emerald-500/90" },
               { label: "Review", value: pendingReview, color: "bg-amber-400" },
-              { label: "Payment", value: pendingPayJobs, color: "bg-sky-400" },
+              { label: "Payment", value: pendingPayJobs, color: "bg-amber-400" },
               { label: "Rejected", value: rejectedJobs, color: "bg-rose-400/90" },
             ]}
           />
@@ -240,7 +240,7 @@ export default async function AdminOverviewPage() {
               {
                 label: "Awaiting pay",
                 value: pendingPayJobs,
-                className: "bg-sky-400",
+                className: "bg-amber-400",
               },
               {
                 label: "Rejected",

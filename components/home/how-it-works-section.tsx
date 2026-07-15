@@ -46,7 +46,7 @@ export function HowItWorksSection({ appName }: { appName: string }) {
 
 	return (
 		<MotionSection className="container mx-auto px-4 py-20 md:py-24">
-			<div className="overflow-hidden rounded-[1.75rem] border border-border/60 bg-brand-deep text-primary-foreground shadow-xl shadow-black/10">
+			<div className="overflow-hidden rounded-[1.75rem] border border-border/60 bg-brand-deep text-white shadow-xl shadow-black/10">
 				<div className="border-b border-white/10 px-6 py-8 sm:px-8 sm:py-10 lg:px-10">
 					<MotionBlock>
 						<span className="inline-flex items-center rounded-md border border-primary/50 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
@@ -55,7 +55,7 @@ export function HowItWorksSection({ appName }: { appName: string }) {
 						<h2 className="mt-4 max-w-2xl text-balance text-3xl font-bold tracking-tight text-white sm:text-4xl">
 							How posting works on {appName}
 						</h2>
-						<p className="mt-3 max-w-xl text-sm leading-relaxed text-white/65 sm:text-base">
+						<p className="mt-3 max-w-xl text-sm leading-relaxed text-white/70 sm:text-base">
 							Sign up, add the job, pay, then we publish it to Telegram.
 						</p>
 					</MotionBlock>
@@ -169,7 +169,7 @@ function HubVisual({ reduce }: { reduce: boolean }) {
 					<motion.span
 						key={i}
 						aria-hidden
-						className="absolute size-1.5 rounded-full bg-sky-300"
+						className="absolute size-1.5 rounded-full bg-amber-300"
 						style={{ left: "50%", top: "50%" }}
 						animate={{ rotate: 360 }}
 						transition={{
@@ -180,7 +180,7 @@ function HubVisual({ reduce }: { reduce: boolean }) {
 						}}
 					>
 						<span
-							className="absolute block size-1.5 rounded-full bg-sky-300"
+							className="absolute block size-1.5 rounded-full bg-amber-300"
 							style={{ transform: `translate(${40 + i * 10}px, -50%)` }}
 						/>
 					</motion.span>
@@ -378,7 +378,7 @@ function PublishVisual({ reduce }: { reduce: boolean }) {
 						y1="18%"
 						x2={`${t.x}%`}
 						y2="68%"
-						stroke="rgb(125 211 252 / 0.35)"
+						stroke="rgb(234 179 8 / 0.4)"
 						strokeWidth="1.5"
 						strokeDasharray="5 6"
 						initial={reduce ? false : { pathLength: 0, opacity: 0 }}
@@ -394,7 +394,7 @@ function PublishVisual({ reduce }: { reduce: boolean }) {
 					<motion.span
 						key={`pulse-${t.id}`}
 						aria-hidden
-						className="absolute left-1/2 top-[18%] size-2 -translate-x-1/2 rounded-full bg-sky-300"
+						className="absolute left-1/2 top-[18%] size-2 -translate-x-1/2 rounded-full bg-amber-300"
 						animate={{
 							x: ["0%", `${(t.x - 50) * 2.2}%`],
 							y: ["0%", "120%"],

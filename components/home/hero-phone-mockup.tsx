@@ -55,7 +55,7 @@ export function HeroPhoneMockup({ appName }: HeroPhoneMockupProps) {
 						: { scale: [1, 1.05, 1], opacity: [0.4, 0.7, 0.4] }
 				}
 				transition={{ duration: 4, repeat: Number.POSITIVE_INFINITY }}
-				className="pointer-events-none absolute left-1/2 top-1/2 size-[280px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-sky-400/30 blur-3xl sm:size-[320px]"
+				className="pointer-events-none absolute left-1/2 top-1/2 size-[280px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-400/30 blur-3xl sm:size-[320px]"
 			/>
 
 			<motion.div
@@ -131,7 +131,7 @@ export function HeroPhoneMockup({ appName }: HeroPhoneMockupProps) {
 										transition={{ delay: 0.7 + i * 0.15, ease: EASE }}
 										className="flex items-center gap-2 rounded-xl border border-zinc-200/80 bg-white p-2.5 shadow-sm"
 									>
-										<span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sky-100 text-brand-deep">
+										<span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-brand-deep">
 											<Briefcase className="size-3.5" />
 										</span>
 										<div className="min-w-0 flex-1">
@@ -146,13 +146,13 @@ export function HeroPhoneMockup({ appName }: HeroPhoneMockupProps) {
 									</motion.div>
 								))}
 								<div className="flex gap-2">
-									<div className="flex-1 rounded-xl bg-sky-50 py-2 text-center">
+									<div className="flex-1 rounded-xl bg-amber-50 py-2 text-center">
 										<p className="text-[9px] text-zinc-500">Posted</p>
-										<p className="text-xs font-bold text-sky-700">+128</p>
+										<p className="text-xs font-bold text-amber-700">+128</p>
 									</div>
-									<div className="flex-1 rounded-xl bg-sky-50 py-2 text-center">
+									<div className="flex-1 rounded-xl bg-amber-50 py-2 text-center">
 										<p className="text-[9px] text-zinc-500">Views</p>
-										<p className="text-xs font-bold text-sky-700">24.5k</p>
+										<p className="text-xs font-bold text-amber-700">24.5k</p>
 									</div>
 								</div>
 							</div>
@@ -179,7 +179,7 @@ export function HeroPhoneMockup({ appName }: HeroPhoneMockupProps) {
 							Goal: Dream role
 						</p>
 						<p className="text-sm font-bold">Apply this week</p>
-						<p className="text-[10px] text-sky-600">3 steps left</p>
+						<p className="text-[10px] text-amber-600">3 steps left</p>
 					</div>
 				</div>
 			</FloatingStat>
@@ -207,8 +207,8 @@ export function HeroPhoneMockup({ appName }: HeroPhoneMockupProps) {
 				initial={{ opacity: 0, y: 24 }}
 				className="absolute bottom-[10%] left-2 z-20 sm:-left-2"
 			>
-				<div className="rounded-2xl border border-sky-400/30 bg-sky-950/80 px-4 py-2.5 text-white shadow-xl backdrop-blur">
-					<p className="text-[10px] text-sky-200">Verified posts</p>
+				<div className="rounded-2xl border border-amber-400/30 bg-amber-950/80 px-4 py-2.5 text-white shadow-xl backdrop-blur">
+					<p className="text-[10px] text-amber-200">Verified posts</p>
 					<p className="text-sm font-bold">98% approval rate</p>
 				</div>
 			</FloatingStat>

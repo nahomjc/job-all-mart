@@ -84,11 +84,11 @@ export function ProductTour({ tourKey, steps }: ProductTourProps) {
 	const isDark = resolvedTheme === "dark";
 
 	const options: Partial<Options> = {
-		primaryColor: "#0ea5e9",
-		textColor: isDark ? "#e2e8f0" : "#0f172a",
-		backgroundColor: isDark ? "#0f172a" : "#ffffff",
-		arrowColor: isDark ? "#0f172a" : "#ffffff",
-		overlayColor: "rgba(2, 6, 23, 0.55)",
+		primaryColor: "#e6c84a",
+		textColor: isDark ? "#f7f1d8" : "#1c1917",
+		backgroundColor: isDark ? "#1a1508" : "#ffffff",
+		arrowColor: isDark ? "#1a1508" : "#ffffff",
+		overlayColor: "rgba(26, 21, 8, 0.6)",
 		zIndex: 10000,
 		showProgress: true,
 		skipBeacon: true,
@@ -111,11 +111,11 @@ export function ProductTour({ tourKey, steps }: ProductTourProps) {
 		buttonBack: {
 			borderRadius: 10,
 			fontSize: 13,
-			color: isDark ? "#94a3b8" : "#64748b",
+			color: isDark ? "#a8a29e" : "#78716c",
 		},
 		buttonSkip: {
 			fontSize: 13,
-			color: isDark ? "#94a3b8" : "#64748b",
+			color: isDark ? "#a8a29e" : "#78716c",
 		},
 	};
 
