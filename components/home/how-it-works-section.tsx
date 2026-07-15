@@ -63,25 +63,22 @@ export function HowItWorksSection({ appName }: { appName: string }) {
 				</div>
 
 				<div className="grid lg:grid-cols-3">
-					{/* Step 1 — full height left */}
 					<StepCell className="border-b border-white/10 lg:border-b-0 lg:border-r">
 						<StepCopy step={STEPS[0]} />
 						<HubVisual reduce={!!reduce} />
 					</StepCell>
 
-					{/* Steps 2 + 3 — stacked middle */}
 					<div className="flex flex-col border-b border-white/10 lg:border-b-0 lg:border-r">
 						<StepCell className="flex-1 border-b border-white/10">
 							<OverviewVisual reduce={!!reduce} />
 							<StepCopy step={STEPS[1]} className="mt-5" />
 						</StepCell>
 						<StepCell className="flex-1">
-							<UploadVisual />
+							<UploadVisual reduce={!!reduce} />
 							<StepCopy step={STEPS[2]} className="mt-5" />
 						</StepCell>
 					</div>
 
-					{/* Step 4 — full height right */}
 					<StepCell>
 						<StepCopy step={STEPS[3]} />
 						<PublishVisual reduce={!!reduce} />
@@ -139,54 +136,112 @@ function StepCopy({
 
 function HubVisual({ reduce }: { reduce: boolean }) {
 	const nodes = [
-		{ icon: MessageSquare, label: "Telegram", x: "12%", y: "78%" },
-		{ icon: Briefcase, label: "Web", x: "38%", y: "88%" },
-		{ icon: Shield, label: "Review", x: "62%", y: "88%" },
-		{ icon: Send, label: "Channel", x: "88%", y: "78%" },
+		{ icon: MessageSquare, label: "Telegram", angle: 210 },
+		{ icon: Briefcase, label: "Web", angle: 255 },
+		{ icon: Shield, label: "Review", angle: 300 },
+		{ icon: Send, label: "Channel", angle: 345 },
 	] as const;
 
+	const radius = 72;
+
 	return (
-		<div className="relative mt-8 min-h-[200px] flex-1">
-			<svg
-				className="absolute inset-0 size-full text-primary/35"
-				aria-hidden="true"
-			>
-				{nodes.map((n) => (
-					<line
-						key={n.label}
-						x1="50%"
-						y1="42%"
-						x2={n.x}
-						y2={n.y}
-						stroke="currentColor"
-						strokeWidth="1"
-						strokeDasharray="4 4"
-					/>
+		<div className="relative mx-auto mt-10 flex h-[220px] w-full max-w-[280px] items-center justify-center">
+			{/* Soft scan ring */}
+			{!reduce && (
+				<motion.span
+					aria-hidden
+					className="absolute size-36 rounded-full border border-primary/30"
+					animate={{ scale: [1, 1.35, 1], opacity: [0.55, 0, 0.55] }}
+					transition={{
+						duration: 2.8,
+						repeat: Number.POSITIVE_INFINITY,
+						ease: "easeOut",
+					}}
+				/>
+			)}
+			<span
+				aria-hidden
+				className="absolute size-28 rounded-full border border-dashed border-white/15"
+			/>
+
+			{/* Orbiting connector dots */}
+			{!reduce &&
+				[0, 1, 2].map((i) => (
+					<motion.span
+						key={i}
+						aria-hidden
+						className="absolute size-1.5 rounded-full bg-sky-300"
+						style={{ left: "50%", top: "50%" }}
+						animate={{ rotate: 360 }}
+						transition={{
+							duration: 8 + i * 2,
+							repeat: Number.POSITIVE_INFINITY,
+							ease: "linear",
+							delay: i * 0.4,
+						}}
+					>
+						<span
+							className="absolute block size-1.5 rounded-full bg-sky-300"
+							style={{ transform: `translate(${40 + i * 10}px, -50%)` }}
+						/>
+					</motion.span>
 				))}
-			</svg>
 
 			<motion.div
-				className="absolute left-1/2 top-[34%] flex size-14 -translate-x-1/2 items-center justify-center rounded-full border border-primary/40 bg-primary/20 text-primary shadow-[0_0_32px_color-mix(in_oklab,var(--primary)_45%,transparent)]"
-				animate={reduce ? undefined : { scale: [1, 1.06, 1] }}
-				transition={{ duration: 3.2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+				className="relative z-10 flex size-16 items-center justify-center rounded-full border border-primary/50 bg-primary/25 text-primary shadow-[0_0_40px_color-mix(in_oklab,var(--primary)_40%,transparent)]"
+				initial={reduce ? false : { scale: 0.7, opacity: 0 }}
+				whileInView={{ scale: 1, opacity: 1 }}
+				viewport={{ once: true }}
+				transition={{ duration: 0.55, ease: EASE }}
 			>
-				<BadgeCheck className="size-6" />
+				{!reduce && (
+					<motion.span
+						aria-hidden
+						className="absolute inset-0 rounded-full bg-primary/20"
+						animate={{ scale: [1, 1.18, 1], opacity: [0.5, 0, 0.5] }}
+						transition={{
+							duration: 2.2,
+							repeat: Number.POSITIVE_INFINITY,
+							ease: "easeInOut",
+						}}
+					/>
+				)}
+				<BadgeCheck className="relative size-7" />
 			</motion.div>
 
 			{nodes.map((n, i) => {
 				const Icon = n.icon;
+				const rad = (n.angle * Math.PI) / 180;
+				const x = Math.cos(rad) * radius;
+				const y = Math.sin(rad) * radius;
 				return (
 					<motion.div
 						key={n.label}
-						initial={reduce ? false : { opacity: 0, y: 8 }}
-						whileInView={{ opacity: 1, y: 0 }}
+						initial={reduce ? false : { opacity: 0, scale: 0.5 }}
+						whileInView={{ opacity: 1, scale: 1 }}
 						viewport={{ once: true }}
-						transition={{ delay: 0.1 * i, duration: 0.45, ease: EASE }}
-						className="absolute flex size-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-white/85 backdrop-blur-sm"
-						style={{ left: n.x, top: n.y }}
+						transition={{ delay: 0.15 + i * 0.12, duration: 0.45, ease: EASE }}
+						className="absolute z-10 flex size-11 items-center justify-center rounded-xl border border-white/15 bg-white/8 text-white/90 shadow-lg backdrop-blur-sm"
+						style={{
+							left: `calc(50% + ${x}px)`,
+							top: `calc(50% + ${y}px)`,
+							transform: "translate(-50%, -50%)",
+						}}
 						title={n.label}
 					>
-						<Icon className="size-4" />
+						{!reduce && (
+							<motion.span
+								className="absolute inset-0 rounded-xl"
+								animate={{ y: [0, -3, 0] }}
+								transition={{
+									duration: 2.4 + i * 0.25,
+									repeat: Number.POSITIVE_INFINITY,
+									ease: "easeInOut",
+									delay: i * 0.2,
+								}}
+							/>
+						)}
+						<Icon className="relative size-4" />
 					</motion.div>
 				);
 			})}
@@ -196,38 +251,108 @@ function HubVisual({ reduce }: { reduce: boolean }) {
 
 function OverviewVisual({ reduce }: { reduce: boolean }) {
 	return (
-		<div className="relative flex min-h-[120px] items-center justify-center">
-			<div className="absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_50%_45%,color-mix(in_oklab,var(--primary)_18%,transparent),transparent_65%)]" />
+		<div className="relative overflow-hidden rounded-2xl border border-white/12 bg-black/25 p-4">
+			<div className="mb-3 flex items-center gap-2">
+				<span className="size-2 rounded-full bg-rose-400/80" />
+				<span className="size-2 rounded-full bg-amber-300/80" />
+				<span className="size-2 rounded-full bg-emerald-400/80" />
+				<span className="ml-auto text-[10px] font-medium uppercase tracking-wider text-white/40">
+					Job draft
+				</span>
+			</div>
+
+			<div className="space-y-2.5">
+				{[
+					{ id: "l1", w: 72 },
+					{ id: "l2", w: 54 },
+					{ id: "l3", w: 88 },
+					{ id: "l4", w: 40 },
+				].map((line, i) => (
+					<motion.div
+						key={line.id}
+						className="h-2 origin-left rounded-full bg-white/15"
+						style={{ width: `${line.w}%` }}
+						initial={reduce ? false : { scaleX: 0, opacity: 0 }}
+						whileInView={{ scaleX: 1, opacity: 1 }}
+						viewport={{ once: true }}
+						transition={{ delay: 0.1 + i * 0.12, duration: 0.55, ease: EASE }}
+					/>
+				))}
+			</div>
+
 			<motion.div
-				className="relative z-10 inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-lg shadow-primary/25"
-				animate={reduce ? undefined : { y: [0, -4, 0] }}
-				transition={{ duration: 3.5, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+				className="mt-4 inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary px-3 py-1.5 text-[11px] font-semibold text-primary-foreground shadow-lg shadow-primary/25"
+				initial={reduce ? false : { opacity: 0, y: 8 }}
+				whileInView={{ opacity: 1, y: 0 }}
+				viewport={{ once: true }}
+				transition={{ delay: 0.55, duration: 0.45, ease: EASE }}
 			>
-				<CheckCircle2 className="size-3.5" />
-				In review
+				{!reduce && (
+					<motion.span
+						animate={{ rotate: [0, 12, -8, 0] }}
+						transition={{
+							duration: 2.8,
+							repeat: Number.POSITIVE_INFINITY,
+							ease: "easeInOut",
+						}}
+					>
+						<CheckCircle2 className="size-3.5" />
+					</motion.span>
+				)}
+				{reduce && <CheckCircle2 className="size-3.5" />}
+				<span>Ready to submit</span>
 			</motion.div>
-			<span className="absolute left-[18%] top-[28%] size-2 rounded-full bg-emerald-400/80" />
-			<span className="absolute right-[22%] top-[34%] size-1.5 rounded-full bg-sky-300/80" />
-			<span className="absolute bottom-[30%] left-[30%] size-1.5 rounded-full bg-amber-300/70" />
-			<span className="absolute bottom-[26%] right-[28%] size-2 rounded-full bg-primary/70" />
 		</div>
 	);
 }
 
-function UploadVisual() {
+function UploadVisual({ reduce }: { reduce: boolean }) {
 	return (
 		<div className="rounded-xl border border-white/12 bg-white/5 p-3 backdrop-blur-sm">
-			<div className="flex items-center gap-3 rounded-lg border border-dashed border-white/20 bg-black/20 px-3 py-3">
-				<span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/20 text-primary">
+			<div className="relative flex items-center gap-3 overflow-hidden rounded-lg border border-dashed border-white/20 bg-black/20 px-3 py-3">
+				{!reduce && (
+					<motion.span
+						aria-hidden
+						className="pointer-events-none absolute inset-y-0 w-16 bg-linear-to-r from-transparent via-white/10 to-transparent"
+						animate={{ x: ["-40%", "220%"] }}
+						transition={{
+							duration: 2.4,
+							repeat: Number.POSITIVE_INFINITY,
+							ease: "easeInOut",
+							repeatDelay: 1.2,
+						}}
+					/>
+				)}
+
+				<motion.span
+					className="relative flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/20 text-primary"
+					animate={reduce ? undefined : { y: [0, -4, 0] }}
+					transition={{
+						duration: 1.8,
+						repeat: Number.POSITIVE_INFINITY,
+						ease: "easeInOut",
+					}}
+				>
 					<Upload className="size-4" />
-				</span>
-				<div className="min-w-0 flex-1">
+				</motion.span>
+				<div className="relative min-w-0 flex-1">
 					<p className="truncate text-xs font-medium text-white">
 						Upload payment proof
 					</p>
-					<p className="truncate text-[11px] text-white/45">PNG, JPG up to 5MB</p>
+					<div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10">
+						<motion.div
+							className="h-full rounded-full bg-primary"
+							initial={reduce ? { width: "72%" } : { width: "0%" }}
+							whileInView={{ width: "72%" }}
+							viewport={{ once: true }}
+							transition={{ delay: 0.2, duration: 1.1, ease: EASE }}
+						/>
+					</div>
+					<p className="mt-1 truncate text-[11px] text-white/45">
+						receipt.png · uploading…
+					</p>
 				</div>
-				<span className="flex size-8 shrink-0 items-center justify-center rounded-md border border-white/15 text-white/50">
+				<span className="relative flex size-8 shrink-0 items-center justify-center rounded-md border border-white/15 text-white/50">
 					<CreditCard className="size-3.5" />
 				</span>
 			</div>
@@ -236,51 +361,104 @@ function UploadVisual() {
 }
 
 function PublishVisual({ reduce }: { reduce: boolean }) {
-	const files = [0, 1, 2, 3, 4];
+	const targets = [
+		{ id: "t1", x: 14 },
+		{ id: "t2", x: 32 },
+		{ id: "t3", x: 50 },
+		{ id: "t4", x: 68 },
+		{ id: "t5", x: 86 },
+	];
 
 	return (
-		<div className="relative mt-8 min-h-[180px] flex-1">
+		<div className="relative mt-8 min-h-[190px] flex-1">
+			<svg className="absolute inset-0 size-full" aria-hidden="true">
+				{targets.map((t, i) => (
+					<motion.line
+						key={t.id}
+						x1="50%"
+						y1="18%"
+						x2={`${t.x}%`}
+						y2="68%"
+						stroke="rgb(125 211 252 / 0.35)"
+						strokeWidth="1.5"
+						strokeDasharray="5 6"
+						initial={reduce ? false : { pathLength: 0, opacity: 0 }}
+						whileInView={{ pathLength: 1, opacity: 1 }}
+						viewport={{ once: true }}
+						transition={{ delay: 0.15 + i * 0.08, duration: 0.6, ease: EASE }}
+					/>
+				))}
+			</svg>
+
+			{!reduce &&
+				targets.map((t, i) => (
+					<motion.span
+						key={`pulse-${t.id}`}
+						aria-hidden
+						className="absolute left-1/2 top-[18%] size-2 -translate-x-1/2 rounded-full bg-sky-300"
+						animate={{
+							x: ["0%", `${(t.x - 50) * 2.2}%`],
+							y: ["0%", "120%"],
+							opacity: [0, 1, 0],
+							scale: [0.6, 1, 0.4],
+						}}
+						transition={{
+							duration: 1.8,
+							repeat: Number.POSITIVE_INFINITY,
+							ease: "easeInOut",
+							delay: 0.35 * i,
+							repeatDelay: 0.8,
+						}}
+					/>
+				))}
+
 			<motion.div
 				className="relative z-10 mx-auto w-fit rounded-xl bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground shadow-lg shadow-primary/30"
-				initial={reduce ? false : { opacity: 0, y: 8 }}
-				whileInView={{ opacity: 1, y: 0 }}
+				initial={reduce ? false : { opacity: 0, y: 10, scale: 0.94 }}
+				whileInView={{ opacity: 1, y: 0, scale: 1 }}
 				viewport={{ once: true }}
 				transition={{ duration: 0.5, ease: EASE }}
 			>
 				<span className="inline-flex items-center gap-2">
-					<Send className="size-3.5" />
+					<motion.span
+						animate={reduce ? undefined : { x: [0, 3, 0] }}
+						transition={{
+							duration: 1.4,
+							repeat: Number.POSITIVE_INFINITY,
+							ease: "easeInOut",
+						}}
+					>
+						<Send className="size-3.5" />
+					</motion.span>
 					Publish to board
 				</span>
 			</motion.div>
 
-			<svg className="absolute inset-0 size-full text-primary/30" aria-hidden="true">
-				{files.map((i) => {
-					const x = 18 + i * 16;
-					return (
-						<line
-							key={i}
-							x1="50%"
-							y1="22%"
-							x2={`${x}%`}
-							y2="72%"
-							stroke="currentColor"
-							strokeWidth="1"
-						/>
-					);
-				})}
-			</svg>
-
-			<div className="absolute inset-x-0 bottom-2 flex justify-center gap-3">
-				{files.map((i) => (
+			<div className="absolute inset-x-0 bottom-1 flex justify-center gap-2.5 sm:gap-3">
+				{targets.map((t, i) => (
 					<motion.span
-						key={i}
-						initial={reduce ? false : { opacity: 0, y: 10 }}
-						whileInView={{ opacity: 1, y: 0 }}
+						key={t.id}
+						initial={reduce ? false : { opacity: 0, y: 16, scale: 0.8 }}
+						whileInView={{ opacity: 1, y: 0, scale: 1 }}
 						viewport={{ once: true }}
-						transition={{ delay: 0.08 * i, duration: 0.4, ease: EASE }}
-						className="flex size-10 items-center justify-center rounded-lg border border-white/12 bg-white/5 text-white/70"
+						transition={{ delay: 0.35 + i * 0.1, duration: 0.45, ease: EASE }}
+						className="flex size-10 items-center justify-center rounded-lg border border-white/12 bg-white/5 text-white/75"
 					>
-						<FileText className="size-4" />
+						{!reduce && (
+							<motion.span
+								animate={{ y: [0, -2, 0] }}
+								transition={{
+									duration: 2,
+									repeat: Number.POSITIVE_INFINITY,
+									ease: "easeInOut",
+									delay: i * 0.15,
+								}}
+								className="flex"
+							>
+								<FileText className="size-4" />
+							</motion.span>
+						)}
+						{reduce && <FileText className="size-4" />}
 					</motion.span>
 				))}
 			</div>
