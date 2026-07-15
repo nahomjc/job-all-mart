@@ -21,24 +21,24 @@ const SLIDES: {
 }[] = [
 	{
 		icon: Shield,
-		title: "Moderated submissions",
-		body: "Every post goes through admin review before it goes live.",
+		title: "Reviewed by people",
+		body: "An admin looks at every post before it is published.",
 		screenTitle: "Review queue",
 		rows: ["Spam check passed", "Admin assigned", "Awaiting approval"],
 	},
 	{
 		icon: CheckCircle2,
-		title: "Payment-verified posts",
-		body: "Jobs publish only after payment proof is approved by a person.",
+		title: "Payment confirmed",
+		body: "Jobs go live only after payment proof is approved.",
 		screenTitle: "Payment proof",
 		rows: ["Screenshot uploaded", "Reference matched", "Marked verified"],
 	},
 	{
 		icon: Zap,
-		title: "Instant Telegram reach",
-		body: "Approved listings hit the right category topic in under a minute.",
-		screenTitle: "Published live",
-		rows: ["Posted to board", "Sent to Telegram", "Seekers notified"],
+		title: "Goes to Telegram quickly",
+		body: "Approved jobs are sent to the matching channel topic.",
+		screenTitle: "Published",
+		rows: ["Posted to board", "Sent to Telegram", "Listed for seekers"],
 	},
 ];
 
@@ -63,14 +63,13 @@ export function WhyUsSection() {
 				<div>
 					<MotionBlock variant="fadeUp">
 						<p className="text-sm font-semibold uppercase tracking-wider text-primary">
-							Why choose us
+							Why us
 						</p>
 						<h2 className="mt-2 text-balance text-3xl font-bold tracking-tight md:text-4xl">
-							Built for trust at scale
+							Checked before it goes live
 						</h2>
 						<p className="mt-3 max-w-md text-muted-foreground">
-							A clean board for employers and seekers — reviewed, verified, then
-							live.
+							Every job is reviewed and payment-checked by a person first.
 						</p>
 					</MotionBlock>
 

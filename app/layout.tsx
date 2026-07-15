@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     template: `%s · ${appName}`,
   },
   description:
-    "Post jobs on our Telegram channels. Moderated submissions, verified payments, instant publishing.",
+    "Post jobs to Telegram and the website. Reviewed and payment-checked before going live.",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     title: appName,
-    description: "Reach thousands of job seekers on Telegram.",
+    description: "Job posts for Telegram channels and the web.",
     images: [{ url: "/logo.png" }],
   },
   robots: { index: true, follow: true },

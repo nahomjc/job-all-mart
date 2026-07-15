@@ -29,7 +29,7 @@ const STEPS = [
 		number: "01",
 		title: "Create your account",
 		description:
-			"Sign up with email or Telegram in under a minute. No lengthy onboarding — just name and you're in.",
+			"Sign up with email or Telegram. Takes about a minute.",
 		icon: Briefcase,
 		color: "from-sky-500 to-blue-600",
 	},
@@ -38,7 +38,7 @@ const STEPS = [
 		number: "02",
 		title: "Fill in job details",
 		description:
-			"Add title, company, category, salary, and description. Upload your company logo if you want extra visibility.",
+			"Add title, company, category, salary, description, and an optional logo.",
 		icon: FileText,
 		color: "from-sky-500 to-blue-600",
 	},
@@ -47,7 +47,7 @@ const STEPS = [
 		number: "03",
 		title: "Upload payment proof",
 		description:
-			"Pay per your plan, then upload a screenshot of the transfer. We match it against your submission.",
+			"Pay for your plan, then upload a screenshot of the transfer.",
 		icon: CreditCard,
 		color: "from-violet-500 to-purple-600",
 	},
@@ -56,7 +56,7 @@ const STEPS = [
 		number: "04",
 		title: "Admin review",
 		description:
-			"Our team verifies payment and checks the listing for quality. Usually within a few hours.",
+			"We check the payment and the job details. Usually done in a few hours.",
 		icon: Shield,
 		color: "from-amber-500 to-orange-600",
 	},
@@ -65,7 +65,7 @@ const STEPS = [
 		number: "05",
 		title: "Go live on Telegram",
 		description:
-			"Once approved, your job is published on the website and posted to the right Telegram channel topic.",
+			"When approved, the job appears on the website and in the matching Telegram topic.",
 		icon: Rocket,
 		color: "from-primary to-brand-deep",
 	},
@@ -533,14 +533,14 @@ export function JobPostStepsSection() {
 					className="mx-auto mb-14 max-w-2xl text-center"
 				>
 					<p className="text-sm font-semibold uppercase tracking-widest text-primary">
-						How it works
+						Steps
 					</p>
 					<h2 className="mt-3 text-balance text-3xl font-bold tracking-tight md:text-4xl">
-						Post a job in five simple steps
+						Post a job in five steps
 					</h2>
 					<p className="mt-4 text-pretty text-muted-foreground md:text-lg">
-						From sign-up to Telegram reach — every listing is moderated and
-						payment-verified before it goes live.
+						Create an account, submit the job, pay, wait for review, then go live
+						on Telegram.
 					</p>
 				</motion.div>
 

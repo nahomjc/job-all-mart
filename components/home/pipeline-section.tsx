@@ -27,22 +27,22 @@ const STEPS: {
 	{
 		n: "01",
 		icon: Briefcase,
-		title: "Ship a listing before lunch",
-		body: "Draft your role, pass a quick review, and go live on web plus Telegram the same day.",
+		title: "Publish your job",
+		body: "Write the role, submit it for review, and go live on the web and Telegram.",
 		screen: "publish",
 	},
 	{
 		n: "02",
 		icon: Users,
-		title: "Reach real people",
-		body: "Candidates find you on search, categories, and Telegram — not buried in a spreadsheet.",
+		title: "Shown to job seekers",
+		body: "People find jobs through search, categories, and Telegram channels.",
 		screen: "reach",
 	},
 	{
 		n: "03",
 		icon: Shield,
-		title: "Close with confidence",
-		body: "Payments stay protected and suspicious listings get flagged before they waste time.",
+		title: "Payment and spam checks",
+		body: "We verify payment and remove spam before anything goes live.",
 		screen: "close",
 	},
 ];
@@ -74,15 +74,13 @@ export function PipelineSection() {
 					<div>
 						<MotionBlock variant="fadeUp">
 							<p className="text-sm font-semibold uppercase tracking-wider text-primary">
-								For employers & teams
+								For employers
 							</p>
 							<h2 className="mt-3 text-balance text-3xl font-bold tracking-tight md:text-4xl">
-								Build your pipeline in{" "}
-								<span className="text-primary">three moves</span>
+								What you get
 							</h2>
 							<p className="mt-4 max-w-md text-pretty text-muted-foreground">
-								List on web and Telegram, reach candidates where they already
-								are, and close hires with moderation you can trust.
+								Post once. Show up on the website and Telegram. We handle review.
 							</p>
 						</MotionBlock>
 

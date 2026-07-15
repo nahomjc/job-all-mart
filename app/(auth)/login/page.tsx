@@ -23,18 +23,18 @@ export const metadata = {
 const FEATURES = [
   {
     icon: Shield,
-    title: "Moderated submissions",
-    body: "Every post is reviewed by a real human before going live.",
+    title: "Human review",
+    body: "An admin checks every post before it goes live.",
   },
   {
     icon: CheckCircle2,
-    title: "Payment-verified",
-    body: "Jobs publish only after we confirm your payment screenshot.",
+    title: "Payment checked",
+    body: "We confirm your payment screenshot before publishing.",
   },
   {
     icon: Zap,
-    title: "Instant Telegram reach",
-    body: "Approved posts hit the right channel topic in under 60 seconds.",
+    title: "Posted to Telegram",
+    body: "Approved jobs go to the matching channel topic.",
   },
 ];
 
@@ -117,12 +117,11 @@ export default async function LoginPage() {
               Live · Telegram + Web
             </span>
             <h2 className="mt-6 max-w-md text-balance text-4xl font-bold tracking-tight">
-              Hire faster on the channels you already use.
+              Post jobs to Telegram
             </h2>
             <p className="mt-4 max-w-md text-pretty text-primary-foreground/90">
-              Post once on {brandName}, reach thousands of vetted candidates on
-              Telegram and the open web — moderated, payment-verified, and live
-              in under a minute.
+              Submit a job on {brandName}. After payment and review, we publish it
+              on the website and Telegram.
             </p>
           </div>
 
@@ -149,7 +148,7 @@ export default async function LoginPage() {
               </span>
               <div className="flex-1">
                 <p className="text-xs uppercase tracking-wider text-primary-foreground/80">
-                  Monthly reach
+                  Channel members
                 </p>
                 <p className="text-xl font-bold">
                   250,000+{" "}

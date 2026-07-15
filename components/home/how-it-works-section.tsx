@@ -22,22 +22,22 @@ const STEPS = [
 	{
 		n: "01",
 		title: "Create your account",
-		body: "Sign up on the web or start from Telegram. Link your channel so posts reach the right audience.",
+		body: "Sign up on the website or through Telegram.",
 	},
 	{
 		n: "02",
 		title: "Post job details",
-		body: "Add title, company, location, salary, and a clear description in a guided form.",
+		body: "Add the title, company, location, salary, and description.",
 	},
 	{
 		n: "03",
 		title: "Upload payment proof",
-		body: "Attach your transfer screenshot so our team can verify and move you into review.",
+		body: "Send a screenshot of your payment so we can verify it.",
 	},
 	{
 		n: "04",
 		title: "Go live on Telegram",
-		body: "Once approved, your listing is published to the board and broadcast to seekers.",
+		body: "After approval, your job goes live on the board and Telegram.",
 	},
 ] as const;
 
@@ -53,11 +53,10 @@ export function HowItWorksSection({ appName }: { appName: string }) {
 							How it works
 						</span>
 						<h2 className="mt-4 max-w-2xl text-balance text-3xl font-bold tracking-tight text-white sm:text-4xl">
-							From draft to Telegram — four clear steps on {appName}
+							How posting works on {appName}
 						</h2>
 						<p className="mt-3 max-w-xl text-sm leading-relaxed text-white/65 sm:text-base">
-							Post once, get reviewed, and reach job seekers without juggling
-							multiple tools.
+							Sign up, add the job, pay, then we publish it to Telegram.
 						</p>
 					</MotionBlock>
 				</div>

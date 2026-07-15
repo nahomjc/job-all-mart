@@ -14,10 +14,10 @@ export function SidebarPromo() {
 					<Sparkles className="size-4" />
 				</span>
 				<p className="mt-3 text-sm font-semibold leading-snug">
-					Reach more candidates
+					Post a job to Telegram
 				</p>
 				<p className="mt-1 text-xs text-white/70">
-					Publish moderated job posts to Telegram in under a minute.
+					Submit once. We review it, then publish.
 				</p>
 				<Button
 					asChild

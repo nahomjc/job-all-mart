@@ -10,7 +10,7 @@ export function Footer() {
             {env.NEXT_PUBLIC_APP_NAME}
           </h3>
           <p className="text-sm text-muted-foreground">
-            Reach thousands of job seekers on Telegram and the web.
+            Job posts for Telegram channels and the website.
           </p>
         </div>
         <div>
@@ -24,8 +24,8 @@ export function Footer() {
         <div>
           <h4 className="mb-2 text-sm font-semibold">Telegram</h4>
           <ul className="space-y-1 text-sm text-muted-foreground">
-            <li>Use our bot to post jobs directly from Telegram.</li>
-            <li>No account required — start with /start.</li>
+            <li>Use our bot to post from Telegram.</li>
+            <li>Start with /start in the bot chat.</li>
           </ul>
         </div>
         <div>

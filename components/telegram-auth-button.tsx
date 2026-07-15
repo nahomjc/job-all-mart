@@ -24,8 +24,8 @@ export function TelegramAuthButton({ mode }: TelegramAuthButtonProps) {
             <p className="text-sm font-semibold">Continue with Telegram</p>
             <p className="text-xs text-muted-foreground">
               {mode === "signup"
-                ? "No email needed — confirm inside the bot chat"
-                : "Opens your bot chat — no phone form on the website"}
+                ? "No email needed. Confirm inside the bot chat."
+                : "Opens the bot chat. No phone form on the website."}
             </p>
           </div>
         </div>
@@ -44,9 +44,9 @@ export function TelegramAuthButton({ mode }: TelegramAuthButtonProps) {
         </Button>
 
         <ol className="mt-3 space-y-1 text-xs text-muted-foreground">
-          <li>1. Tap the button — your Telegram app opens</li>
-          <li>2. In the bot chat, tap <strong>Confirm website login</strong></li>
-          <li>3. You return here, signed in to the dashboard</li>
+          <li>1. Tap the button. Your Telegram app opens.</li>
+          <li>2. In the bot chat, tap <strong>Confirm website login</strong>.</li>
+          <li>3. Come back here. You will be signed in.</li>
         </ol>
       </div>
 

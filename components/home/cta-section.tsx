@@ -40,14 +40,14 @@ export function CtaSection({ telegramJoinUrl }: { telegramJoinUrl: string }) {
 					>
 						<span className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-medium">
 							<Handshake className="size-3.5" />
-							Hire faster, hire smarter
+							Hiring
 						</span>
 						<h2 className="mt-4 text-balance text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">
-							Ready to post your next role?
+							Ready to post a job?
 						</h2>
 						<p className="mt-4 max-w-xl text-pretty text-lg text-primary-foreground/85">
-							Reach thousands of vetted candidates on Telegram and the open web.
-							Every post is human-reviewed and payment-verified before going live.
+							Create an account, submit your job, and we&apos;ll publish it after
+							review.
 						</p>
 					</motion.div>
 

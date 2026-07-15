@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 
 export const metadata = {
   title: "Pricing",
-  description: "Choose a plan that fits your hiring volume.",
+  description: "Pay per job post. No subscription.",
 };
 
 const tiers = [
@@ -13,11 +13,11 @@ const tiers = [
     name: "Free",
     price: "ETB 0",
     cadence: "/post",
-    description: "Try us out with a single free post per 30 days.",
+    description: "One free post every 30 days.",
     features: [
       "1 free post / 30 days",
-      "Manual moderation in 24h",
-      "Standard Telegram reach",
+      "Review within 24 hours",
+      "Posted to Telegram",
     ],
     cta: "Start free",
   },
@@ -25,11 +25,11 @@ const tiers = [
     name: "Basic",
     price: "ETB 500",
     cadence: "/post",
-    description: "For occasional hiring.",
+    description: "For a few posts at a time.",
     features: [
-      "Same-day review (typically <2h)",
-      "Logo & company branding",
-      "Web + Telegram cross-post",
+      "Same-day review (often under 2 hours)",
+      "Logo and company name",
+      "Website and Telegram",
     ],
     cta: "Buy a post",
     highlight: true,
@@ -38,21 +38,21 @@ const tiers = [
     name: "Pro",
     price: "ETB 1,250",
     cadence: "/post",
-    description: "For high-priority roles.",
+    description: "Pinned and featured for 24 hours.",
     features: [
-      "Pinned & featured for 24h",
+      "Pinned and featured for 24h",
       "Priority review",
-      "Repost after 14 days included",
+      "One repost after 14 days",
     ],
-    cta: "Boost a post",
+    cta: "Buy Pro",
   },
   {
     name: "Enterprise",
     price: "Custom",
     cadence: "",
-    description: "Bulk posts, branding takeover, API access.",
+    description: "Bulk posts, custom branding, and API access.",
     features: [
-      "Bulk submission via API",
+      "Bulk posts via API",
       "Dedicated Telegram channel",
       "Account manager",
     ],
@@ -66,8 +66,7 @@ export default function PricingPage() {
       <div className="mx-auto max-w-2xl text-center">
         <h1 className="text-4xl font-bold tracking-tight">Pricing</h1>
         <p className="mt-3 text-muted-foreground">
-          Pay per post. No subscriptions. Get fast manual review and the right
-          audience on every job.
+          Pay per post. No subscription. We review each job before it goes live.
         </p>
       </div>
 

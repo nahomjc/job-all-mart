@@ -121,11 +121,10 @@ export default async function JobsPage(props: {
 							</div>
 							<div className="relative max-w-xl">
 								<h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-[28px]">
-									Find your dream job here
+									Browse open jobs
 								</h1>
 								<p className="mt-2 text-sm leading-relaxed text-muted-foreground sm:text-[15px]">
-									Join {appName} — a place where you find your dream job across
-									many skills, with trusted employers and clear posting.
+									Search listings on {appName} by title, category, or salary.
 								</p>
 							</div>
 						</section>

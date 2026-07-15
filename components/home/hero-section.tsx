@@ -150,7 +150,7 @@ export function HeroSection({
 							className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-xs font-medium backdrop-blur-md"
 						>
 							<Sparkles className="size-3.5 text-sky-200" />
-							Live · Telegram + Web · Moderated
+							Live on Telegram and the web
 						</motion.span>
 
 						<motion.h1
@@ -160,7 +160,7 @@ export function HeroSection({
 							animate="show"
 							className="mt-7 text-balance text-4xl font-bold leading-[1.05] tracking-tight md:text-6xl lg:text-[4rem]"
 						>
-							Smart way to manage
+							Post jobs.
 							<br />
 							<motion.span
 								className="bg-linear-to-r from-sky-200 via-white to-blue-200 bg-clip-text text-transparent"
@@ -172,7 +172,7 @@ export function HeroSection({
 								transition={{ duration: 6, repeat: Number.POSITIVE_INFINITY }}
 								style={{ backgroundSize: "200% auto" }}
 							>
-								your job posts
+								Publish on Telegram.
 							</motion.span>
 						</motion.h1>
 
@@ -183,9 +183,8 @@ export function HeroSection({
 							animate="show"
 							className="mx-auto mt-6 max-w-lg text-pretty text-lg leading-relaxed text-primary-foreground/75 lg:mx-0"
 						>
-							Planning today lays the foundation for hiring success — post on{" "}
-							{appName}, reach candidates on Telegram, and get approved by real
-							humans.
+							Post jobs on {appName}, get them reviewed by our team, then
+							publish to Telegram and the website.
 						</motion.p>
 
 						<motion.div
@@ -275,7 +274,7 @@ export function HeroSection({
 						transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
 						className="flex flex-col items-center gap-2 text-primary-foreground/50"
 					>
-						<span className="text-xs">Scroll to explore</span>
+						<span className="text-xs">Scroll down</span>
 						<span className="h-8 w-px bg-linear-to-b from-white/50 to-transparent" />
 					</motion.div>
 				</motion.div>

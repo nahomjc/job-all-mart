@@ -87,11 +87,10 @@ export function LatestJobsSection({ jobs }: { jobs: JobRow[] }) {
 							Featured jobs
 						</p>
 						<h2 className="mt-2 text-balance text-3xl font-bold tracking-tight md:text-4xl">
-							Roles worth opening first
+							Latest openings
 						</h2>
 						<p className="mt-2 max-w-xl text-primary-foreground/75">
-							Pinned openings from verified employers — built for clarity, not
-							clutter.
+							Recent jobs from employers on our channels.
 						</p>
 					</MotionBlock>
 					<motion.div
@@ -114,7 +113,7 @@ export function LatestJobsSection({ jobs }: { jobs: JobRow[] }) {
 
 				{jobs.length === 0 ? (
 					<div className="rounded-2xl border border-dashed border-white/20 bg-white/10 px-6 py-16 text-center text-sm text-primary-foreground/70 backdrop-blur-sm">
-						No jobs posted yet — be the first.
+						No jobs posted yet. Check back soon.
 					</div>
 				) : (
 					<Stagger className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4 xl:gap-6">
