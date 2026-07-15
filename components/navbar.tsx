@@ -54,25 +54,28 @@ export async function Navbar() {
 						>
 							Pricing
 						</Link>
-						<Link
-							href="/login?mode=signup"
-							className="transition-colors hover:text-black dark:hover:text-white"
-						>
-							Post a job
-						</Link>
 					</nav>
 
 					{/* Right: actions / profile pill */}
 					<div className="flex items-center justify-end gap-1.5 sm:gap-2">
 						<ThemeToggle className="rounded-full text-black hover:bg-black/5 dark:text-white dark:hover:bg-white/10 dark:hover:text-white" />
 						{user ? (
-							<UserMenu
-								name={user.displayName ?? user.email ?? "User"}
-								email={user.email}
-								role={user.role}
-								variant="capsule"
-								showProfile
-							/>
+							<>
+								<Button
+									asChild
+									size="sm"
+									className="hidden rounded-full sm:inline-flex"
+								>
+									<Link href="/post/new">Post a job</Link>
+								</Button>
+								<UserMenu
+									name={user.displayName ?? user.email ?? "User"}
+									email={user.email}
+									role={user.role}
+									variant="capsule"
+									showProfile
+								/>
+							</>
 						) : (
 							<>
 								<Button
@@ -88,7 +91,7 @@ export async function Navbar() {
 									size="sm"
 									className="hidden rounded-full sm:inline-flex"
 								>
-									<Link href="/login?mode=signup">Post a job</Link>
+									<Link href="/post/new">Post a job</Link>
 								</Button>
 							</>
 						)}

@@ -65,7 +65,18 @@ type VerificationResult = {
 	amount?: number | null;
 };
 
-export function PaymentForm({ jobId }: { jobId: string }) {
+export function PaymentForm({
+	jobId,
+	successHref,
+	cancelHref,
+	variant = "steps",
+}: {
+	jobId: string;
+	successHref?: string;
+	cancelHref?: string;
+	/** `single` shows all payment fields on one screen (no nested stepper). */
+	variant?: "steps" | "single";
+}) {
 	const router = useRouter();
 	const formRef = useRef<HTMLFormElement>(null);
 	const [stepIndex, setStepIndex] = useState(0);
@@ -74,8 +85,10 @@ export function PaymentForm({ jobId }: { jobId: string }) {
 	const [checking, startCheck] = useTransition();
 	const [method, setMethod] = useState<PaymentVerifyMethod>("telebirr");
 	const [verified, setVerified] = useState<VerificationResult | null>(null);
+	const doneHref = successHref ?? `/dashboard/jobs/${jobId}`;
+	const isSingle = variant === "single";
 
-	const isLastStep = stepIndex === STEPS.length - 1;
+	const isLastStep = isSingle || stepIndex === STEPS.length - 1;
 
 	const selectedMethod = useMemo(
 		() => PAYMENT_METHOD_OPTIONS.find((m) => m.value === method),
@@ -88,16 +101,16 @@ export function PaymentForm({ jobId }: { jobId: string }) {
 	useEffect(() => {
 		if (state.ok) {
 			toast.success("Payment submitted. Awaiting admin review.");
-			router.push(`/dashboard/jobs/${jobId}`);
+			router.push(doneHref);
 		} else if (state.error && !state.fieldErrors) {
 			toast.error(state.error);
 		}
-	}, [state.ok, state.error, state.fieldErrors, router, jobId]);
+	}, [state.ok, state.error, state.fieldErrors, router, doneHref]);
 
 	const clearVerification = () => setVerified(null);
 
 	const validateCurrentStep = useCallback(() => {
-		if (!formRef.current || isLastStep) return true;
+		if (isSingle || !formRef.current || isLastStep) return true;
 		const fd = Object.fromEntries(new FormData(formRef.current));
 		const schema = STEP_SCHEMAS[stepIndex];
 		if (!schema) return true;
@@ -108,7 +121,7 @@ export function PaymentForm({ jobId }: { jobId: string }) {
 		}
 		setStepErrors({});
 		return true;
-	}, [stepIndex, isLastStep]);
+	}, [stepIndex, isLastStep, isSingle]);
 
 	const goNext = () => {
 		if (!validateCurrentStep()) return;
@@ -140,7 +153,7 @@ export function PaymentForm({ jobId }: { jobId: string }) {
 			].filter(Boolean);
 			toast.success(
 				parts.length
-					? `Reference verified — ${parts.join(" · ")}`
+					? `Reference verified. ${parts.join(" · ")}`
 					: "Reference verified",
 			);
 		});
@@ -156,14 +169,16 @@ export function PaymentForm({ jobId }: { jobId: string }) {
 			<input type="hidden" name="jobId" value={jobId} />
 			<input type="hidden" name="method" value={method} />
 
-			<FormStepper
-				steps={STEPS}
-				stepIndex={stepIndex}
-				onStepClick={setStepIndex}
-				ariaLabel="Payment progress"
-			/>
+			{!isSingle ? (
+				<FormStepper
+					steps={STEPS}
+					stepIndex={stepIndex}
+					onStepClick={setStepIndex}
+					ariaLabel="Payment progress"
+				/>
+			) : null}
 
-			<div className={cn(stepIndex !== 0 && "hidden")}>
+			<div className={cn(!isSingle && stepIndex !== 0 && "hidden")}>
 				<Card className="border-primary/20">
 					<CardHeader className="pb-3">
 						<CardTitle className="text-base">How much did you pay?</CardTitle>
@@ -211,7 +226,7 @@ export function PaymentForm({ jobId }: { jobId: string }) {
 				</Card>
 			</div>
 
-			<div className={cn(stepIndex !== 1 && "hidden")}>
+			<div className={cn(!isSingle && stepIndex !== 1 && "hidden")}>
 				<Card
 					className={cn(
 						"transition-colors duration-300",
@@ -350,7 +365,7 @@ export function PaymentForm({ jobId }: { jobId: string }) {
 				</Card>
 			</div>
 
-			<div className={cn(stepIndex !== 2 && "hidden")}>
+			<div className={cn(!isSingle && stepIndex !== 2 && "hidden")}>
 				<Card>
 					<CardHeader className="pb-3">
 						<CardTitle className="text-base">Payment screenshot</CardTitle>
@@ -363,7 +378,7 @@ export function PaymentForm({ jobId }: { jobId: string }) {
 							kind="payment"
 							name="screenshotKey"
 							label="Payment screenshot"
-							helperText="PNG, JPG, WebP, or GIF — up to 5 MB."
+							helperText="PNG, JPG, WebP, or GIF. Up to 5 MB."
 						/>
 						{mergedErrors.screenshotKey?.[0] && (
 							<p className="mt-2 text-xs text-destructive">
@@ -384,9 +399,19 @@ export function PaymentForm({ jobId }: { jobId: string }) {
 				<Button
 					type="button"
 					variant="outline"
-					onClick={() => (stepIndex === 0 ? router.back() : goBack())}
+					onClick={() => {
+						if (!isSingle && stepIndex !== 0) {
+							goBack();
+							return;
+						}
+						if (cancelHref) {
+							router.push(cancelHref);
+							return;
+						}
+						router.back();
+					}}
 				>
-					{stepIndex === 0 ? "Cancel" : "Back"}
+					{isSingle || stepIndex === 0 ? "Cancel" : "Back"}
 				</Button>
 				{isLastStep ? (
 					<Button type="submit" disabled={pending}>

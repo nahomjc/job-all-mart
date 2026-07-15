@@ -129,7 +129,7 @@ export function PipelineSection() {
 
 						<div className="mt-8">
 							<Button asChild className="h-12 rounded-full px-8" size="lg">
-								<Link href="/login?mode=signup">
+								<Link href="/post/new">
 									Start hiring <ArrowRight className="size-4" />
 								</Link>
 							</Button>

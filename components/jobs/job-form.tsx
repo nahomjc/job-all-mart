@@ -6,6 +6,7 @@ import { useActionState } from "react";
 import { toast } from "sonner";
 import { FileUploader } from "@/components/file-uploader";
 import { FormStepper, type FormStep } from "@/components/form-stepper";
+import { PaymentForm } from "@/components/jobs/payment-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,6 +31,11 @@ const STEPS: FormStep[] = [
 	{ id: "compensation", title: "Compensation", short: "Pay" },
 	{ id: "apply", title: "Apply & logo", short: "Apply" },
 	{ id: "review", title: "Review & submit", short: "Review" },
+];
+
+const SIMPLE_STEPS: FormStep[] = [
+	...STEPS,
+	{ id: "payment", title: "Payment proof", short: "Payment" },
 ];
 
 const STEP_SCHEMAS = [
@@ -70,19 +76,28 @@ const SALARY_CURRENCIES = [
 
 interface JobFormProps {
 	categories: Pick<Category, "id" | "name">[];
+	/** `simple` uses the public /post flow instead of the dashboard. */
+	flow?: "dashboard" | "simple";
 }
 
 type ReviewSnapshot = Record<string, string>;
 
-export function JobForm({ categories }: JobFormProps) {
+export function JobForm({ categories, flow = "dashboard" }: JobFormProps) {
 	const router = useRouter();
 	const formRef = useRef<HTMLFormElement>(null);
 	const [stepIndex, setStepIndex] = useState(0);
 	const [stepErrors, setStepErrors] = useState<Record<string, string[]>>({});
 	const [reviewData, setReviewData] = useState<ReviewSnapshot | null>(null);
+	const [submittedJobId, setSubmittedJobId] = useState<string | null>(null);
 	const [state, action, pending] = useActionState(submitJobAction, initial);
-
-	const isReviewStep = stepIndex === STEPS.length - 1;
+	const cancelHref = flow === "simple" ? "/" : undefined;
+	const isSimple = flow === "simple";
+	const steps = isSimple ? SIMPLE_STEPS : STEPS;
+	const reviewStepIndex = STEPS.length - 1;
+	const paymentStepIndex = STEPS.length;
+	const isReviewStep = stepIndex === reviewStepIndex;
+	const isPaymentStep =
+		isSimple && stepIndex === paymentStepIndex && Boolean(submittedJobId);
 	const isLastInputStep = stepIndex === STEPS.length - 2;
 
 	const categoryName = useMemo(() => {
@@ -98,8 +113,19 @@ export function JobForm({ categories }: JobFormProps) {
 		}
 	}, [state.error, state.fieldErrors]);
 
+	useEffect(() => {
+		if (!isSimple || !state.ok || !state.data || typeof state.data !== "object") {
+			return;
+		}
+		const jobId = (state.data as { jobId?: string }).jobId;
+		if (!jobId) return;
+		setSubmittedJobId(jobId);
+		setStepIndex(paymentStepIndex);
+		toast.success("Job saved. Add your payment details.");
+	}, [isSimple, state.ok, state.data, paymentStepIndex]);
+
 	const validateCurrentStep = useCallback(() => {
-		if (!formRef.current || isReviewStep) return true;
+		if (!formRef.current || isReviewStep || isPaymentStep) return true;
 		const fd = Object.fromEntries(new FormData(formRef.current));
 		const schema = STEP_SCHEMAS[stepIndex];
 		if (!schema) return true;
@@ -110,7 +136,7 @@ export function JobForm({ categories }: JobFormProps) {
 		}
 		setStepErrors({});
 		return true;
-	}, [stepIndex, isReviewStep]);
+	}, [stepIndex, isReviewStep, isPaymentStep]);
 
 	const goNext = () => {
 		if (!validateCurrentStep()) return;
@@ -119,7 +145,7 @@ export function JobForm({ categories }: JobFormProps) {
 				Object.fromEntries(new FormData(formRef.current)) as ReviewSnapshot,
 			);
 		}
-		setStepIndex((i) => Math.min(i + 1, STEPS.length - 1));
+		setStepIndex((i) => Math.min(i + 1, steps.length - 1));
 	};
 
 	const goBack = () => {
@@ -132,12 +158,31 @@ export function JobForm({ categories }: JobFormProps) {
 		...(state.fieldErrors ?? {}),
 	};
 
+	if (isPaymentStep && submittedJobId) {
+		return (
+			<div className="space-y-6">
+				<FormStepper
+					steps={steps}
+					stepIndex={stepIndex}
+					ariaLabel="Job post progress"
+				/>
+				<PaymentForm
+					jobId={submittedJobId}
+					variant="single"
+					successHref={`/post/${submittedJobId}/done`}
+					cancelHref="/"
+				/>
+			</div>
+		);
+	}
+
 	return (
 		<form ref={formRef} action={action} noValidate className="space-y-6">
+			{isSimple ? <input type="hidden" name="flow" value="simple" /> : null}
 			<FormStepper
-				steps={STEPS}
+				steps={steps}
 				stepIndex={stepIndex}
-				onStepClick={setStepIndex}
+				onStepClick={submittedJobId ? undefined : setStepIndex}
 				ariaLabel="Job post progress"
 			/>
 
@@ -163,7 +208,7 @@ export function JobForm({ categories }: JobFormProps) {
 						label="Job description"
 						name="description"
 						error={mergedErrors.description?.[0]}
-						helperText="Min 80 characters. Markdown not yet supported."
+						helperText="Min 10 characters. Markdown not yet supported."
 					>
 						<Textarea
 							name="description"
@@ -375,13 +420,27 @@ export function JobForm({ categories }: JobFormProps) {
 				<Button
 					type="button"
 					variant="outline"
-					onClick={() => (stepIndex === 0 ? router.back() : goBack())}
+					onClick={() => {
+						if (stepIndex !== 0) {
+							goBack();
+							return;
+						}
+						if (cancelHref) {
+							router.push(cancelHref);
+							return;
+						}
+						router.back();
+					}}
 				>
 					{stepIndex === 0 ? "Cancel" : "Back"}
 				</Button>
 				{isReviewStep ? (
 					<Button type="submit" disabled={pending || !reviewData}>
-						{pending ? "Submitting..." : "Submit & continue to payment"}
+						{pending
+							? "Saving..."
+							: isSimple
+								? "Continue to payment"
+								: "Submit & continue to payment"}
 					</Button>
 				) : (
 					<Button type="button" onClick={goNext}>

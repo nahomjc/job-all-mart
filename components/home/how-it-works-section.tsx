@@ -86,7 +86,7 @@ export function HowItWorksSection({ appName }: { appName: string }) {
 								asChild
 								className="h-11 rounded-xl bg-primary px-5 font-semibold text-primary-foreground hover:bg-primary/90"
 							>
-								<Link href="/login?mode=signup">
+								<Link href="/post/new">
 									Start posting
 									<ArrowRight className="size-4" />
 								</Link>

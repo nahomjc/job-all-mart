@@ -138,6 +138,10 @@ export async function submitJobAction(
   });
 
   revalidatePath("/dashboard/jobs");
+  const flow = String(formData.get("flow") ?? "");
+  if (flow === "simple") {
+    return ok({ jobId: job.id });
+  }
   redirect(`/dashboard/jobs/${job.id}/payment`);
 }
 

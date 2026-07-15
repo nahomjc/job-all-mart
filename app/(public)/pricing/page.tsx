@@ -98,7 +98,7 @@ export default function PricingPage() {
                 className="w-full"
                 variant={t.highlight ? "default" : "outline"}
               >
-                <Link href="/login?mode=signup">{t.cta}</Link>
+                <Link href="/post/new">{t.cta}</Link>
               </Button>
             </CardContent>
           </Card>

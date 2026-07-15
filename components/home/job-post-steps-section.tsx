@@ -650,7 +650,7 @@ export function JobPostStepsSection() {
 							className="mt-8 flex flex-wrap gap-3"
 						>
 							<Button asChild className="rounded-full">
-								<Link href="/login?mode=signup">
+								<Link href="/post/new">
 									Start posting <ArrowRight className="size-4" />
 								</Link>
 							</Button>

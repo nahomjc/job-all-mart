@@ -211,7 +211,7 @@ export function HeroSection({
 								variant="ghost"
 								className="h-12 text-primary-foreground/90 hover:bg-white/10 hover:text-white"
 							>
-								<Link href="/login?mode=signup">
+								<Link href="/post/new">
 									Post a job <ArrowRight className="size-4" />
 								</Link>
 							</Button>

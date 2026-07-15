@@ -64,7 +64,7 @@ export function CtaSection({ telegramJoinUrl }: { telegramJoinUrl: string }) {
 								size="lg"
 								className="h-12 w-full rounded-full bg-white text-brand-deep hover:bg-white/90 sm:w-auto md:w-full"
 							>
-								<Link href="/login?mode=signup">
+								<Link href="/post/new">
 									Post a job <ArrowRight className="size-4" />
 								</Link>
 							</Button>

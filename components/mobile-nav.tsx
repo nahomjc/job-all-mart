@@ -90,13 +90,13 @@ export function MobileNav({ brandName, categories, signedIn }: MobileNavProps) {
 							)}
 						</nav>
 
-						{!signedIn && (
-							<div className="shrink-0 space-y-2 border-t p-4">
-								<Button asChild className="h-11 w-full rounded-xl">
-									<Link href="/login?mode=signup" onClick={close}>
-										Post a job
-									</Link>
-								</Button>
+						<div className="shrink-0 space-y-2 border-t p-4">
+							<Button asChild className="h-11 w-full rounded-xl">
+								<Link href="/post/new" onClick={close}>
+									Post a job
+								</Link>
+							</Button>
+							{!signedIn ? (
 								<Button
 									asChild
 									variant="outline"
@@ -106,8 +106,8 @@ export function MobileNav({ brandName, categories, signedIn }: MobileNavProps) {
 										Sign in
 									</Link>
 								</Button>
-							</div>
-						)}
+							) : null}
+						</div>
 					</div>
 				</DialogContent>
 			</Dialog>

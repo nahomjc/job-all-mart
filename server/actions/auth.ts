@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { safeNextPath } from "@/lib/safe-next-path";
 import { loginSchema, signupSchema } from "@/lib/validations/auth";
 
 export interface AuthActionState {
@@ -27,7 +28,7 @@ export async function loginAction(
   if (error) {
     return { ok: false, error: error.message };
   }
-  redirect("/dashboard");
+  redirect(safeNextPath(formData.get("next")));
 }
 
 export async function signupAction(

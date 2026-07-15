@@ -11,7 +11,7 @@ export const jobSubmitSchema = z.object({
 		.max(200, "Company name too long"),
 	description: z
 		.string()
-		.min(80, "Description must be at least 80 characters"),
+		.min(10, "Description must be at least 10 characters"),
 	categoryId: z.string().uuid("Pick a category"),
 	employmentType: z.enum([
 		"full_time",

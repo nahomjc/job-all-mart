@@ -13,6 +13,7 @@ import { AuthForm } from "@/components/auth-form";
 import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/auth";
+import { safeNextPath } from "@/lib/safe-next-path";
 import { buildRequiredChannelJoinUrl } from "@/lib/required-channel-links";
 import { env } from "@/lib/env";
 
@@ -38,9 +39,12 @@ const FEATURES = [
   },
 ];
 
-export default async function LoginPage() {
+export default async function LoginPage(props: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const sp = await props.searchParams;
   const user = await getCurrentUser();
-  if (user) redirect("/dashboard");
+  if (user) redirect(safeNextPath(sp.next));
 
   const brandName = env.NEXT_PUBLIC_APP_NAME;
   const tgJoinUrl = buildRequiredChannelJoinUrl({

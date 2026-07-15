@@ -31,6 +31,9 @@ export function AuthForm() {
   const sp = useSearchParams();
   const mode = sp.get("mode") === "signup" ? "signup" : "login";
   const oauthError = sp.get("error");
+  const next = sp.get("next");
+  const nextQuery = next ? `&next=${encodeURIComponent(next)}` : "";
+  const nextSuffix = next ? `?next=${encodeURIComponent(next)}` : "";
 
   const action = mode === "signup" ? signupAction : loginAction;
   const [state, formAction, pending] = useActionState(action, initial);
@@ -54,25 +57,30 @@ export function AuthForm() {
         </h1>
         <p className="text-sm text-muted-foreground">
           {isSignup
-            ? "Start posting jobs on the channels in under a minute."
-            : "Sign in to manage your posts and Telegram delivery."}
+            ? "Create an account to post a job."
+            : "Sign in to post a job or manage your listings."}
         </p>
       </div>
 
       {/* Mode switcher (segmented) */}
       <div className="grid grid-cols-2 rounded-xl bg-muted p-1 text-sm">
-        <ModeTab href="/login" active={!isSignup} label="Sign in" />
-        <ModeTab href="/login?mode=signup" active={isSignup} label="Sign up" />
+        <ModeTab href={`/login${nextSuffix}`} active={!isSignup} label="Sign in" />
+        <ModeTab
+          href={`/login?mode=signup${nextQuery}`}
+          active={isSignup}
+          label="Sign up"
+        />
       </div>
 
       {/* Success state for signup */}
       {state.ok && isSignup ? (
-        <SignupSuccess />
+        <SignupSuccess next={next} />
       ) : (
         <div className="space-y-4">
           <TelegramAuthButton mode={isSignup ? "signup" : "login"} />
 
           <form action={formAction} className="space-y-4">
+          {next ? <input type="hidden" name="next" value={next} /> : null}
           {isSignup && (
             <Field
               id="displayName"
@@ -180,7 +188,7 @@ export function AuthForm() {
               <>
                 Already have an account?{" "}
                 <Link
-                  href="/login"
+                  href={`/login${nextSuffix}`}
                   className="font-medium text-primary hover:underline"
                 >
                   Sign in
@@ -190,7 +198,7 @@ export function AuthForm() {
               <>
                 New here?{" "}
                 <Link
-                  href="/login?mode=signup"
+                  href={`/login?mode=signup${nextQuery}`}
                   className="font-medium text-primary hover:underline"
                 >
                   Create an account
@@ -265,7 +273,10 @@ function Field({
   );
 }
 
-function SignupSuccess() {
+function SignupSuccess({ next }: { next: string | null }) {
+  const signInHref = next
+    ? `/login?next=${encodeURIComponent(next)}`
+    : "/login";
   return (
     <div className="space-y-4 rounded-2xl border border-primary/30 bg-primary/5 p-6 text-center">
       <span className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-primary/15 text-primary">
@@ -279,7 +290,7 @@ function SignupSuccess() {
         </p>
       </div>
       <Button asChild variant="outline" size="sm">
-        <Link href="/login">Back to sign in</Link>
+        <Link href={signInHref}>Back to sign in</Link>
       </Button>
     </div>
   );
