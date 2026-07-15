@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import NextTopLoader from "nextjs-toploader";
 import { DEFAULT_APP_NAME, resolveAppName } from "@/lib/env";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -36,6 +37,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <NextTopLoader color="#3b82f6" height={3} showSpinner={false} />
           {children}
           <Toaster />
         </ThemeProvider>
