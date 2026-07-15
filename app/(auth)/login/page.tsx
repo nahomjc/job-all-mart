@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
-  Briefcase,
   CheckCircle2,
   MessageSquare,
   Shield,
@@ -11,6 +10,7 @@ import {
   Zap,
 } from "lucide-react";
 import { AuthForm } from "@/components/auth-form";
+import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/auth";
 import { buildRequiredChannelJoinUrl } from "@/lib/required-channel-links";
@@ -59,9 +59,7 @@ export default async function LoginPage() {
             href="/"
             className="flex items-center gap-2 font-bold tracking-tight"
           >
-            <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
-              <Briefcase className="size-4" />
-            </span>
+            <BrandLogo size={32} priority />
             <span className="text-lg">{brandName}</span>
           </Link>
           <Button asChild variant="ghost" size="sm">

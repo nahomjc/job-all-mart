@@ -148,3 +148,48 @@
     background-color: var(--shell-canvas);
   }
 }
+
+/* Jobs browse budget slider (theme-aware) */
+.jobs-budget-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--primary) 0%,
+    var(--primary) var(--budget-pct, 55%),
+    var(--border) var(--budget-pct, 55%),
+    var(--border) 100%
+  );
+  outline: none;
+  cursor: pointer;
+}
+
+.jobs-budget-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--card);
+  border: 3px solid var(--primary);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.15);
+  cursor: pointer;
+}
+
+.jobs-budget-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--card);
+  border: 3px solid var(--primary);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.15);
+  cursor: pointer;
+}
+
+.jobs-budget-slider::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--border);
+}

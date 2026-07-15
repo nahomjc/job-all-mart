@@ -16,6 +16,7 @@ import {
 	TrendingUp,
 	Users,
 } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
 import { cn } from "@/lib/utils";
 import { SidebarPromo } from "@/components/sidebar-promo";
 
@@ -142,9 +143,7 @@ export function SidebarNavContent({
 					data-tour="brand"
 					className="flex min-w-0 items-center gap-3"
 				>
-					<span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md shadow-primary/30">
-						<Briefcase className="size-5" />
-					</span>
+					<BrandLogo size={40} className="shadow-md shadow-primary/20" priority />
 					<span className="truncate text-lg font-bold tracking-tight">{brand}</span>
 				</Link>
 				{badge && <div className="mt-3">{badge}</div>}

@@ -87,12 +87,29 @@ export const jobRepo = {
     categoryId?: string;
     q?: string;
     employmentType?: Job["employmentType"];
+    /** Match jobs whose pay band overlaps this range (inclusive). */
+    salaryMin?: number;
+    salaryMax?: number;
   } = {}) {
-    const { limit = 20, offset = 0, categoryId, q, employmentType } = opts;
+    const {
+      limit = 20,
+      offset = 0,
+      categoryId,
+      q,
+      employmentType,
+      salaryMin,
+      salaryMax,
+    } = opts;
     const where = and(
       eq(jobs.status, "posted"),
       categoryId ? eq(jobs.categoryId, categoryId) : undefined,
       employmentType ? eq(jobs.employmentType, employmentType) : undefined,
+      salaryMin != null
+        ? sql`coalesce(${jobs.salaryMax}, ${jobs.salaryMin}, 0) >= ${salaryMin}`
+        : undefined,
+      salaryMax != null
+        ? sql`coalesce(${jobs.salaryMin}, ${jobs.salaryMax}, 0) <= ${salaryMax}`
+        : undefined,
       q
         ? sql`(
             ${jobs.title} ILIKE ${`%${q}%`}

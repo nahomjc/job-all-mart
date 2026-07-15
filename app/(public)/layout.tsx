@@ -9,9 +9,9 @@ export default function PublicLayout({
 }) {
   return (
     <PublicIntroGate>
-      <div className="flex min-h-screen flex-col">
+      <div className="flex min-h-screen flex-col bg-background">
         <Navbar />
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 bg-background">{children}</main>
         <Footer />
       </div>
     </PublicIntroGate>
