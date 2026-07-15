@@ -68,7 +68,7 @@ export function UserMenu({
 				className={cn(
 					"outline-none transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
 					isCapsule
-						? "flex items-center gap-2.5 rounded-full border border-white/15 bg-black/25 py-1.5 pl-1.5 pr-3 hover:bg-black/35"
+						? "flex items-center gap-2.5 rounded-full border border-black/10 bg-black/5 py-1.5 pl-1.5 pr-3 hover:bg-black/10 dark:border-white/15 dark:bg-white/10 dark:hover:bg-white/15"
 						: showProfile
 							? "flex items-center gap-2.5 rounded-xl px-1 py-1 hover:bg-muted/60"
 							: "rounded-full",
@@ -78,7 +78,7 @@ export function UserMenu({
 					className={cn(
 						"shrink-0 transition",
 						isCapsule
-							? "size-8 border border-white/20"
+							? "size-8 border border-black/10 dark:border-white/20"
 							: showProfile
 								? "size-10 border-2 border-primary/25 hover:border-primary/50"
 								: "size-9 border-2 border-primary/25 hover:border-primary/50",
@@ -88,7 +88,7 @@ export function UserMenu({
 						className={cn(
 							"text-xs font-semibold",
 							isCapsule
-								? "bg-white/15 text-white"
+								? "bg-black/10 text-black dark:bg-white/15 dark:text-white"
 								: "bg-primary/10 text-sm text-primary",
 						)}
 					>
@@ -109,7 +109,9 @@ export function UserMenu({
 							<p
 								className={cn(
 									"truncate text-sm font-semibold leading-tight",
-									isCapsule ? "text-white" : "text-foreground",
+									isCapsule
+										? "text-black dark:text-white"
+										: "text-foreground",
 								)}
 							>
 								{name}
@@ -118,7 +120,9 @@ export function UserMenu({
 								<p
 									className={cn(
 										"truncate text-xs",
-										isCapsule ? "text-white/60" : "text-muted-foreground",
+										isCapsule
+											? "text-black/55 dark:text-white/60"
+											: "text-muted-foreground",
 									)}
 								>
 									{email}
@@ -127,7 +131,9 @@ export function UserMenu({
 								<p
 									className={cn(
 										"truncate text-xs capitalize",
-										isCapsule ? "text-white/60" : "text-muted-foreground",
+										isCapsule
+											? "text-black/55 dark:text-white/60"
+											: "text-muted-foreground",
 									)}
 								>
 									{label}
@@ -142,7 +148,9 @@ export function UserMenu({
 						<ChevronDown
 							className={cn(
 								"hidden size-4 shrink-0 sm:block",
-								isCapsule ? "text-white/70" : "text-muted-foreground",
+								isCapsule
+									? "text-black/50 dark:text-white/70"
+									: "text-muted-foreground",
 							)}
 						/>
 					</>
