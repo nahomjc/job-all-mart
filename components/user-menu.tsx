@@ -27,6 +27,8 @@ export interface UserMenuProps {
 	role: string;
 	/** Show name + email beside avatar (desktop shell). */
 	showProfile?: boolean;
+	/** Pill capsule trigger like marketing headers. */
+	variant?: "default" | "capsule";
 	align?: "start" | "end" | "center";
 }
 
@@ -41,6 +43,7 @@ export function UserMenu({
 	email,
 	role,
 	showProfile = true,
+	variant = "default",
 	align = "end",
 }: UserMenuProps) {
 	const pathname = usePathname();
@@ -56,50 +59,92 @@ export function UserMenu({
 	const onAdmin = pathname.startsWith("/admin");
 	const onDashboard = pathname.startsWith("/dashboard");
 	const label = roleLabel(role);
+	const isCapsule = variant === "capsule";
 
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger
 				aria-label="Open account menu"
 				className={cn(
-					"rounded-xl outline-none transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-					showProfile
-						? "flex items-center gap-2.5 px-1 py-1 hover:bg-muted/60"
-						: "rounded-full",
+					"outline-none transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+					isCapsule
+						? "flex items-center gap-2.5 rounded-full border border-white/15 bg-black/25 py-1.5 pl-1.5 pr-3 hover:bg-black/35"
+						: showProfile
+							? "flex items-center gap-2.5 rounded-xl px-1 py-1 hover:bg-muted/60"
+							: "rounded-full",
 				)}
 			>
 				<Avatar
 					className={cn(
-						"border-2 border-primary/25 transition hover:border-primary/50",
-						showProfile ? "size-10" : "size-9",
+						"shrink-0 transition",
+						isCapsule
+							? "size-8 border border-white/20"
+							: showProfile
+								? "size-10 border-2 border-primary/25 hover:border-primary/50"
+								: "size-9 border-2 border-primary/25 hover:border-primary/50",
 					)}
 				>
-					<AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary">
+					<AvatarFallback
+						className={cn(
+							"text-xs font-semibold",
+							isCapsule
+								? "bg-white/15 text-white"
+								: "bg-primary/10 text-sm text-primary",
+						)}
+					>
 						{initials}
 					</AvatarFallback>
 				</Avatar>
-				{showProfile && (
+
+				{(showProfile || isCapsule) && (
 					<>
-						<div className="hidden min-w-0 max-w-[140px] text-left sm:block lg:max-w-[180px]">
-							<p className="truncate text-sm font-semibold leading-tight">
+						<div
+							className={cn(
+								"min-w-0 text-left",
+								isCapsule
+									? "hidden max-w-[160px] sm:block lg:max-w-[200px]"
+									: "hidden max-w-[140px] sm:block lg:max-w-[180px]",
+							)}
+						>
+							<p
+								className={cn(
+									"truncate text-sm font-semibold leading-tight",
+									isCapsule ? "text-white" : "text-foreground",
+								)}
+							>
 								{name}
 							</p>
 							{email ? (
-								<p className="truncate text-xs text-muted-foreground">
+								<p
+									className={cn(
+										"truncate text-xs",
+										isCapsule ? "text-white/60" : "text-muted-foreground",
+									)}
+								>
 									{email}
 								</p>
 							) : (
-								<p className="truncate text-xs capitalize text-muted-foreground">
+								<p
+									className={cn(
+										"truncate text-xs capitalize",
+										isCapsule ? "text-white/60" : "text-muted-foreground",
+									)}
+								>
 									{label}
 								</p>
 							)}
 						</div>
-						{isAdmin && (
+						{!isCapsule && isAdmin && (
 							<span className="hidden rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary sm:inline">
 								Admin
 							</span>
 						)}
-						<ChevronDown className="hidden size-4 shrink-0 text-muted-foreground sm:block" />
+						<ChevronDown
+							className={cn(
+								"hidden size-4 shrink-0 sm:block",
+								isCapsule ? "text-white/70" : "text-muted-foreground",
+							)}
+						/>
 					</>
 				)}
 			</DropdownMenuTrigger>

@@ -49,7 +49,7 @@ export function PublicJobDetail({
 	].filter(Boolean) as string[];
 
 	return (
-		<div className="min-h-[70vh] shell-canvas py-8 md:py-10">
+		<div className="min-h-[70vh] shell-canvas pt-24 pb-8 md:pt-28 md:pb-10">
 			<div className="container mx-auto space-y-5 px-4">
 				<nav
 					aria-label="Breadcrumb"

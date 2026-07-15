@@ -62,7 +62,7 @@ const tiers = [
 
 export default function PricingPage() {
   return (
-    <div className="container mx-auto px-4 py-16">
+    <div className="container mx-auto px-4 pb-16 pt-28">
       <div className="mx-auto max-w-2xl text-center">
         <h1 className="text-4xl font-bold tracking-tight">Pricing</h1>
         <p className="mt-3 text-muted-foreground">

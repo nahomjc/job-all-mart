@@ -20,8 +20,8 @@ export function CategoriesNav({ categories }: { categories: CategoryItem[] }) {
 			<DropdownMenuTrigger
 				className={cn(
 					"group inline-flex items-center gap-1.5 outline-none transition-colors",
-					"hover:text-primary focus-visible:text-primary",
-					"data-[state=open]:text-primary",
+					"hover:text-white focus-visible:text-white",
+					"data-[state=open]:text-white",
 				)}
 			>
 				Categories

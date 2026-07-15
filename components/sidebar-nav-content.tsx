@@ -77,16 +77,16 @@ function NavLink({
 			onClick={onNavigate}
 			data-tour={item.dataTour}
 			className={cn(
-				"group flex min-h-10 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
+				"group flex min-h-10 items-center gap-3 rounded-full px-3.5 py-2.5 text-sm font-medium transition-all",
 				active
-					? "bg-primary text-primary-foreground shadow-sm shadow-primary/25"
-					: "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+					? "bg-muted text-foreground shadow-none"
+					: "text-sidebar-foreground/80 hover:bg-muted/60 hover:text-foreground",
 			)}
 		>
 			<Icon
 				className={cn(
 					"size-[18px] shrink-0",
-					active ? "text-primary-foreground" : "opacity-70 group-hover:opacity-100",
+					active ? "text-foreground" : "opacity-65 group-hover:opacity-100",
 				)}
 			/>
 			<span className="min-w-0 flex-1 truncate">{item.label}</span>
@@ -95,8 +95,8 @@ function NavLink({
 					className={cn(
 						"rounded-full px-2 py-0.5 text-[10px] font-bold",
 						active
-							? "bg-primary-foreground/20 text-primary-foreground"
-							: "bg-primary text-primary-foreground",
+							? "bg-background text-foreground"
+							: "bg-primary/10 text-primary",
 					)}
 				>
 					{item.badge}

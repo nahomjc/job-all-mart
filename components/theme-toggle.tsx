@@ -17,7 +17,7 @@ function useMounted(): boolean {
   );
 }
 
-export function ThemeToggle() {
+export function ThemeToggle({ className }: { className?: string }) {
   const { setTheme, resolvedTheme } = useTheme();
   const mounted = useMounted();
 
@@ -29,6 +29,7 @@ export function ThemeToggle() {
       size="icon"
       onClick={toggle}
       aria-label="Toggle theme"
+      className={className}
     >
       {mounted && resolvedTheme === "dark" ? (
         <Sun className="size-4" />

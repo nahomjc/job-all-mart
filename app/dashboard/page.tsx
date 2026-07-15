@@ -5,13 +5,17 @@ import {
   CheckCircle2,
   Clock,
   Plus,
-  Video,
+  Wallet,
   XCircle,
 } from "lucide-react";
-import { StatusChart } from "@/components/dashboard/status-chart";
-import { PageHeader } from "@/components/page-header";
-import { StatCard } from "@/components/stat-card";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DashPanel,
+  GoalRow,
+  KpiCard,
+  OverviewBars,
+  ProgressMeter,
+  SegmentedBar,
+} from "@/components/dashboard/dash-widgets";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { requireUser } from "@/lib/auth";
@@ -35,178 +39,273 @@ export default async function DashboardPage() {
     inReview: rows.filter((r) => r.job.status === "pending_review").length,
   };
 
-  const recent = rows.slice(0, 5);
+  const recent = rows.slice(0, 6);
   const nextPending = rows.find((r) =>
     ["pending_payment", "pending_review"].includes(r.job.status),
   );
+  const postedPct =
+    stats.total > 0 ? Math.round((stats.posted / stats.total) * 100) : 0;
+  const firstName =
+    (user.displayName ?? user.email ?? "there").split(/\s+/)[0] ?? "there";
 
   return (
-    <div className="space-y-8">
-      <PageHeader
-        title="Dashboard"
-        description="Plan, prioritize, and track your job posts with ease."
-        actions={
-          <>
-            <Button asChild variant="outline" className="h-10 rounded-xl">
-              <Link href="/dashboard/jobs">View all jobs</Link>
-            </Button>
-            <Button asChild className="h-10 rounded-xl">
-              <Link href="/dashboard/jobs/new">
-                <Plus className="size-4" />
-                New job post
-              </Link>
-            </Button>
-          </>
-        }
-      />
-
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          label="Total posts"
-          value={stats.total}
-          icon={Briefcase}
-          featured
-          trend={{
-            direction: "up",
-            label: "All submissions on your account",
-          }}
-        />
-        <StatCard
-          label="In progress"
-          value={stats.pending}
-          icon={Clock}
-          tone="warning"
-          trend={{ direction: "flat", label: "Awaiting payment or review" }}
-        />
-        <StatCard
-          label="Posted"
-          value={stats.posted}
-          icon={CheckCircle2}
-          tone="success"
-          trend={{ direction: "up", label: "Live on site & Telegram" }}
-        />
-        <StatCard
-          label="Rejected"
-          value={stats.rejected}
-          icon={XCircle}
-          tone="destructive"
-          trend={{ direction: "flat", label: "Needs edits & resubmit" }}
-        />
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-sm text-muted-foreground">Welcome back, {firstName}</p>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight md:text-3xl">
+            Dashboard
+          </h1>
+          <p className="mt-1.5 max-w-xl text-sm text-muted-foreground">
+            Plan, prioritize, and track your job posts in one place.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="outline" className="h-10 rounded-full px-4">
+            <Link href="/dashboard/jobs">View all jobs</Link>
+          </Button>
+          <Button asChild className="h-10 rounded-full px-4">
+            <Link href="/dashboard/jobs/new">
+              <Plus className="size-4" />
+              New job post
+            </Link>
+          </Button>
+        </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <StatusChart
-            posted={stats.posted}
-            inReview={stats.inReview}
-            pendingPay={stats.pendingPay}
-            rejected={stats.rejected}
+      <div className="grid gap-4 xl:grid-cols-12">
+        <DashPanel
+          className="xl:col-span-7"
+          title="Post analytics"
+          description="Breakdown of your submissions by status"
+          action={
+            <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+              Your account
+            </span>
+          }
+        >
+          <OverviewBars
+            items={[
+              { label: "Posted", value: stats.posted, color: "bg-emerald-500/90" },
+              { label: "Review", value: stats.inReview, color: "bg-amber-400" },
+              { label: "Payment", value: stats.pendingPay, color: "bg-sky-400" },
+              { label: "Rejected", value: stats.rejected, color: "bg-rose-400/90" },
+            ]}
+          />
+        </DashPanel>
+
+        <div className="grid gap-4 sm:grid-cols-3 xl:col-span-5 xl:grid-cols-1">
+          <KpiCard
+            label="Total posts"
+            value={stats.total}
+            hint="All submissions on your account"
+            icon={Briefcase}
+            tone="info"
+          />
+          <KpiCard
+            label="In progress"
+            value={stats.pending}
+            delta={stats.pending > 0 ? "Needs follow-up" : "Nothing pending"}
+            deltaTone={stats.pending > 0 ? "muted" : "success"}
+            hint="payment, review, or scheduled"
+            icon={Clock}
+            tone="warning"
+          />
+          <KpiCard
+            label="Live posts"
+            value={stats.posted}
+            delta={`+${postedPct}%`}
+            hint="of your total posts"
+            icon={CheckCircle2}
+            tone="success"
           />
         </div>
-
-        <Card className="border-border/60 shadow-sm">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-semibold">Reminders</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {nextPending ? (
-              <>
-                <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
-                  <p className="text-xs font-medium uppercase tracking-wide text-primary">
-                    Next action
-                  </p>
-                  <p className="mt-1 font-semibold leading-snug">
-                    {nextPending.job.title}
-                  </p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Status: {statusLabel(nextPending.job.status)}
-                  </p>
-                </div>
-                <Button asChild className="h-10 w-full rounded-xl">
-                  <Link href={`/dashboard/jobs/${nextPending.job.id}`}>
-                    <Video className="size-4" />
-                    Open job
-                  </Link>
-                </Button>
-              </>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                No pending actions. You&apos;re all caught up.
-              </p>
-            )}
-            <Button asChild variant="outline" className="h-10 w-full rounded-xl">
-              <Link href="/dashboard/jobs/new">
-                <Plus className="size-4" />
-                Post another job
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
       </div>
 
-      <Card className="border-border/60 shadow-sm">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b border-border/60 pb-4">
-          <div>
-            <CardTitle className="text-base font-semibold">Recent posts</CardTitle>
-            <p className="text-xs text-muted-foreground">Your latest submissions</p>
-          </div>
-          {rows.length > 0 && (
-            <Button asChild variant="ghost" size="sm" className="rounded-lg">
-              <Link href="/dashboard/jobs">
-                See all <ArrowRight className="size-3.5" />
-              </Link>
-            </Button>
-          )}
-        </CardHeader>
-        <CardContent className="p-0">
+      <div className="grid gap-4 xl:grid-cols-12">
+        <DashPanel
+          className="xl:col-span-5"
+          title="Recent posts"
+          description="Your latest submissions"
+          contentClassName="p-0"
+          action={
+            rows.length > 0 ? (
+              <Button asChild variant="ghost" size="sm" className="rounded-full">
+                <Link href="/dashboard/jobs">
+                  See all <ArrowRight className="size-3.5" />
+                </Link>
+              </Button>
+            ) : undefined
+          }
+        >
           {recent.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-3 p-12 text-center">
+            <div className="flex flex-col items-center justify-center gap-3 px-6 py-14 text-center">
               <span className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                 <Briefcase className="size-6" />
               </span>
               <p className="text-sm text-muted-foreground">
                 You haven&apos;t submitted any jobs yet.
               </p>
-              <Button asChild size="sm" className="rounded-xl">
+              <Button asChild size="sm" className="rounded-full">
                 <Link href="/dashboard/jobs/new">
                   <Plus className="size-4" /> Start your first post
                 </Link>
               </Button>
             </div>
           ) : (
-            <ul className="divide-y divide-border/60">
+            <ul className="divide-y divide-border/50">
               {recent.map(({ job, category }) => (
-                <li
-                  key={job.id}
-                  className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-muted/30"
-                >
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <Briefcase className="size-4" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <Link
-                      href={`/dashboard/jobs/${job.id}`}
-                      className="line-clamp-1 font-medium hover:text-primary"
-                    >
-                      {job.title}
-                    </Link>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      {category?.name ?? "Uncategorized"} · Due{" "}
-                      {formatRelativeTime(job.createdAt)}
-                    </p>
-                  </div>
-                  <Badge
-                    variant={statusBadgeVariant(job.status)}
-                    className="shrink-0 rounded-lg"
+                <li key={job.id}>
+                  <Link
+                    href={`/dashboard/jobs/${job.id}`}
+                    className="flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-muted/40"
                   >
-                    {statusLabel(job.status)}
-                  </Badge>
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+                      <Briefcase className="size-4" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="line-clamp-1 text-sm font-medium">{job.title}</p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {category?.name ?? "Uncategorized"} ·{" "}
+                        {formatRelativeTime(job.createdAt)}
+                      </p>
+                    </div>
+                    <Badge
+                      variant={statusBadgeVariant(job.status)}
+                      className="shrink-0 rounded-full"
+                    >
+                      {statusLabel(job.status)}
+                    </Badge>
+                  </Link>
                 </li>
               ))}
             </ul>
           )}
-        </CardContent>
-      </Card>
+        </DashPanel>
+
+        <DashPanel
+          className="xl:col-span-4"
+          title="Status mix"
+          description="Share of your pipeline"
+        >
+          <SegmentedBar
+            segments={[
+              {
+                label: "Posted",
+                value: stats.posted,
+                className: "bg-emerald-500",
+              },
+              {
+                label: "In review",
+                value: stats.inReview,
+                className: "bg-amber-400",
+              },
+              {
+                label: "Awaiting pay",
+                value: stats.pendingPay,
+                className: "bg-sky-400",
+              },
+              {
+                label: "Rejected",
+                value: stats.rejected,
+                className: "bg-rose-400",
+              },
+            ]}
+          />
+          <div className="mt-6 space-y-4">
+            <GoalRow
+              label="Go live"
+              current={stats.posted}
+              total={Math.max(stats.total, 1)}
+              hint="Posted vs all submissions"
+            />
+            <GoalRow
+              label="Clear backlog"
+              current={Math.max(0, stats.total - stats.pending)}
+              total={Math.max(stats.total, 1)}
+              hint={`${stats.pending} still in progress`}
+            />
+          </div>
+        </DashPanel>
+
+        <DashPanel className="xl:col-span-3" title="Next steps">
+          <ProgressMeter
+            value={postedPct}
+            label="Publish rate"
+            sublabel={
+              stats.total === 0
+                ? "Submit your first job to start tracking"
+                : `${stats.posted} live of ${stats.total} posts`
+            }
+          />
+
+          {nextPending ? (
+            <div className="mt-4 rounded-2xl border border-primary/15 bg-primary/5 p-4">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">
+                Next action
+              </p>
+              <p className="mt-1 line-clamp-2 text-sm font-semibold leading-snug">
+                {nextPending.job.title}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {statusLabel(nextPending.job.status)}
+              </p>
+              <Button asChild className="mt-3 h-9 w-full rounded-full">
+                <Link href={`/dashboard/jobs/${nextPending.job.id}`}>
+                  Continue
+                  <ArrowRight className="size-3.5" />
+                </Link>
+              </Button>
+            </div>
+          ) : (
+            <div className="mt-4 space-y-2">
+              <Button asChild className="h-10 w-full rounded-full">
+                <Link href="/dashboard/jobs/new">
+                  <Plus className="size-4" />
+                  Post another job
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="h-10 w-full rounded-full">
+                <Link href="/dashboard/payments">
+                  <Wallet className="size-4" />
+                  Payments
+                </Link>
+              </Button>
+            </div>
+          )}
+        </DashPanel>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <KpiCard
+          label="Rejected"
+          value={stats.rejected}
+          hint="Needs edits & resubmit"
+          icon={XCircle}
+          tone="danger"
+        />
+        <KpiCard
+          label="Awaiting payment"
+          value={stats.pendingPay}
+          hint="Upload screenshot to continue"
+          icon={Wallet}
+          tone="warning"
+        />
+        <KpiCard
+          label="In review"
+          value={stats.inReview}
+          hint="Waiting on moderator"
+          icon={Clock}
+          tone="info"
+        />
+        <KpiCard
+          label="Completion"
+          value={`${postedPct}%`}
+          hint="Posted / total"
+          icon={CheckCircle2}
+          tone="success"
+        />
+      </div>
     </div>
   );
 }
