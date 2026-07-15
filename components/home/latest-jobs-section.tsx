@@ -2,8 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useRef } from "react";
 import { ArrowRight } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import {
 	EASE,
 	MotionBlock,
@@ -17,10 +18,28 @@ import type { Category, Job } from "@/server/db/schema";
 
 type JobRow = { job: Job; category: Category | null };
 
-export function LatestJobsSection({ jobs }: { jobs: JobRow[] }) {
+function FeaturedJobsBackground() {
+	const videoRef = useRef<HTMLVideoElement>(null);
+	const reduceMotion = useReducedMotion();
+
+	useEffect(() => {
+		const video = videoRef.current;
+		if (!video) return;
+		if (reduceMotion) {
+			video.pause();
+			return;
+		}
+		const play = () => {
+			void video.play().catch(() => {
+				/* autoplay can be blocked; poster still shows */
+			});
+		};
+		play();
+	}, [reduceMotion]);
+
 	return (
-		<MotionSection className="relative overflow-hidden py-24 text-primary-foreground">
-			{/* Full-bleed workplace background */}
+		<>
+			{/* Poster / reduced-motion fallback */}
 			<Image
 				src="/images/featured-jobs-bg.jpg"
 				alt=""
@@ -29,15 +48,37 @@ export function LatestJobsSection({ jobs }: { jobs: JobRow[] }) {
 				sizes="100vw"
 				className="object-cover object-center"
 			/>
-			{/* Brand-tinted scrim so white cards + copy stay readable */}
+
+			{!reduceMotion && (
+				<video
+					ref={videoRef}
+					className="absolute inset-0 size-full object-cover object-center"
+					autoPlay
+					muted
+					loop
+					playsInline
+					preload="metadata"
+					aria-hidden
+					poster="/images/featured-jobs-bg.jpg"
+				>
+					<source src="/videos/featured-jobs-bg.mp4" type="video/mp4" />
+				</video>
+			)}
+
+			{/* Light scrim — keep copy readable without burying the video */}
+			<div aria-hidden className="absolute inset-0 bg-brand-deep/35" />
 			<div
 				aria-hidden
-				className="absolute inset-0 bg-brand-deep/78"
+				className="absolute inset-0 bg-linear-to-b from-black/25 via-brand-deep/25 to-brand-deep/45"
 			/>
-			<div
-				aria-hidden
-				className="absolute inset-0 bg-linear-to-b from-brand-deep/55 via-brand-deep/70 to-brand-deep/85"
-			/>
+		</>
+	);
+}
+
+export function LatestJobsSection({ jobs }: { jobs: JobRow[] }) {
+	return (
+		<MotionSection className="relative overflow-hidden py-24 text-primary-foreground">
+			<FeaturedJobsBackground />
 
 			<div className="container relative z-10 mx-auto px-4">
 				<div className="mb-10 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
