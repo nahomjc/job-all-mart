@@ -92,7 +92,7 @@ export function registerHandlers(bot: Telegraf): void {
 
     if (startPayload === "weblogin") {
       const token = createBotLoginToken(from.id);
-      const confirmUrl = `${env.NEXT_PUBLIC_APP_URL}/api/auth/telegram/bot-confirm?token=${encodeURIComponent(token)}&next=/dashboard`;
+      const confirmUrl = `${env.NEXT_PUBLIC_APP_URL}/api/auth/telegram/bot-confirm?token=${encodeURIComponent(token)}&next=/post/new`;
       await ctx.reply(
         `Sign in to ${env.NEXT_PUBLIC_APP_NAME} on the website.\n\nTap the button below to finish login (link expires in 10 minutes).`,
         {

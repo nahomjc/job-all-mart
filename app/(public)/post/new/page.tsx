@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { JobForm } from "@/components/jobs/job-form";
+import { PostJobHelpDialog } from "@/components/jobs/post-job-help-dialog";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/auth";
 import { categoryRepo } from "@/server/repositories/category";
@@ -28,9 +29,12 @@ export default async function SimplePostJobPage() {
 						goes live.
 					</p>
 				</div>
-				<Button asChild variant="ghost" size="sm" className="self-start sm:self-auto">
-					<Link href="/dashboard">Open dashboard</Link>
-				</Button>
+				<div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+					<PostJobHelpDialog />
+					<Button asChild variant="ghost" size="sm">
+						<Link href="/dashboard">Open dashboard</Link>
+					</Button>
+				</div>
 			</div>
 
 			<div className="rounded-2xl border bg-card p-5 shadow-sm sm:p-8 lg:p-10">

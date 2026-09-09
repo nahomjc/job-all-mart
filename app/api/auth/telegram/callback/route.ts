@@ -3,16 +3,11 @@ import { env } from "@/lib/env";
 import { verifyTelegramLoginPayload } from "@/lib/telegram/web-auth";
 import { signInWithTelegramProfile } from "@/lib/telegram/sign-in-user";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-
-function safeRedirect(raw: string | null): string {
-  if (!raw) return "/dashboard";
-  if (!raw.startsWith("/") || raw.startsWith("//")) return "/dashboard";
-  return raw;
-}
+import { safeNextPath } from "@/lib/safe-next-path";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const nextPath = safeRedirect(url.searchParams.get("next"));
+  const nextPath = safeNextPath(url.searchParams.get("next"));
 
   try {
     const verified = verifyTelegramLoginPayload(

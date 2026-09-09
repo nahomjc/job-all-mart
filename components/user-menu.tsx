@@ -7,6 +7,7 @@ import {
 	ChevronDown,
 	LayoutDashboard,
 	LogOut,
+	PlusCircle,
 	Shield,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -58,6 +59,7 @@ export function UserMenu({
 	const isAdmin = role === "admin" || role === "owner";
 	const onAdmin = pathname.startsWith("/admin");
 	const onDashboard = pathname.startsWith("/dashboard");
+	const onNewPost = pathname === "/post/new";
 	const label = roleLabel(role);
 	const isCapsule = variant === "capsule";
 
@@ -176,6 +178,14 @@ export function UserMenu({
 				<p className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
 					Switch workspace
 				</p>
+
+				<DropdownMenuItem asChild className="cursor-pointer gap-2">
+					<Link href="/post/new" className="flex w-full items-center gap-2">
+						<PlusCircle className="size-4" />
+						<span className="flex-1">New post</span>
+						{onNewPost && <Check className="size-4 text-primary" />}
+					</Link>
+				</DropdownMenuItem>
 
 				<DropdownMenuItem asChild className="cursor-pointer gap-2">
 					<Link href="/dashboard" className="flex w-full items-center gap-2">

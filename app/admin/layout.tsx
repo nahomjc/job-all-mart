@@ -107,7 +107,7 @@ export default async function AdminLayout({
 
 	const sidebarProps = {
 		brand: brandName,
-		homeHref: "/admin" as const,
+		homeHref: "/" as const,
 		badge: roleBadge,
 		sections,
 		footer: sidebarFooter,
