@@ -56,7 +56,7 @@ export async function signupAction(
     };
   }
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
@@ -64,8 +64,47 @@ export async function signupAction(
       emailRedirectTo: authCallbackUrl("/login"),
     },
   });
-  if (error) return { ok: false, error: error.message };
+  if (error) {
+    if (isAlreadyRegisteredError(error.message)) {
+      redirectToExistingAccountLogin(parsed.data.email, formData.get("next"));
+    }
+    return { ok: false, error: error.message };
+  }
+  // Supabase returns a user with empty identities when the email is already
+  // registered (anti-enumeration). Send them to sign in with email filled in.
+  if (data.user && (data.user.identities?.length ?? 0) === 0) {
+    redirectToExistingAccountLogin(parsed.data.email, formData.get("next"));
+  }
   return { ok: true };
+}
+
+function isAlreadyRegisteredError(message: string): boolean {
+  const lower = message.toLowerCase();
+  return (
+    lower.includes("already registered") ||
+    lower.includes("already been registered") ||
+    lower.includes("user already exists") ||
+    lower.includes("email address is already")
+  );
+}
+
+function redirectToExistingAccountLogin(
+  email: string,
+  next: FormDataEntryValue | null,
+): never {
+  const params = new URLSearchParams({
+    email,
+    notice: "existing",
+  });
+  if (
+    typeof next === "string" &&
+    next.startsWith("/") &&
+    !next.startsWith("//") &&
+    !next.includes("://")
+  ) {
+    params.set("next", next);
+  }
+  redirect(`/login?${params.toString()}`);
 }
 
 export async function forgotPasswordAction(

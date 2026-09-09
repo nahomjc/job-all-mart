@@ -41,11 +41,13 @@ export function AuthForm() {
   const mode = resolveMode(sp.get("mode"));
   const oauthError = sp.get("error");
   const next = sp.get("next");
+  const emailPrefill = sp.get("email") ?? "";
+  const existingNotice = sp.get("notice") === "existing";
   const nextQuery = next ? `&next=${encodeURIComponent(next)}` : "";
   const nextSuffix = next ? `?next=${encodeURIComponent(next)}` : "";
 
   if (mode === "forgot") {
-    return <ForgotPasswordForm nextSuffix={nextSuffix} />;
+    return <ForgotPasswordForm nextSuffix={nextSuffix} emailPrefill={emailPrefill} />;
   }
   if (mode === "reset") {
     return <ResetPasswordForm next={next} />;
@@ -60,6 +62,12 @@ export function AuthForm() {
       toast.success("Account created! Check your email to verify.");
     }
   }, [state.ok, mode]);
+
+  useEffect(() => {
+    if (existingNotice && mode === "login") {
+      toast.message("You already have an account. Please sign in.");
+    }
+  }, [existingNotice, mode]);
 
   const isSignup = mode === "signup";
 
@@ -125,6 +133,7 @@ export function AuthForm() {
                 autoComplete="email"
                 placeholder="you@company.com"
                 required
+                defaultValue={emailPrefill}
                 className="h-11 pl-10"
               />
             </Field>
@@ -137,7 +146,11 @@ export function AuthForm() {
               headerExtra={
                 !isSignup ? (
                   <Link
-                    href="/login?mode=forgot"
+                    href={
+                      emailPrefill
+                        ? `/login?mode=forgot&email=${encodeURIComponent(emailPrefill)}`
+                        : "/login?mode=forgot"
+                    }
                     className="text-xs font-medium text-primary hover:underline"
                   >
                     Forgot password?
@@ -160,6 +173,15 @@ export function AuthForm() {
                 onToggle={() => setShowPassword((s) => !s)}
               />
             </Field>
+
+            {existingNotice && !isSignup && !state.error && !oauthError ? (
+              <div className="flex items-start gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-sm text-foreground">
+                <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
+                <span>
+                  You already have an account with this email. Please sign in.
+                </span>
+              </div>
+            ) : null}
 
             {(state.error || oauthError) && (
               <ErrorAlert message={state.error ?? oauthError ?? "Something went wrong"} />
@@ -212,7 +234,13 @@ export function AuthForm() {
   );
 }
 
-function ForgotPasswordForm({ nextSuffix }: { nextSuffix: string }) {
+function ForgotPasswordForm({
+  nextSuffix,
+  emailPrefill = "",
+}: {
+  nextSuffix: string;
+  emailPrefill?: string;
+}) {
   const [state, formAction, pending] = useActionState(
     forgotPasswordAction,
     initial,
@@ -266,6 +294,7 @@ function ForgotPasswordForm({ nextSuffix }: { nextSuffix: string }) {
               autoComplete="email"
               placeholder="you@company.com"
               required
+              defaultValue={emailPrefill}
               className="h-11 pl-10"
             />
           </Field>
