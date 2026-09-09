@@ -12,6 +12,16 @@ import { createServerClient } from "@supabase/ssr";
  *      we just gate unauthenticated users).
  */
 export async function proxy(request: NextRequest) {
+  const { pathname, searchParams } = request.nextUrl;
+
+  // Email confirm / recovery links sometimes land on Site URL with ?code=
+  // instead of /auth/callback — forward them so the session can be exchanged.
+  if (pathname === "/" && searchParams.has("code")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth/callback";
+    return NextResponse.redirect(url);
+  }
+
   const response = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -37,7 +47,6 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { pathname } = request.nextUrl;
   const protectedPath =
     pathname.startsWith("/dashboard") || pathname.startsWith("/admin");
 
