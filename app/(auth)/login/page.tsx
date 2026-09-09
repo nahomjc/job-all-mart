@@ -40,11 +40,12 @@ const FEATURES = [
 ];
 
 export default async function LoginPage(props: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; mode?: string }>;
 }) {
   const sp = await props.searchParams;
   const user = await getCurrentUser();
-  if (user) redirect(safeNextPath(sp.next));
+  // Recovery link lands here with a session so the user can set a new password.
+  if (user && sp.mode !== "reset") redirect(safeNextPath(sp.next));
 
   const brandName = env.NEXT_PUBLIC_APP_NAME;
   const tgJoinUrl = buildRequiredChannelJoinUrl({
