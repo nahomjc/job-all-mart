@@ -2,9 +2,6 @@ import { FolderKanban } from "lucide-react";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
 import {
   Table,
@@ -16,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/page-header";
-import { CategoryForm } from "@/components/admin/category-form";
+import { CategoryCreateDialog } from "@/components/admin/category-create-dialog";
 import { CategoryEditDialog } from "@/components/admin/category-edit-dialog";
 import { categoryRepo } from "@/server/repositories/category";
 
@@ -30,31 +27,23 @@ export default async function AdminCategoriesPage() {
         eyebrow="Taxonomy"
         title="Categories"
         description="Map your Telegram topic IDs to slugs and control which categories show on the site."
+        actions={<CategoryCreateDialog />}
       />
-
-      <Card>
-        <CardHeader>
-          <CardTitle>New category</CardTitle>
-          <CardDescription>
-            Create a category and bind it to a Telegram forum topic.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <CategoryForm />
-        </CardContent>
-      </Card>
 
       <Card>
         <CardContent className="p-0">
           {rows.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-3 p-12 text-center">
+            <div className="flex flex-col items-center justify-center gap-4 p-12 text-center">
               <span className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                 <FolderKanban className="size-6" />
               </span>
-              <p className="text-sm text-muted-foreground">
-                No categories yet, create one above to start receiving
-                submissions.
-              </p>
+              <div className="space-y-1">
+                <p className="text-sm font-medium">No categories yet</p>
+                <p className="text-sm text-muted-foreground">
+                  Use Add Category to create one and start receiving submissions.
+                </p>
+              </div>
+              <CategoryCreateDialog />
             </div>
           ) : (
             <Table>

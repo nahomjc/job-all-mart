@@ -73,22 +73,8 @@ export function CategoryFields({
           defaultValue={sortOrder}
         />
       </div>
-      <div className="space-y-1.5">
-        <Label htmlFor={`${idPrefix}-telegramTopicId`}>Telegram topic ID</Label>
-        <Input
-          id={`${idPrefix}-telegramTopicId`}
-          name="telegramTopicId"
-          type="number"
-          min={1}
-          step={1}
-          defaultValue={telegramTopicId}
-          placeholder="4"
-        />
-        <p className="text-xs text-muted-foreground">
-          From <span className="font-mono">/topicid</span> inside the forum topic
-          (not the <span className="font-mono">-100…</span> chat id).
-        </p>
-      </div>
+      {/* Keep existing topic binding on edit; create leaves it empty/null. */}
+      <input type="hidden" name="telegramTopicId" value={telegramTopicId} />
       {showStatus ? (
         <div className="space-y-1.5">
           <Label htmlFor={`${idPrefix}-active`}>Status</Label>

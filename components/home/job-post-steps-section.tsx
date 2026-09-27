@@ -87,7 +87,7 @@ function StepVisual({
 	const t = useTranslations("home");
 
 	return (
-		<div className="relative flex h-full min-h-[340px] items-center justify-center overflow-hidden p-6 sm:min-h-[400px] sm:p-8">
+		<div className="relative flex h-full min-h-[260px] items-center justify-center overflow-hidden p-4 sm:min-h-[340px] sm:p-6 md:min-h-[380px] md:p-8">
 			{!reduce && (
 				<>
 					<motion.span
@@ -114,7 +114,7 @@ function StepVisual({
 						animate="animate"
 						exit="exit"
 						transition={{ duration: 0.5, ease: EASE }}
-						className="relative w-full max-w-sm rounded-2xl border bg-card/95 p-6 shadow-2xl shadow-primary/10 backdrop-blur-sm"
+						className="relative w-full max-w-sm rounded-2xl border bg-card/95 p-4 shadow-2xl shadow-primary/10 backdrop-blur-sm sm:p-6"
 					>
 						<div className="flex items-center justify-between">
 							<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -204,7 +204,7 @@ function StepVisual({
 						animate="animate"
 						exit="exit"
 						transition={{ duration: 0.5, ease: EASE }}
-						className="relative w-full max-w-sm rounded-2xl border bg-card/95 p-5 shadow-2xl shadow-primary/10 backdrop-blur-sm"
+						className="relative w-full max-w-sm rounded-2xl border bg-card/95 p-4 shadow-2xl shadow-primary/10 backdrop-blur-sm sm:p-5"
 					>
 						<p className="text-xs font-semibold text-primary">{t("animNewJobPost")}</p>
 
@@ -276,7 +276,7 @@ function StepVisual({
 						animate="animate"
 						exit="exit"
 						transition={{ duration: 0.5, ease: EASE }}
-						className="relative w-full max-w-sm rounded-2xl border bg-card/95 p-5 shadow-2xl shadow-violet-500/10 backdrop-blur-sm"
+						className="relative w-full max-w-sm rounded-2xl border bg-card/95 p-4 shadow-2xl shadow-violet-500/10 backdrop-blur-sm sm:p-5"
 					>
 						<p className="text-xs font-semibold text-violet-600 dark:text-violet-400">
 							{t("animPendingPayment")}
@@ -347,7 +347,7 @@ function StepVisual({
 						animate="animate"
 						exit="exit"
 						transition={{ duration: 0.5, ease: EASE }}
-						className="relative w-full max-w-sm rounded-2xl border bg-card/95 p-5 shadow-2xl shadow-amber-500/10 backdrop-blur-sm"
+						className="relative w-full max-w-sm rounded-2xl border bg-card/95 p-4 shadow-2xl shadow-amber-500/10 backdrop-blur-sm sm:p-5"
 					>
 						<div className="flex items-center justify-between">
 							<p className="text-xs font-semibold text-amber-600">
@@ -520,6 +520,10 @@ export function JobPostStepsSection() {
 	}, [isInView, reduceMotion]);
 
 	useEffect(() => {
+		// Avoid janky page jumps on small screens when the carousel advances.
+		if (typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches) {
+			return;
+		}
 		stepRefs.current[active]?.scrollIntoView({
 			behavior: reduceMotion ? "auto" : "smooth",
 			block: "nearest",
@@ -532,7 +536,7 @@ export function JobPostStepsSection() {
 
 	return (
 		<MotionSection
-			className="relative border-b bg-background pt-10 pb-20 md:pt-14 md:pb-28"
+			className="relative border-b bg-background pt-8 pb-14 sm:pt-10 sm:pb-20 md:pt-14 md:pb-28"
 			delay={0}
 		>
 			<div
@@ -540,29 +544,99 @@ export function JobPostStepsSection() {
 				className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_0%,var(--primary)/0.06,transparent_65%)]"
 			/>
 
-			<div ref={sectionRef} className="container relative mx-auto px-4">
+			<div ref={sectionRef} className="container relative mx-auto max-w-6xl px-4 sm:px-6">
 				<motion.div
 					initial={{ opacity: 0, y: 24 }}
 					whileInView={{ opacity: 1, y: 0 }}
 					viewport={{ once: true }}
 					transition={{ duration: 0.6, ease: EASE }}
-					className="mx-auto mb-14 max-w-2xl text-center"
+					className="mx-auto mb-8 max-w-2xl text-center sm:mb-12 md:mb-14"
 				>
-					<p className="text-sm font-semibold uppercase tracking-widest text-primary">
+					<p className="text-[11px] font-semibold uppercase tracking-widest text-primary sm:text-sm">
 						{t("howItWorks")}
 					</p>
-					<h2 className="mt-3 text-balance text-3xl font-bold tracking-tight md:text-4xl">
+					<h2 className="mt-2 text-balance text-2xl font-bold tracking-tight sm:mt-3 sm:text-3xl md:text-4xl">
 						{t("stepsTitle")}
 					</h2>
-					<p className="mt-4 text-pretty text-muted-foreground md:text-lg">
+					<p className="mt-3 text-pretty text-sm text-muted-foreground sm:mt-4 sm:text-base md:text-lg">
 						{t("stepsSubtitle")}
 					</p>
 				</motion.div>
 
-				<div className="grid overflow-hidden rounded-[2rem] border bg-card shadow-xl shadow-black/5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
-					<div className="border-b p-6 sm:p-8 lg:max-h-[560px] lg:border-b-0 lg:border-r lg:overflow-y-auto">
-						<div className="mb-6 flex items-center justify-between gap-4">
-							<p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+				<div className="grid overflow-hidden rounded-2xl border bg-card shadow-xl shadow-black/5 sm:rounded-[1.75rem] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:rounded-[2rem]">
+					{/* Visual first on mobile so the hero reads as one composition */}
+					<div className="relative order-1 border-b bg-muted/30 lg:order-2 lg:border-b-0">
+						<div
+							aria-hidden
+							className={cn(
+								"pointer-events-none absolute inset-0 bg-linear-to-br opacity-15 transition-opacity duration-500",
+								step.color,
+							)}
+						/>
+						<div className="relative">
+							<div className="flex items-center gap-2 border-b bg-muted/30 px-3 py-2.5 sm:px-5 sm:py-3">
+								<AnimatePresence mode="wait">
+									<motion.div
+										key={step.id}
+										initial={{ opacity: 0, x: -10 }}
+										animate={{ opacity: 1, x: 0 }}
+										exit={{ opacity: 0, x: 8 }}
+										transition={{ duration: 0.3, ease: EASE }}
+										className="flex min-w-0 items-center gap-2"
+									>
+										<span
+											className={cn(
+												"flex size-7 shrink-0 items-center justify-center rounded-lg bg-linear-to-br text-white shadow-sm sm:size-8",
+												step.color,
+											)}
+										>
+											<Icon className="size-3.5 sm:size-4" />
+										</span>
+										<span className="truncate text-xs font-semibold sm:text-sm">
+											{stepTitle}
+										</span>
+									</motion.div>
+								</AnimatePresence>
+							</div>
+							<StepVisual stepId={step.id} reduce={!!reduceMotion} />
+						</div>
+					</div>
+
+					<div className="order-2 min-w-0 p-4 sm:p-6 md:p-8 lg:order-1 lg:max-h-[560px] lg:overflow-y-auto lg:border-r">
+						{/* Mobile: compact numbered step chips */}
+						<div className="mb-4 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden">
+							{STEPS.map((s, i) => {
+								const isActive = i === active;
+								return (
+									<button
+										key={`chip-${s.id}`}
+										type="button"
+										onClick={() => goTo(i)}
+										aria-current={isActive ? "step" : undefined}
+										aria-label={t("stepsGoTo", {
+											n: i + 1,
+											title: t(s.titleKey),
+										})}
+										className={cn(
+											"flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-xs font-semibold transition-colors",
+											isActive
+												? "bg-primary text-primary-foreground shadow-sm shadow-primary/25"
+												: "bg-muted text-muted-foreground",
+										)}
+									>
+										<span className="tabular-nums">{s.number}</span>
+										{isActive ? (
+											<span className="max-w-[9.5rem] truncate">
+												{t(s.titleKey)}
+											</span>
+										) : null}
+									</button>
+								);
+							})}
+						</div>
+
+						<div className="mb-4 flex items-center justify-between gap-3 sm:mb-6 sm:gap-4">
+							<p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground sm:text-xs">
 								{t("stepsOf", { current: active + 1, total: STEPS.length })}
 							</p>
 							<div className="flex min-w-0 flex-1 items-center gap-2">
@@ -572,7 +646,7 @@ export function JobPostStepsSection() {
 										initial={{ scaleX: 0 }}
 										animate={{ scaleX: 1 }}
 										transition={{ duration: CYCLE_MS / 1000, ease: "linear" }}
-										className="h-1 max-w-32 flex-1 origin-left rounded-full bg-primary"
+										className="h-1 max-w-24 flex-1 origin-left rounded-full bg-primary sm:max-w-32"
 									/>
 								)}
 								<span className="shrink-0 text-[10px] font-medium text-primary">
@@ -581,7 +655,18 @@ export function JobPostStepsSection() {
 							</div>
 						</div>
 
-						<ol className="space-y-2">
+						{/* Mobile: only the active step details */}
+						<div className="lg:hidden">
+							<div className="rounded-2xl bg-primary/10 p-4 ring-1 ring-primary/20">
+								<p className="font-semibold leading-snug">{stepTitle}</p>
+								<p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+									{t(step.bodyKey)}
+								</p>
+							</div>
+						</div>
+
+						{/* Desktop: full interactive list */}
+						<ol className="hidden space-y-2 lg:block">
 							{STEPS.map((s, i) => {
 								const StepIcon = s.icon;
 								const isActive = i === active;
@@ -613,7 +698,11 @@ export function JobPostStepsSection() {
 													animate={{
 														scale: isActive ? 1.06 : 1,
 													}}
-													transition={{ type: "spring", stiffness: 320, damping: 20 }}
+													transition={{
+														type: "spring",
+														stiffness: 320,
+														damping: 20,
+													}}
 													className={cn(
 														"flex size-11 shrink-0 items-center justify-center rounded-xl text-sm font-bold",
 														isActive
@@ -664,56 +753,25 @@ export function JobPostStepsSection() {
 							whileInView={{ opacity: 1 }}
 							viewport={{ once: true }}
 							transition={{ delay: 0.3 }}
-							className="mt-8 flex flex-wrap gap-3"
+							className="mt-6 flex flex-col gap-2.5 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-3"
 						>
-							<Button asChild className="rounded-full">
+							<Button asChild className="h-11 w-full rounded-full sm:w-auto">
 								<Link href="/post/new">
 									{t("ctaPost")} <ArrowRight className="size-4" />
 								</Link>
 							</Button>
-							<Button asChild variant="outline" className="rounded-full">
+							<Button
+								asChild
+								variant="outline"
+								className="h-11 w-full rounded-full sm:w-auto"
+							>
 								<Link href="/pricing">{t("stepsViewPricing")}</Link>
 							</Button>
 						</motion.div>
 					</div>
-
-					<div className="relative bg-muted/30">
-						<div
-							aria-hidden
-							className={cn(
-								"pointer-events-none absolute inset-0 bg-linear-to-br opacity-15 transition-opacity duration-500",
-								step.color,
-							)}
-						/>
-						<div className="relative">
-							<div className="flex items-center gap-2 border-b bg-muted/30 px-5 py-3">
-								<AnimatePresence mode="wait">
-									<motion.div
-										key={step.id}
-										initial={{ opacity: 0, x: -10 }}
-										animate={{ opacity: 1, x: 0 }}
-										exit={{ opacity: 0, x: 8 }}
-										transition={{ duration: 0.3, ease: EASE }}
-										className="flex items-center gap-2"
-									>
-										<span
-											className={cn(
-												"flex size-8 items-center justify-center rounded-lg bg-linear-to-br text-white shadow-sm",
-												step.color,
-											)}
-										>
-											<Icon className="size-4" />
-										</span>
-										<span className="text-sm font-semibold">{stepTitle}</span>
-									</motion.div>
-								</AnimatePresence>
-							</div>
-							<StepVisual stepId={step.id} reduce={!!reduceMotion} />
-						</div>
-					</div>
 				</div>
 
-				<div className="mt-8 flex justify-center gap-2">
+				<div className="mt-6 flex justify-center gap-2 sm:mt-8">
 					{STEPS.map((s, i) => (
 						<button
 							key={s.id}

@@ -1,10 +1,5 @@
 import { z } from "zod";
 
-function emptyToNull(v: unknown): unknown {
-  if (v === "" || v === undefined || v === null) return null;
-  return v;
-}
-
 function coerceActive(v: unknown): boolean {
   return v === true || v === "true" || v === "on" || v === 1 || v === "1";
 }
@@ -23,10 +18,14 @@ export const categoryInputSchema = z.object({
     .optional()
     .nullable()
     .transform((v) => (v && v.length > 0 ? v : null)),
-  telegramTopicId: z.preprocess(
-    emptyToNull,
-    z.union([z.null(), z.coerce.number().int().positive()]),
-  ),
+  // Empty/hidden field must become null — Number("") === 0 and fails .positive().
+  telegramTopicId: z.preprocess((v) => {
+    if (v === "" || v === undefined || v === null) return null;
+    if (typeof v === "string" && v.trim() === "") return null;
+    const n = typeof v === "number" ? v : Number(v);
+    if (!Number.isFinite(n) || n <= 0) return null;
+    return Math.trunc(n);
+  }, z.number().int().positive().nullable()),
   sortOrder: z.coerce.number().int().default(0),
   active: z.preprocess(coerceActive, z.boolean()),
 });
