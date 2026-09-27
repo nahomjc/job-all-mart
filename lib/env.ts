@@ -27,6 +27,8 @@ const LEGACY_APP_NAMES = new Set([
   "jobpost",
   "all mart dhs",
   "job post",
+  "mak advert",
+  "mak adverts",
 ]);
 
 export function resolveAppName(raw?: string): string {

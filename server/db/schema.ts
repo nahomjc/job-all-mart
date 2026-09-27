@@ -497,6 +497,37 @@ export const telegramPostsRelations = relations(telegramPosts, ({ one }) => ({
   job: one(jobs, { fields: [telegramPosts.jobId], references: [jobs.id] }),
 }));
 
+// ──────────────────────────────────────────────
+// telegram_web_logins
+// Browser stays open and polls; bot confirms via callback (no default-browser hop).
+// ──────────────────────────────────────────────
+
+export const telegramWebLoginStatusEnum = pgEnum("telegram_web_login_status", [
+  "pending",
+  "approved",
+  "consumed",
+  "cancelled",
+]);
+
+export const telegramWebLogins = pgTable(
+  "telegram_web_logins",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    status: telegramWebLoginStatusEnum("status").notNull().default("pending"),
+    telegramId: bigint("telegram_id", { mode: "number" }),
+    nextPath: varchar("next_path", { length: 256 }).notNull().default("/post/new"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    consumedAt: timestamp("consumed_at", { withTimezone: true }),
+  },
+  (t) => [
+    index("telegram_web_logins_status_idx").on(t.status),
+    index("telegram_web_logins_expires_idx").on(t.expiresAt),
+  ],
+);
+
 export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
   actor: one(users, { fields: [auditLogs.actorId], references: [users.id] }),
 }));
@@ -518,3 +549,4 @@ export type Subscription = typeof subscriptions.$inferSelect;
 export type AppSetting = typeof appSettings.$inferSelect;
 export type PricingPlan = typeof pricingPlans.$inferSelect;
 export type NewPricingPlan = typeof pricingPlans.$inferInsert;
+export type TelegramWebLogin = typeof telegramWebLogins.$inferSelect;

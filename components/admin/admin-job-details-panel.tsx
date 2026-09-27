@@ -4,7 +4,10 @@ import type { LucideIcon } from "lucide-react";
 import { Briefcase, Building2, Calendar, ExternalLink, MapPin } from "lucide-react";
 import Image from "next/image";
 import { useLocale } from "next-intl";
-import { AdminJobEditContentDialog } from "@/components/admin/admin-job-edit-content-dialog";
+import {
+	AdminJobEditContentDialog,
+	type AdminEditableCategory,
+} from "@/components/admin/admin-job-edit-content-dialog";
 import { Separator } from "@/components/ui/separator";
 import {
 	formatLocation,
@@ -19,7 +22,9 @@ export type AdminJobDetailsPanelProps = {
 	jobId: string;
 	title: string;
 	company: string;
+	categoryId: string | null;
 	categoryName: string;
+	categories: AdminEditableCategory[];
 	logoUrl: string | null;
 	employmentType: string;
 	location: string;
@@ -28,6 +33,7 @@ export type AdminJobDetailsPanelProps = {
 	salaryCurrency: string | null;
 	createdAt: Date;
 	applyUrl: string | null;
+	contactInfo: string | null;
 	description: string;
 };
 
@@ -35,7 +41,9 @@ export function AdminJobDetailsPanel({
 	jobId,
 	title,
 	company,
+	categoryId,
 	categoryName,
+	categories,
 	logoUrl,
 	employmentType,
 	location,
@@ -44,11 +52,29 @@ export function AdminJobDetailsPanel({
 	salaryCurrency,
 	createdAt,
 	applyUrl,
+	contactInfo,
 	description,
 }: AdminJobDetailsPanelProps) {
 	const rawLocale = useLocale();
 	const locale: FormatLocale = rawLocale === "am" ? "am" : "en";
 	const isAm = locale === "am";
+
+	const editProps = {
+		jobId,
+		title,
+		company,
+		description,
+		categoryId,
+		employmentType,
+		location,
+		salaryMin,
+		salaryMax,
+		salaryCurrency,
+		applyUrl,
+		contactInfo,
+		logoUrl,
+		categories,
+	};
 
 	return (
 		<div className="min-w-0 space-y-4 sm:space-y-6">
@@ -75,9 +101,7 @@ export function AdminJobDetailsPanel({
 					</div>
 				</div>
 				<AdminJobEditContentDialog
-					jobId={jobId}
-					title={title}
-					description={description}
+					{...editProps}
 					triggerLabel={isAm ? "አስተካክል" : "Edit"}
 					triggerClassName="h-10 w-full shrink-0 gap-1.5 px-3 sm:w-auto"
 				/>
@@ -124,11 +148,11 @@ export function AdminJobDetailsPanel({
 
 			<Separator />
 
-			<div className="min-w-0">
-				<p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground sm:text-xs">
-					{isAm ? "ዝርዝር ማብራሪያ" : "Description"}
-				</p>
-				<div className="mt-2 max-w-full overflow-hidden rounded-xl border bg-muted/20 p-3 text-sm leading-relaxed break-words whitespace-pre-line sm:mt-3 sm:p-4">
+			<div>
+				<h3 className="mb-2 text-sm font-semibold">
+					{isAm ? "መግለጫ" : "Description"}
+				</h3>
+				<div className="whitespace-pre-wrap break-words text-sm leading-relaxed text-muted-foreground">
 					{description}
 				</div>
 			</div>
@@ -137,23 +161,23 @@ export function AdminJobDetailsPanel({
 }
 
 function DetailItem({
+	icon: Icon,
 	label,
 	value,
-	icon: Icon,
 	className,
 }: {
+	icon?: LucideIcon;
 	label: string;
 	value: React.ReactNode;
-	icon?: LucideIcon;
 	className?: string;
 }) {
 	return (
-		<div className={cn("min-w-0", className)}>
-			<p className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground sm:text-xs">
-				{Icon && <Icon className="size-3.5 shrink-0" />}
+		<div className={cn("min-w-0 space-y-1", className)}>
+			<p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+				{Icon ? <Icon className="size-3.5 shrink-0" /> : null}
 				{label}
 			</p>
-			<div className="mt-1 break-words text-sm font-medium sm:mt-1.5">{value}</div>
+			<div className="text-sm font-medium">{value}</div>
 		</div>
 	);
 }

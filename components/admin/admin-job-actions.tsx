@@ -164,6 +164,29 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 							Reject, schedule, feature, or recover a failed Telegram publish.
 						</p>
 
+				{isPosted && (
+					<div className="rounded-xl border border-primary/25 bg-primary/5 p-3 sm:p-4">
+						<p className="text-sm font-semibold text-primary">
+							Re-post to Telegram
+						</p>
+						<p className="mt-1 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+							Send a fresh Telegram post with the latest job details after
+							edits.
+						</p>
+						<div className="mt-3">
+							<Button
+								className="h-11 w-full sm:w-auto"
+								variant="default"
+								onClick={runRepublish}
+								disabled={pending}
+							>
+								<Send className="size-3.5" />
+								Re-post to Telegram
+							</Button>
+						</div>
+					</div>
+				)}
+
 				{isStuckAtApproved && (
 					<div className="rounded-xl border border-primary/25 bg-primary/5 p-3 sm:p-4">
 						<p className="text-sm font-semibold text-primary">

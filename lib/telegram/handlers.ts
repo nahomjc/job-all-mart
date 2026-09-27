@@ -7,6 +7,7 @@ import { settingsRepo } from "@/server/repositories/settings";
 import {
   clearDraft,
   handleCategoryPick,
+  handleSalarySkip,
   handleWizardMessage,
 } from "@/lib/telegram/wizard";
 import {
@@ -30,8 +31,20 @@ import {
 } from "@/lib/telegram/menu-actions";
 import { requiredChannelLabel } from "@/lib/telegram/required-channel";
 import { createBotLoginToken } from "@/lib/telegram/bot-login-token";
+import { telegramWebLoginRepo } from "@/server/repositories/telegramWebLogin";
 
 let registered = false;
+
+function uuidFromCompact(compact: string): string | null {
+  const hex = compact.replace(/-/g, "").toLowerCase();
+  if (!/^[0-9a-f]{32}$/.test(hex)) return null;
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
+function parseWebLoginSessionId(payload: string): string | null {
+  if (!payload.startsWith("wl_")) return null;
+  return uuidFromCompact(payload.slice(3));
+}
 
 /**
  * Idempotently registers all command + message handlers on the bot.
@@ -89,6 +102,46 @@ export function registerHandlers(bot: Telegraf): void {
       firstName: from.first_name,
       lastName: from.last_name,
     });
+
+    const webLoginSessionId = parseWebLoginSessionId(startPayload);
+    if (webLoginSessionId) {
+      const session = await telegramWebLoginRepo.byId(webLoginSessionId);
+      if (
+        !session ||
+        session.status !== "pending" ||
+        session.expiresAt.getTime() < Date.now()
+      ) {
+        await ctx.reply(
+          "This website login link expired or was already used.\nGo back to the website and tap Continue with Telegram again.",
+          mainMenuKeyboard(),
+        );
+        return;
+      }
+
+      await ctx.reply(
+        `Sign in to ${env.NEXT_PUBLIC_APP_NAME} on the website?\n\n` +
+          "Confirm here — your browser tab will finish login automatically (no need to open a link).",
+        {
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: "✅ Confirm website login",
+                  callback_data: `wl:ok:${webLoginSessionId.replace(/-/g, "")}`,
+                },
+              ],
+              [
+                {
+                  text: "Cancel",
+                  callback_data: `wl:no:${webLoginSessionId.replace(/-/g, "")}`,
+                },
+              ],
+            ],
+          },
+        },
+      );
+      return;
+    }
 
     if (startPayload === "weblogin") {
       const token = createBotLoginToken(from.id);
@@ -206,6 +259,51 @@ Full details: ${env.NEXT_PUBLIC_APP_URL}/pricing`,
     if (data.startsWith("pickcat:")) {
       const categoryId = data.slice("pickcat:".length);
       await handleCategoryPick(ctx, categoryId);
+      return;
+    }
+    if (data === "skip:salary") {
+      await handleSalarySkip(ctx);
+      return;
+    }
+    if (data.startsWith("wl:ok:") || data.startsWith("wl:no:")) {
+      const from = ctx.from;
+      if (!from) return;
+      const approve = data.startsWith("wl:ok:");
+      const sessionId = uuidFromCompact(data.slice(6));
+      if (!sessionId) {
+        await ctx.answerCbQuery("Invalid login session");
+        return;
+      }
+
+      if (!approve) {
+        await telegramWebLoginRepo.cancel(sessionId);
+        await ctx.answerCbQuery("Cancelled");
+        await ctx.editMessageText(
+          "Website login cancelled. You can close this chat and stay on the website.",
+        );
+        return;
+      }
+
+      const approved = await telegramWebLoginRepo.approve(sessionId, from.id);
+      if (!approved) {
+        await ctx.answerCbQuery("Login expired or already used");
+        await ctx.editMessageText(
+          "This website login expired or was already used. Start again from the website.",
+        );
+        return;
+      }
+
+      await userRepo.upsertFromTelegram({
+        telegramId: from.id,
+        username: from.username,
+        firstName: from.first_name,
+        lastName: from.last_name,
+      });
+
+      await ctx.answerCbQuery("Confirmed");
+      await ctx.editMessageText(
+        `✅ Confirmed!\n\nReturn to your browser tab — ${env.NEXT_PUBLIC_APP_NAME} will finish signing you in there automatically.`,
+      );
       return;
     }
     // Footer button popup (e.g. "MAK Adverts services") on posted jobs.

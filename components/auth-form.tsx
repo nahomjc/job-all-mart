@@ -99,7 +99,10 @@ export function AuthForm() {
         <SignupSuccess next={next} />
       ) : (
         <div className="space-y-4">
-          <TelegramAuthButton mode={isSignup ? "signup" : "login"} />
+          <TelegramAuthButton
+            mode={isSignup ? "signup" : "login"}
+            nextPath={next ?? "/post/new"}
+          />
 
           <form action={formAction} className="space-y-4">
             {next ? <input type="hidden" name="next" value={next} /> : null}

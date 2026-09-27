@@ -33,6 +33,7 @@ type WizardStep =
   | "awaiting_location"
   | "awaiting_salary"
   | "awaiting_apply_url"
+  | "awaiting_logo"
   | "awaiting_payment_amount"
   | "awaiting_payment_screenshot";
 
@@ -46,6 +47,7 @@ interface Draft {
   salaryMin?: number;
   salaryMax?: number;
   applyUrl?: string;
+  logoUrl?: string;
   paymentAmount?: number;
   jobId?: string;
   startedAt: number;
@@ -149,25 +151,46 @@ export async function handleWizardMessage(ctx: Context): Promise<boolean> {
       draft.location = text.slice(0, 200);
       draft.step = "awaiting_salary";
       await ctx.reply(
-        "Salary range? (e.g. `1000-2000 USD` or send `skip` to omit)",
+        "Salary range in Birr? (optional)\n\n" +
+          "Send a range like `15000-25000`, a single amount like `20000`, or tap Skip if you don't want to show salary.",
+        {
+          reply_markup: {
+            inline_keyboard: [[{ text: "Skip salary", callback_data: "skip:salary" }]],
+          },
+        },
       );
       return true;
     }
     case "awaiting_salary": {
-      if (text.toLowerCase() !== "skip") {
+      const skipSalary =
+        !text ||
+        /^(skip|no|none|n\/a|-)$/i.test(text.trim());
+      if (!skipSalary) {
         const m = text.match(/(\d+)\s*[-–]\s*(\d+)/);
         if (m) {
           draft.salaryMin = Number(m[1]);
           draft.salaryMax = Number(m[2]);
         } else {
           const single = Number(text.replace(/[^\d]/g, ""));
-          if (Number.isFinite(single) && single > 0) draft.salaryMin = single;
+          if (Number.isFinite(single) && single > 0) {
+            draft.salaryMin = single;
+          } else {
+            await ctx.reply(
+              "That doesn't look like a salary. Send e.g. `15000-25000`, or tap Skip / type `skip`.",
+              {
+                reply_markup: {
+                  inline_keyboard: [
+                    [{ text: "Skip salary", callback_data: "skip:salary" }],
+                  ],
+                },
+              },
+            );
+            return true;
+          }
         }
       }
       draft.step = "awaiting_apply_url";
-      await ctx.reply(
-        "Apply URL (e.g. https://...) or send `skip`:",
-      );
+      await ctx.reply("Apply URL (e.g. https://...) or send `skip`:");
       return true;
     }
     case "awaiting_apply_url": {
@@ -178,6 +201,44 @@ export async function handleWizardMessage(ctx: Context): Promise<boolean> {
         } catch {
           await ctx.reply("That doesn't look like a valid URL. Try again or `skip`:");
           return true;
+        }
+      }
+      draft.step = "awaiting_logo";
+      await ctx.reply(
+        "🏢 Send your company logo as a photo (square works best), or send `skip` to continue without one:",
+      );
+      return true;
+    }
+    case "awaiting_logo": {
+      const skipLogo = text.toLowerCase() === "skip";
+      if (!photo && !skipLogo) {
+        await ctx.reply(
+          "Please send the company logo as a photo, or type `skip` to continue without one.",
+        );
+        return true;
+      }
+
+      if (photo) {
+        const largest = photo[photo.length - 1];
+        if (largest) {
+          try {
+            const fileLink = await telegramClient.getFileLink(largest.file_id);
+            draft.logoUrl = await uploadBufferToR2(
+              await fetchAsBuffer(fileLink.toString()),
+              {
+                kind: "logo",
+                userId: user.id,
+                ext: ".jpg",
+                contentType: "image/jpeg",
+              },
+            );
+          } catch (err) {
+            console.error("[telegram] logo upload failed:", err);
+            await ctx.reply(
+              "Could not upload that logo. Send another photo, or type `skip`:",
+            );
+            return true;
+          }
         }
       }
 
@@ -216,6 +277,7 @@ export async function handleWizardMessage(ctx: Context): Promise<boolean> {
         salaryMax: draft.salaryMax ?? null,
         salaryCurrency: "ETB",
         applyUrl: draft.applyUrl ?? null,
+        logoUrl: draft.logoUrl ?? null,
         status: "pending_payment",
         source: "telegram",
         spamScore: spam.score,
@@ -224,7 +286,9 @@ export async function handleWizardMessage(ctx: Context): Promise<boolean> {
       draft.jobId = job.id;
       draft.step = "awaiting_payment_amount";
       await ctx.reply(
-        "💵 How much did you pay? (e.g. `500` for 500 Birr, send `0` if you're using a free quota)",
+        draft.logoUrl
+          ? "✅ Logo saved.\n\n💵 How much did you pay? (e.g. `500` for 500 Birr, send `0` if you're using a free quota)"
+          : "💵 How much did you pay? (e.g. `500` for 500 Birr, send `0` if you're using a free quota)",
       );
       return true;
     }
@@ -324,6 +388,21 @@ export async function handleCategoryPick(
   draft.step = "awaiting_location";
   await ctx.answerCbQuery("Category set");
   await ctx.reply("Where is the job located? (e.g. `Addis Ababa`, `Hawassa`, `Remote`)");
+}
+
+export async function handleSalarySkip(ctx: Context): Promise<void> {
+  const from = ctx.from;
+  if (!from) return;
+  const draft = DRAFTS.get(from.id);
+  if (!draft || draft.step !== "awaiting_salary") {
+    await ctx.answerCbQuery("Session expired. Start with /postjob");
+    return;
+  }
+  draft.salaryMin = undefined;
+  draft.salaryMax = undefined;
+  draft.step = "awaiting_apply_url";
+  await ctx.answerCbQuery("Salary skipped");
+  await ctx.reply("Apply URL (e.g. https://...) or send `skip`:");
 }
 
 export async function ensureCanPost(

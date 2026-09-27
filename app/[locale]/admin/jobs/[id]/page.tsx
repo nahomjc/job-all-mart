@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { formatRelativeTime, statusLabel } from "@/lib/format";
 import { paymentMethodLabel } from "@/lib/payment-methods";
+import { categoryRepo } from "@/server/repositories/category";
 import { jobRepo } from "@/server/repositories/job";
 import { paymentRepo } from "@/server/repositories/payment";
 import { telegramPostRepo } from "@/server/repositories/telegramPost";
@@ -52,8 +53,28 @@ export default async function AdminJobReviewPage(props: {
 	const data = await jobRepo.byIdWithRelations(id);
 	if (!data?.job) notFound();
 	const { job, category, employer } = data;
-	const payment = await paymentRepo.byJobId(id);
-	const tgPosts = await telegramPostRepo.byJobId(id);
+	const [payment, tgPosts, categories] = await Promise.all([
+		paymentRepo.byJobId(id),
+		telegramPostRepo.byJobId(id),
+		categoryRepo.list(),
+	]);
+	const categoryOptions = categories.map((c) => ({ id: c.id, name: c.name }));
+	const editJobProps = {
+		jobId: job.id,
+		title: job.title,
+		company: job.company,
+		description: job.description,
+		categoryId: job.categoryId,
+		employmentType: job.employmentType,
+		location: job.location,
+		salaryMin: job.salaryMin,
+		salaryMax: job.salaryMax,
+		salaryCurrency: job.salaryCurrency,
+		applyUrl: job.applyUrl,
+		contactInfo: job.contactInfo,
+		logoUrl: job.logoUrl,
+		categories: categoryOptions,
+	};
 
 	return (
 		<div className="mx-auto w-full max-w-full min-w-0 space-y-4 overflow-x-hidden sm:space-y-6 md:space-y-8">
@@ -94,11 +115,7 @@ export default async function AdminJobReviewPage(props: {
 					</div>
 				</div>
 				<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
-					<AdminJobEditContentDialog
-						jobId={job.id}
-						title={job.title}
-						description={job.description}
-					/>
+					<AdminJobEditContentDialog {...editJobProps} />
 					<AdminJobHeaderActions
 						jobId={job.id}
 						jobTitle={job.title}
@@ -188,7 +205,9 @@ export default async function AdminJobReviewPage(props: {
 								jobId={job.id}
 								title={job.title}
 								company={job.company}
+								categoryId={job.categoryId}
 								categoryName={category?.name ?? "Uncategorized"}
+								categories={categoryOptions}
 								logoUrl={job.logoUrl}
 								employmentType={job.employmentType}
 								location={job.location}
@@ -197,6 +216,7 @@ export default async function AdminJobReviewPage(props: {
 								salaryCurrency={job.salaryCurrency}
 								createdAt={job.createdAt}
 								applyUrl={job.applyUrl}
+								contactInfo={job.contactInfo}
 								description={job.description}
 							/>
 						}

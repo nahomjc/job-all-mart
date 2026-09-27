@@ -142,7 +142,10 @@ export function formatJobMessage(args: {
   return [...header, ...descriptionLabel, descriptionBody, ...footer].join("\n");
 }
 
-export async function publishJobToTelegram(jobId: string): Promise<{
+export async function publishJobToTelegram(
+  jobId: string,
+  opts?: { allowPosted?: boolean },
+): Promise<{
   chatId: string;
   messageId: number;
   topicId: number | null;
@@ -151,7 +154,9 @@ export async function publishJobToTelegram(jobId: string): Promise<{
   if (!data?.job) throw new Error(`Job ${jobId} not found`);
   const { job, category, employer } = data;
 
-  if (job.status !== "approved" && job.status !== "scheduled") {
+  const allowed = new Set(["approved", "scheduled"]);
+  if (opts?.allowPosted) allowed.add("posted");
+  if (!allowed.has(job.status)) {
     throw new Error(
       `Refusing to publish job ${jobId} in status ${job.status}`,
     );
@@ -189,7 +194,7 @@ export async function publishJobToTelegram(jobId: string): Promise<{
 
   await jobRepo.update(job.id, {
     status: "posted",
-    postedAt: new Date(),
+    postedAt: job.postedAt ?? new Date(),
     expiresAt:
       job.expiresAt ?? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
   });

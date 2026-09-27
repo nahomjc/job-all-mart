@@ -9,6 +9,7 @@ import {
 	methodNeedsPhoneNumber,
 	paymentMethodLabel,
 } from "@/lib/payment-methods";
+import { publicUrlFor } from "@/lib/r2";
 import { verifyPaymentReferenceSchema } from "@/lib/validations/payment";
 import { telegramClient } from "@/lib/telegram/client";
 import { notifyAdmins, publishJobToTelegram } from "@/lib/telegram/publisher";
@@ -108,8 +109,8 @@ export async function approveJobAction(
 
 /* ──────────────────────────────────────────────
  * Re-run the Telegram publish step.
- * Useful when the original `approveJobAction` failed mid-flow and left the
- * job at `approved` (status never advanced to `posted`).
+ * - approved / scheduled: recover a failed approve→post flow
+ * - posted: send a fresh Telegram post (e.g. after editing content)
  * ────────────────────────────────────────────── */
 export async function republishJobAction(
 	jobId: string,
@@ -117,12 +118,16 @@ export async function republishJobAction(
 	const admin = await requireAdmin();
 	const job = await jobRepo.byId(jobId);
 	if (!job) return failState("Job not found");
-	if (job.status !== "approved" && job.status !== "scheduled") {
+	if (
+		job.status !== "approved" &&
+		job.status !== "scheduled" &&
+		job.status !== "posted"
+	) {
 		return failState(`Cannot republish: job is in status '${job.status}'`);
 	}
 
 	try {
-		await publishJobToTelegram(jobId);
+		await publishJobToTelegram(jobId, { allowPosted: true });
 	} catch (err) {
 		const message = err instanceof Error ? err.message : String(err);
 		return failState(`Telegram publish failed: ${message}`);
@@ -133,7 +138,12 @@ export async function republishJobAction(
 		action: "job.post",
 		targetType: "job",
 		targetId: jobId,
-		metadata: { note: "Republished via admin retry button." },
+		metadata: {
+			note:
+				job.status === "posted"
+					? "Reposted to Telegram via admin button."
+					: "Republished via admin retry button.",
+		},
 		ip: null,
 		userAgent: null,
 	});
@@ -289,13 +299,56 @@ const updateJobContentSchema = z.object({
 		.string()
 		.min(6, "Title must be at least 6 characters")
 		.max(200, "Title must be at most 200 characters"),
+	company: z
+		.string()
+		.min(2, "Company must be at least 2 characters")
+		.max(200, "Company must be at most 200 characters"),
 	description: z
 		.string()
 		.min(10, "Description must be at least 10 characters"),
+	categoryId: z.string().uuid("Pick a category"),
+	employmentType: z.enum([
+		"full_time",
+		"part_time",
+		"contract",
+		"internship",
+		"remote",
+	]),
+	location: z
+		.string()
+		.min(2, "Location must be at least 2 characters")
+		.max(200, "Location must be at most 200 characters"),
+	salaryMin: z.preprocess(
+		(v) => (v === "" || v === null || v === undefined ? null : v),
+		z.coerce.number().int().nonnegative().nullable(),
+	),
+	salaryMax: z.preprocess(
+		(v) => (v === "" || v === null || v === undefined ? null : v),
+		z.coerce.number().int().nonnegative().nullable(),
+	),
+	salaryCurrency: z
+		.string()
+		.trim()
+		.max(8)
+		.optional()
+		.transform((v) => (v && v.length > 0 ? v.toUpperCase() : "ETB")),
+	applyUrl: z.preprocess(
+		(v) => (typeof v === "string" && v.trim() === "" ? null : v),
+		z.string().url("Apply URL must be a valid URL").nullable(),
+	),
+	contactInfo: z.preprocess(
+		(v) => (typeof v === "string" && v.trim() === "" ? null : v),
+		z.string().max(2000).nullable(),
+	),
+	logoKey: z.preprocess(
+		(v) => (typeof v === "string" && v.trim() === "" ? null : v),
+		z.string().max(500).nullable(),
+	),
+	clearLogo: z.preprocess((v) => v === "on" || v === "true" || v === true, z.boolean()),
 });
 
 /* ──────────────────────────────────────────────
- * Edit job title & description (admin)
+ * Edit job details (admin)
  * ────────────────────────────────────────────── */
 export async function updateJobContentAction(
 	_prev: AdminActionState,
@@ -305,19 +358,58 @@ export async function updateJobContentAction(
 	const parsed = updateJobContentSchema.safeParse({
 		jobId: formData.get("jobId"),
 		title: formData.get("title"),
+		company: formData.get("company"),
 		description: formData.get("description"),
+		categoryId: formData.get("categoryId"),
+		employmentType: formData.get("employmentType"),
+		location: formData.get("location"),
+		salaryMin: formData.get("salaryMin"),
+		salaryMax: formData.get("salaryMax"),
+		salaryCurrency: formData.get("salaryCurrency"),
+		applyUrl: formData.get("applyUrl"),
+		contactInfo: formData.get("contactInfo"),
+		logoKey: formData.get("logoKey"),
+		clearLogo: formData.get("clearLogo"),
 	});
 	if (!parsed.success) {
 		return failState(parsed.error.issues[0]?.message ?? "Invalid input");
 	}
 
-	const { jobId, title, description } = parsed.data;
-	const existing = await jobRepo.byId(jobId);
+	const data = parsed.data;
+	const existing = await jobRepo.byId(data.jobId);
 	if (!existing) return failState("Job not found");
 
-	const updated = await jobRepo.update(jobId, {
-		title: title.trim(),
-		description: description.trim(),
+	const category = await categoryRepo.byId(data.categoryId);
+	if (!category) return failState("Category not found");
+
+	if (
+		data.salaryMin != null &&
+		data.salaryMax != null &&
+		data.salaryMax < data.salaryMin
+	) {
+		return failState("Max salary must be greater than or equal to min salary");
+	}
+
+	let logoUrl = existing.logoUrl;
+	if (data.clearLogo) {
+		logoUrl = null;
+	} else if (data.logoKey) {
+		logoUrl = publicUrlFor(data.logoKey);
+	}
+
+	const updated = await jobRepo.update(data.jobId, {
+		title: data.title.trim(),
+		company: data.company.trim(),
+		description: data.description.trim(),
+		categoryId: data.categoryId,
+		employmentType: data.employmentType,
+		location: data.location.trim(),
+		salaryMin: data.salaryMin,
+		salaryMax: data.salaryMax,
+		salaryCurrency: data.salaryCurrency,
+		applyUrl: data.applyUrl,
+		contactInfo: data.contactInfo,
+		logoUrl,
 	});
 	if (!updated) return failState("Could not update job");
 
@@ -325,9 +417,20 @@ export async function updateJobContentAction(
 		actorId: admin.id,
 		action: "job.update",
 		targetType: "job",
-		targetId: jobId,
+		targetId: data.jobId,
 		metadata: {
-			fields: ["title", "description"],
+			fields: [
+				"title",
+				"company",
+				"description",
+				"categoryId",
+				"employmentType",
+				"location",
+				"salary",
+				"applyUrl",
+				"contactInfo",
+				"logoUrl",
+			],
 			fromTitle: existing.title,
 			toTitle: updated.title,
 		},
@@ -336,11 +439,11 @@ export async function updateJobContentAction(
 	});
 
 	revalidatePath("/admin/jobs");
-	revalidatePath(`/admin/jobs/${jobId}`);
+	revalidatePath(`/admin/jobs/${data.jobId}`);
 	revalidatePath("/jobs");
 	revalidatePath(`/jobs/${existing.slug}`);
 	revalidatePath("/");
-	return okState({ title: updated.title, description: updated.description });
+	return okState({ title: updated.title });
 }
 
 /* ──────────────────────────────────────────────

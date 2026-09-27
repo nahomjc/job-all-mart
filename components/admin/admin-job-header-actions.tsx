@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, Send, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -15,7 +15,11 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { approveJobAction, rejectJobAction } from "@/server/actions/admin";
+import {
+	approveJobAction,
+	rejectJobAction,
+	republishJobAction,
+} from "@/server/actions/admin";
 
 type AdminJobHeaderActionsProps = {
 	jobId: string;
@@ -33,13 +37,18 @@ export function AdminJobHeaderActions({
 	const router = useRouter();
 	const [approvePending, startApprove] = useTransition();
 	const [rejectPending, startReject] = useTransition();
+	const [repostPending, startRepost] = useTransition();
 	const [approveOpen, setApproveOpen] = useState(false);
 	const [rejectOpen, setRejectOpen] = useState(false);
+	const [repostOpen, setRepostOpen] = useState(false);
 	const [reason, setReason] = useState("");
 
-	if (jobStatus === "posted") return null;
+	const isPosted = jobStatus === "posted";
+	const canApproveReject = !isPosted && jobStatus !== "rejected" && jobStatus !== "expired";
+	const canRepost =
+		isPosted || jobStatus === "approved" || jobStatus === "scheduled";
 
-	const busy = approvePending || rejectPending;
+	const busy = approvePending || rejectPending || repostPending;
 
 	const runApprove = () => {
 		startApprove(async () => {
@@ -71,26 +80,92 @@ export function AdminJobHeaderActions({
 		});
 	};
 
+	const runRepost = () => {
+		startRepost(async () => {
+			const r = await republishJobAction(jobId);
+			if (r.ok) {
+				toast.success("Re-posted to Telegram");
+				setRepostOpen(false);
+				router.refresh();
+			} else {
+				toast.error(r.error ?? "Telegram re-post failed");
+			}
+		});
+	};
+
+	if (!canApproveReject && !canRepost) return null;
+
 	return (
 		<>
-			<Button
-				variant="success"
-				className="h-11 w-full shrink-0 sm:w-auto"
-				onClick={() => setApproveOpen(true)}
-				disabled={busy}
+			{canRepost ? (
+				<Button
+					variant="outline"
+					className="h-11 w-full shrink-0 sm:w-auto"
+					onClick={() => setRepostOpen(true)}
+					disabled={busy}
+				>
+					<Send className="size-4" />
+					Re-post to Telegram
+				</Button>
+			) : null}
+
+			{canApproveReject ? (
+				<>
+					<Button
+						variant="success"
+						className="h-11 w-full shrink-0 sm:w-auto"
+						onClick={() => setApproveOpen(true)}
+						disabled={busy}
+					>
+						<CheckCircle2 className="size-4" />
+						Approve & publish
+					</Button>
+					<Button
+						variant="destructive"
+						className="h-11 w-full shrink-0 sm:w-auto"
+						onClick={() => setRejectOpen(true)}
+						disabled={busy}
+					>
+						<XCircle className="size-4" />
+						Reject
+					</Button>
+				</>
+			) : null}
+
+			<Dialog
+				open={repostOpen}
+				onOpenChange={(o) => !repostPending && setRepostOpen(o)}
 			>
-				<CheckCircle2 className="size-4" />
-				Approve & publish
-			</Button>
-			<Button
-				variant="destructive"
-				className="h-11 w-full shrink-0 sm:w-auto"
-				onClick={() => setRejectOpen(true)}
-				disabled={busy}
-			>
-				<XCircle className="size-4" />
-				Reject
-			</Button>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Re-post to Telegram?</DialogTitle>
+						<DialogDescription>
+							This will send a new Telegram post for{" "}
+							<span className="font-medium text-foreground">{jobTitle}</span>{" "}
+							with the current job details (title, description, logo, salary,
+							etc.).
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<Button
+							variant="outline"
+							className="h-11"
+							onClick={() => setRepostOpen(false)}
+							disabled={repostPending}
+						>
+							Cancel
+						</Button>
+						<Button
+							className="h-11"
+							onClick={runRepost}
+							disabled={repostPending}
+						>
+							<Send className="size-4" />
+							{repostPending ? "Posting…" : "Yes, re-post"}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 
 			<Dialog
 				open={approveOpen}

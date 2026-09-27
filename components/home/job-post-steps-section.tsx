@@ -28,49 +28,46 @@ const STEPS = [
 	{
 		id: "account",
 		number: "01",
-		title: "Create your account",
-		description:
-			"Sign up with email or Telegram. Takes about a minute.",
+		titleKey: "stepsAccountTitle",
+		bodyKey: "stepsAccountBody",
 		icon: Briefcase,
 		color: "from-amber-400 to-yellow-600",
 	},
 	{
 		id: "details",
 		number: "02",
-		title: "Fill in job details",
-		description:
-			"Add title, company, category, salary, description, and an optional logo.",
+		titleKey: "stepsDetailsTitle",
+		bodyKey: "stepsDetailsBody",
 		icon: FileText,
 		color: "from-amber-400 to-yellow-600",
 	},
 	{
 		id: "payment",
 		number: "03",
-		title: "Upload payment proof",
-		description:
-			"Pay for your plan, then upload a screenshot of the transfer.",
+		titleKey: "stepsPaymentTitle",
+		bodyKey: "stepsPaymentBody",
 		icon: CreditCard,
 		color: "from-violet-500 to-purple-600",
 	},
 	{
 		id: "review",
 		number: "04",
-		title: "Admin review",
-		description:
-			"We check the payment and the job details. Usually done in a few hours.",
+		titleKey: "stepsReviewTitle",
+		bodyKey: "stepsReviewBody",
 		icon: Shield,
 		color: "from-amber-500 to-orange-600",
 	},
 	{
 		id: "live",
 		number: "05",
-		title: "Go live on Telegram",
-		description:
-			"When approved, the job appears on the website and in the matching Telegram topic.",
+		titleKey: "stepsLiveTitle",
+		bodyKey: "stepsLiveBody",
 		icon: Rocket,
 		color: "from-primary to-brand-deep",
 	},
 ] as const;
+
+type StepId = (typeof STEPS)[number]["id"];
 
 const CYCLE_MS = 4200;
 
@@ -84,12 +81,13 @@ function StepVisual({
 	stepId,
 	reduce,
 }: {
-	stepId: (typeof STEPS)[number]["id"];
+	stepId: StepId;
 	reduce: boolean;
 }) {
+	const t = useTranslations("home");
+
 	return (
 		<div className="relative flex h-full min-h-[340px] items-center justify-center overflow-hidden p-6 sm:min-h-[400px] sm:p-8">
-			{/* Ambient orbs */}
 			{!reduce && (
 				<>
 					<motion.span
@@ -120,7 +118,7 @@ function StepVisual({
 					>
 						<div className="flex items-center justify-between">
 							<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-								Sign up
+								{t("animSignUp")}
 							</p>
 							{!reduce && (
 								<motion.span
@@ -133,21 +131,24 @@ function StepVisual({
 						</div>
 
 						<div className="mt-4 space-y-3">
-							{["Email", "Full name"].map((label, i) => (
+							{[
+								{ key: "email", label: t("animEmail"), width: "78%" },
+								{ key: "name", label: t("animFullName"), width: "62%" },
+							].map((field, i) => (
 								<motion.div
-									key={label}
+									key={field.key}
 									initial={reduce ? false : { opacity: 0, x: -16 }}
 									animate={{ opacity: 1, x: 0 }}
 									transition={{ delay: 0.15 + i * 0.15, duration: 0.4, ease: EASE }}
 									className="overflow-hidden rounded-xl border bg-muted/40 px-3 py-2.5"
 								>
-									<p className="text-[10px] text-muted-foreground">{label}</p>
+									<p className="text-[10px] text-muted-foreground">{field.label}</p>
 									<motion.div
 										className="mt-1.5 h-2 origin-left rounded-full bg-foreground/15"
 										initial={reduce ? false : { scaleX: 0 }}
 										animate={{ scaleX: 1 }}
 										transition={{ delay: 0.3 + i * 0.15, duration: 0.55, ease: EASE }}
-										style={{ width: i === 0 ? "78%" : "62%" }}
+										style={{ width: field.width }}
 									/>
 								</motion.div>
 							))}
@@ -173,7 +174,7 @@ function StepVisual({
 										}}
 									/>
 								)}
-								Create account
+								{t("animCreateAccount")}
 							</motion.button>
 						</div>
 
@@ -190,7 +191,7 @@ function StepVisual({
 							>
 								<CheckCircle2 className="size-4" />
 							</motion.span>
-							Account ready
+							{t("animAccountReady")}
 						</motion.p>
 					</motion.div>
 				)}
@@ -205,14 +206,24 @@ function StepVisual({
 						transition={{ duration: 0.5, ease: EASE }}
 						className="relative w-full max-w-sm rounded-2xl border bg-card/95 p-5 shadow-2xl shadow-primary/10 backdrop-blur-sm"
 					>
-						<p className="text-xs font-semibold text-primary">New job post</p>
+						<p className="text-xs font-semibold text-primary">{t("animNewJobPost")}</p>
 
 						{[
-							{ label: "Job title", value: "Senior Software Engineer", delay: 0.12 },
-							{ label: "Company", value: "Acme Tech · Remote", delay: 0.28 },
+							{
+								key: "title",
+								label: t("animJobTitle"),
+								value: t("animJobTitleValue"),
+								delay: 0.12,
+							},
+							{
+								key: "company",
+								label: t("animCompany"),
+								value: t("animCompanyValue"),
+								delay: 0.28,
+							},
 						].map((field) => (
 							<motion.div
-								key={field.label}
+								key={field.key}
 								initial={reduce ? false : { opacity: 0, y: 12 }}
 								animate={{ opacity: 1, y: 0 }}
 								transition={{ delay: field.delay, duration: 0.4, ease: EASE }}
@@ -268,7 +279,7 @@ function StepVisual({
 						className="relative w-full max-w-sm rounded-2xl border bg-card/95 p-5 shadow-2xl shadow-violet-500/10 backdrop-blur-sm"
 					>
 						<p className="text-xs font-semibold text-violet-600 dark:text-violet-400">
-							Pending payment
+							{t("animPendingPayment")}
 						</p>
 
 						<motion.div
@@ -302,7 +313,7 @@ function StepVisual({
 							>
 								<CreditCard className="size-6" />
 							</motion.span>
-							<p className="mt-3 text-sm font-medium">Upload screenshot</p>
+							<p className="mt-3 text-sm font-medium">{t("animUploadScreenshot")}</p>
 
 							<div className="mx-auto mt-4 h-2 w-4/5 overflow-hidden rounded-full bg-muted">
 								<motion.div
@@ -313,7 +324,7 @@ function StepVisual({
 								/>
 							</div>
 							<p className="mt-2 text-[11px] text-muted-foreground">
-								receipt.png · 84%
+								{t("animReceiptProgress")}
 							</p>
 						</motion.div>
 
@@ -323,7 +334,7 @@ function StepVisual({
 							transition={{ delay: 1 }}
 							className="mt-3 text-center text-xs text-muted-foreground"
 						>
-							Ref: TXN-48291 · ETB 500
+							{t("animPaymentRef")}
 						</motion.p>
 					</motion.div>
 				)}
@@ -339,7 +350,9 @@ function StepVisual({
 						className="relative w-full max-w-sm rounded-2xl border bg-card/95 p-5 shadow-2xl shadow-amber-500/10 backdrop-blur-sm"
 					>
 						<div className="flex items-center justify-between">
-							<p className="text-xs font-semibold text-amber-600">Under review</p>
+							<p className="text-xs font-semibold text-amber-600">
+								{t("animUnderReview")}
+							</p>
 							{!reduce && (
 								<motion.span
 									animate={{ rotate: 360 }}
@@ -355,12 +368,12 @@ function StepVisual({
 
 						<div className="mt-4 space-y-2">
 							{[
-								{ label: "Payment verified", done: true },
-								{ label: "Content check", done: true },
-								{ label: "Final approval", done: false },
+								{ key: "pay", label: t("animPaymentVerified"), done: true },
+								{ key: "content", label: t("animContentCheck"), done: true },
+								{ key: "final", label: t("animFinalApproval"), done: false },
 							].map((item, i) => (
 								<motion.div
-									key={item.label}
+									key={item.key}
 									initial={reduce ? false : { opacity: 0, x: -20 }}
 									animate={{ opacity: 1, x: 0 }}
 									transition={{ delay: 0.18 + i * 0.22, duration: 0.4, ease: EASE }}
@@ -440,12 +453,12 @@ function StepVisual({
 									transition={{ delay: 0.25, type: "spring" }}
 									className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-500/20 dark:text-amber-300"
 								>
-									POSTED
+									{t("animPosted")}
 								</motion.span>
-								<p className="text-sm font-semibold">Senior Software Engineer</p>
+								<p className="text-sm font-semibold">{t("animJobTitleValue")}</p>
 							</div>
 							<p className="mt-1 text-xs text-muted-foreground">
-								Acme Tech · Remote · $80k–$120k
+								{t("animJobMeta")}
 							</p>
 						</motion.div>
 
@@ -466,8 +479,8 @@ function StepVisual({
 								<Send className="size-4" />
 							</motion.span>
 							<div>
-								<p className="text-[10px] opacity-90">Sent to Telegram</p>
-								<p className="text-xs font-semibold">IT Jobs topic · 2.4k views</p>
+								<p className="text-[10px] opacity-90">{t("animSentToTelegram")}</p>
+								<p className="text-xs font-semibold">{t("animTelegramTopic")}</p>
 							</div>
 						</motion.div>
 
@@ -515,10 +528,11 @@ export function JobPostStepsSection() {
 
 	const step = STEPS[active];
 	const Icon = step.icon;
+	const stepTitle = t(step.titleKey);
 
 	return (
 		<MotionSection
-			className="relative border-b bg-background py-20 md:py-28"
+			className="relative border-b bg-background pt-10 pb-20 md:pt-14 md:pb-28"
 			delay={0}
 		>
 			<div
@@ -549,7 +563,7 @@ export function JobPostStepsSection() {
 					<div className="border-b p-6 sm:p-8 lg:max-h-[560px] lg:border-b-0 lg:border-r lg:overflow-y-auto">
 						<div className="mb-6 flex items-center justify-between gap-4">
 							<p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-								Step {active + 1} of {STEPS.length}
+								{t("stepsOf", { current: active + 1, total: STEPS.length })}
 							</p>
 							<div className="flex min-w-0 flex-1 items-center gap-2">
 								{!reduceMotion && (
@@ -562,7 +576,7 @@ export function JobPostStepsSection() {
 									/>
 								)}
 								<span className="shrink-0 text-[10px] font-medium text-primary">
-									Auto
+									{t("stepsAuto")}
 								</span>
 							</div>
 						</div>
@@ -571,6 +585,8 @@ export function JobPostStepsSection() {
 							{STEPS.map((s, i) => {
 								const StepIcon = s.icon;
 								const isActive = i === active;
+								const title = t(s.titleKey);
+								const description = t(s.bodyKey);
 								return (
 									<li
 										key={s.id}
@@ -620,7 +636,7 @@ export function JobPostStepsSection() {
 																: "text-muted-foreground",
 														)}
 													>
-														{s.title}
+														{title}
 													</p>
 													<AnimatePresence>
 														{isActive && (
@@ -631,7 +647,7 @@ export function JobPostStepsSection() {
 																transition={{ duration: 0.35, ease: EASE }}
 																className="mt-1 overflow-hidden text-sm leading-relaxed text-muted-foreground"
 															>
-																{s.description}
+																{description}
 															</motion.p>
 														)}
 													</AnimatePresence>
@@ -688,7 +704,7 @@ export function JobPostStepsSection() {
 										>
 											<Icon className="size-4" />
 										</span>
-										<span className="text-sm font-semibold">{step.title}</span>
+										<span className="text-sm font-semibold">{stepTitle}</span>
 									</motion.div>
 								</AnimatePresence>
 							</div>
@@ -702,7 +718,7 @@ export function JobPostStepsSection() {
 						<button
 							key={s.id}
 							type="button"
-							aria-label={`Go to step ${i + 1}: ${s.title}`}
+							aria-label={t("stepsGoTo", { n: i + 1, title: t(s.titleKey) })}
 							onClick={() => goTo(i)}
 							className={cn(
 								"h-2 overflow-hidden rounded-full transition-all",
