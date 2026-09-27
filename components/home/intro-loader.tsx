@@ -1,297 +1,292 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
-import { Briefcase } from "lucide-react";
 import {
-	AnimatePresence,
-	motion,
-	useMotionValue,
-	useReducedMotion,
-	useTransform,
-	animate,
-} from "framer-motion";
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+	useSyncExternalStore,
+} from "react";
+import { usePathname } from "next/navigation";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { BrandLogo } from "@/components/brand-logo";
+import { EASE } from "@/components/home/motion";
 import { DEFAULT_APP_NAME } from "@/lib/env";
 
-const INTRO_KEY = "mak-advert-intro-v4";
-const BUILD_MS = 3000;
+const INTRO_KEY = "mak-advert-intro-v7";
+const BUILD_MS = 2800;
 const HOLD_MS = 600;
-const EXIT_MS = 1000;
+const EXIT_MS = 900;
 
-const EASE = [0.22, 1, 0.36, 1] as const;
-const EASE_EXIT = [0.76, 0, 0.24, 1] as const;
+const EASE_LUXE = [0.16, 1, 0.3, 1] as const;
+
+function subscribeNoop() {
+	return () => {};
+}
+
+function useIsClient() {
+	return useSyncExternalStore(subscribeNoop, () => true, () => false);
+}
 
 function IntroLoader({ onComplete }: { onComplete: () => void }) {
 	const reduceMotion = useReducedMotion();
-	const doneRef = useRef(onComplete);
-	doneRef.current = onComplete;
-	const [phase, setPhase] = useState<"build" | "exit">("build");
-	const progress = useMotionValue(0);
-	const progressWidth = useTransform(progress, (v) => `${v}%`);
-	const progressLabel = useTransform(progress, (v) => `${Math.round(v)}`);
+	const [phase, setPhase] = useState<"in" | "out">("in");
+	const onCompleteRef = useRef(onComplete);
 
-	const letters = useMemo(
-		() => DEFAULT_APP_NAME.split("").map((ch, i) => ({ ch, i })),
-		[],
-	);
-
-	const particles = useMemo(
-		() =>
-			Array.from({ length: 20 }, (_, i) => ({
-				id: i,
-				x: 6 + ((i * 41) % 88),
-				y: 8 + ((i * 59) % 84),
-				size: 2 + (i % 3),
-				delay: (i % 8) * 0.16,
-				dur: 3.2 + (i % 5) * 0.5,
-			})),
-		[],
-	);
+	useEffect(() => {
+		onCompleteRef.current = onComplete;
+	}, [onComplete]);
 
 	useEffect(() => {
 		if (reduceMotion) {
-			doneRef.current();
+			onCompleteRef.current();
 			return;
 		}
 
-		const ctrl = animate(progress, 100, {
-			duration: BUILD_MS / 1000,
-			ease: [0.4, 0, 0.2, 1],
-		});
-
 		const exitTimer = window.setTimeout(
-			() => setPhase("exit"),
+			() => setPhase("out"),
 			BUILD_MS + HOLD_MS,
 		);
 		const doneTimer = window.setTimeout(
-			() => doneRef.current(),
+			() => onCompleteRef.current(),
 			BUILD_MS + HOLD_MS + EXIT_MS,
 		);
 
 		return () => {
-			ctrl.stop();
 			window.clearTimeout(exitTimer);
 			window.clearTimeout(doneTimer);
 		};
-	}, [progress, reduceMotion]);
+	}, [reduceMotion]);
 
 	if (reduceMotion) return null;
 
+	const nameParts = DEFAULT_APP_NAME.split(" ");
+	const primary = nameParts[0] ?? "MAK";
+	const rest = nameParts.slice(1).join(" ");
+	const letters = primary.split("").map((letter, index) => {
+		const occurrence = primary.slice(0, index + 1).split(letter).length - 1;
+		return { letter, id: `${letter}${occurrence}` };
+	});
+
 	return (
 		<motion.div
-			className="fixed inset-0 z-100 overflow-hidden bg-brand-deep"
+			className="fixed inset-0 z-100 overflow-hidden bg-[#070605]"
 			aria-hidden
-			initial={{ clipPath: "circle(150% at 50% 45%)" }}
-			animate={
-				phase === "exit"
-					? { clipPath: "circle(0% at 50% 45%)" }
-					: { clipPath: "circle(150% at 50% 45%)" }
-			}
-			transition={{ duration: EXIT_MS / 1000, ease: EASE_EXIT }}
+			initial={{ opacity: 1 }}
+			animate={phase === "out" ? { opacity: 0 } : { opacity: 1 }}
+			transition={{ duration: EXIT_MS / 1000, ease: EASE_LUXE }}
 		>
-			{/* Aurora */}
-			<motion.div
-				className="pointer-events-none absolute -left-1/4 top-[-20%] size-[70vmax] rounded-full bg-amber-400/20 blur-[100px]"
-				animate={{ x: [0, 40, 0], y: [0, 30, 0], opacity: [0.35, 0.55, 0.35] }}
-				transition={{ duration: 6, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-			/>
-			<motion.div
-				className="pointer-events-none absolute -right-1/4 bottom-[-10%] size-[55vmax] rounded-full bg-yellow-500/25 blur-[110px]"
-				animate={{ x: [0, -30, 0], y: [0, -20, 0], opacity: [0.3, 0.5, 0.3] }}
-				transition={{
-					duration: 7,
-					repeat: Number.POSITIVE_INFINITY,
-					ease: "easeInOut",
-					delay: 0.4,
-				}}
-			/>
-
-			{/* Perspective grid */}
+			{/* Deep stage */}
 			<div
-				className="pointer-events-none absolute inset-0 opacity-[0.14]"
+				aria-hidden
+				className="pointer-events-none absolute inset-0"
 				style={{
-					backgroundImage:
-						"linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px)",
-					backgroundSize: "52px 52px",
-					maskImage:
-						"radial-gradient(ellipse 65% 55% at 50% 42%, black, transparent)",
+					background:
+						"radial-gradient(ellipse 50% 42% at 50% 48%, rgba(212,175,55,0.14), transparent 68%), radial-gradient(ellipse 80% 55% at 50% 110%, rgba(0,0,0,0.95), transparent 50%)",
 				}}
 			/>
 
-			{/* Particles */}
-			{particles.map((p) => (
-				<motion.span
-					key={p.id}
-					className="pointer-events-none absolute rounded-full bg-amber-200/75"
-					style={{
-						left: `${p.x}%`,
-						top: `${p.y}%`,
-						width: p.size,
-						height: p.size,
-					}}
-					initial={{ opacity: 0, scale: 0 }}
-					animate={{
-						opacity: [0, 0.95, 0],
-						y: [0, -30, -55],
-						scale: [0.3, 1, 0.15],
-					}}
-					transition={{
-						duration: p.dur,
-						delay: p.delay,
-						repeat: Number.POSITIVE_INFINITY,
-						ease: "easeOut",
-					}}
-				/>
-			))}
-
-			{/* Horizontal scan */}
-			<motion.div
-				className="pointer-events-none absolute inset-x-0 z-20 h-px bg-linear-to-r from-transparent via-amber-300/80 to-transparent"
-				initial={{ top: "115%", opacity: 0 }}
-				animate={{ top: ["115%", "-8%"], opacity: [0, 1, 0] }}
-				transition={{ duration: 2.2, delay: 0.25, ease: "easeInOut" }}
+			{/* Soft vignette */}
+			<div
+				aria-hidden
+				className="pointer-events-none absolute inset-0"
+				style={{
+					background:
+						"radial-gradient(ellipse 70% 70% at 50% 50%, transparent 35%, rgba(0,0,0,0.72) 100%)",
+				}}
 			/>
 
-			<div className="relative z-10 flex h-full flex-col items-center justify-center px-6">
-				{/* Orbital mark */}
-				<div className="relative mb-10 flex size-28 items-center justify-center sm:size-32">
-					<motion.span
-						className="absolute inset-0 rounded-full border border-amber-300/30"
-						initial={{ scale: 0.55, opacity: 0 }}
-						animate={{ scale: [1, 1.1, 1], opacity: [0.4, 0.75, 0.4] }}
-						transition={{
-							duration: 2.6,
-							repeat: Number.POSITIVE_INFINITY,
-							ease: "easeInOut",
-						}}
-					/>
-					<motion.span
-						className="absolute inset-[-12px] rounded-full border border-dashed border-amber-100/35"
-						initial={{ opacity: 0 }}
-						animate={{ rotate: 360, opacity: 1 }}
-						transition={{
-							rotate: { duration: 12, repeat: Number.POSITIVE_INFINITY, ease: "linear" },
-							opacity: { duration: 0.6 },
-						}}
-					/>
-					<motion.span
-						className="absolute inset-[-26px] rounded-full border border-amber-400/20"
-						initial={{ scale: 0.7, opacity: 0 }}
-						animate={{ scale: 1, opacity: 1 }}
-						transition={{ duration: 0.9, ease: EASE }}
-					/>
-					<motion.div
-						className="relative flex size-16 items-center justify-center rounded-2xl bg-white text-brand-deep shadow-[0_0_50px_rgba(234,179,8,0.55)] sm:size-[4.5rem]"
-						initial={{ scale: 0.35, opacity: 0, rotate: -16 }}
-						animate={{ scale: 1, opacity: 1, rotate: 0 }}
-						transition={{ duration: 0.85, delay: 0.12, ease: EASE }}
+			{/* Fine grain */}
+			<div
+				aria-hidden
+				className="pointer-events-none absolute inset-0 opacity-[0.045] mix-blend-overlay"
+				style={{
+					backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+				}}
+			/>
+
+			{/* Curtain exit panels */}
+			<motion.div
+				aria-hidden
+				className="absolute inset-x-0 top-0 z-20 h-1/2 origin-top bg-[#070605]"
+				initial={{ scaleY: 0 }}
+				animate={phase === "out" ? { scaleY: 1 } : { scaleY: 0 }}
+				transition={{ duration: EXIT_MS / 1000, ease: EASE_LUXE }}
+			/>
+			<motion.div
+				aria-hidden
+				className="absolute inset-x-0 bottom-0 z-20 h-1/2 origin-bottom bg-[#070605]"
+				initial={{ scaleY: 0 }}
+				animate={phase === "out" ? { scaleY: 1 } : { scaleY: 0 }}
+				transition={{ duration: EXIT_MS / 1000, ease: EASE_LUXE }}
+			/>
+
+			<motion.div
+				className="relative z-10 flex h-full flex-col items-center justify-center px-6"
+				animate={
+					phase === "out"
+						? { opacity: 0, scale: 0.97, filter: "blur(4px)" }
+						: { opacity: 1, scale: 1, filter: "blur(0px)" }
+				}
+				transition={{ duration: (EXIT_MS / 1000) * 0.65, ease: EASE }}
+			>
+				{/* Crest */}
+				<div className="relative flex size-28 items-center justify-center sm:size-32">
+					{/* Outer thin ring */}
+					<svg
+						className="absolute inset-0 size-full -rotate-90"
+						viewBox="0 0 100 100"
+						fill="none"
+						aria-hidden
+						focusable="false"
 					>
-						<Briefcase className="size-7 sm:size-8" strokeWidth={2.25} />
-						<motion.span
-							className="pointer-events-none absolute inset-0 rounded-2xl ring-2 ring-amber-300/50"
-							animate={{ opacity: [0.2, 0.9, 0.2], scale: [1, 1.06, 1] }}
-							transition={{
-								duration: 1.8,
-								repeat: Number.POSITIVE_INFINITY,
-								ease: "easeInOut",
-							}}
+						<title>Brand mark ring</title>
+						<circle
+							cx="50"
+							cy="50"
+							r="47.5"
+							stroke="rgba(212,175,55,0.12)"
+							strokeWidth="0.6"
+						/>
+						<motion.circle
+							cx="50"
+							cy="50"
+							r="47.5"
+							stroke="rgba(212,175,55,0.9)"
+							strokeWidth="0.75"
+							strokeLinecap="round"
+							strokeDasharray={298.5}
+							initial={{ strokeDashoffset: 298.5 }}
+							animate={{ strokeDashoffset: 0 }}
+							transition={{ duration: 1.35, delay: 0.2, ease: EASE_LUXE }}
+						/>
+					</svg>
+
+					{/* Soft gold bloom behind logo */}
+					<motion.div
+						aria-hidden
+						className="absolute inset-[18%] rounded-full bg-[#d4af37]/20 blur-2xl"
+						initial={{ opacity: 0, scale: 0.6 }}
+						animate={{ opacity: 1, scale: 1 }}
+						transition={{ duration: 1.2, delay: 0.25, ease: EASE_LUXE }}
+					/>
+
+					<motion.div
+						initial={{ opacity: 0, scale: 0.86, y: 8 }}
+						animate={{ opacity: 1, scale: 1, y: 0 }}
+						transition={{ duration: 1, delay: 0.4, ease: EASE_LUXE }}
+						className="relative"
+					>
+						<BrandLogo
+							size={88}
+							priority
+							className="shadow-[0_0_0_1px_rgba(212,175,55,0.2),0_18px_50px_-18px_rgba(212,175,55,0.55)] ring-1 ring-white/5 sm:shadow-[0_0_0_1px_rgba(212,175,55,0.22),0_22px_60px_-16px_rgba(212,175,55,0.6)]"
 						/>
 					</motion.div>
 				</div>
 
-				<motion.p
-					className="text-[11px] font-semibold uppercase tracking-[0.42em] text-amber-200/90"
-					initial={{ opacity: 0, y: 14 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.65, delay: 0.4, ease: EASE }}
-				>
-					Welcome to
-				</motion.p>
-
-				<h1 className="mt-4 flex flex-wrap justify-center gap-x-[0.08em] text-center text-4xl font-bold tracking-tight text-white sm:text-6xl md:text-7xl">
-					{letters.map(({ ch, i }) =>
-						ch === " " ? (
-							<span key={`sp-${i}`} className="inline-block w-[0.32em]" />
-						) : (
-							<span
-								key={`${ch}-${i}`}
-								className="inline-block overflow-hidden pb-1"
-							>
+				{/* Wordmark */}
+				<div className="mt-10 overflow-hidden sm:mt-12">
+					<h1 className="flex items-baseline justify-center gap-[0.28em] text-[2rem] font-semibold tracking-[-0.04em] text-white sm:text-[2.75rem]">
+						<span className="inline-flex">
+							{letters.map(({ letter, id }, i) => (
 								<motion.span
-									className="inline-block bg-linear-to-b from-white via-white to-amber-200/80 bg-clip-text text-transparent"
-									initial={{ y: "120%", opacity: 0, rotateX: 40 }}
-									animate={{ y: 0, opacity: 1, rotateX: 0 }}
+									key={id}
+									className="inline-block bg-linear-to-b from-[#f5e6a8] via-[#d4af37] to-[#a88420] bg-clip-text text-transparent"
+									initial={{ y: "115%", opacity: 0 }}
+									animate={{ y: 0, opacity: 1 }}
 									transition={{
-										duration: 0.75,
-										delay: 0.55 + i * 0.048,
-										ease: EASE,
+										duration: 0.7,
+										delay: 0.85 + i * 0.05,
+										ease: EASE_LUXE,
 									}}
 								>
-									{ch}
+									{letter}
 								</motion.span>
-							</span>
-						),
-					)}
-				</h1>
+							))}
+						</span>
+						{rest ? (
+							<motion.span
+								className="font-medium tracking-[-0.03em] text-white/88"
+								initial={{ y: "115%", opacity: 0 }}
+								animate={{ y: 0, opacity: 1 }}
+								transition={{ duration: 0.75, delay: 1.05, ease: EASE_LUXE }}
+							>
+								{rest}
+							</motion.span>
+						) : null}
+					</h1>
+				</div>
+
+				{/* Gold rule */}
+				<motion.div
+					className="mt-7 flex h-px w-36 items-center justify-center sm:mt-8 sm:w-44"
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					transition={{ duration: 0.4, delay: 1.25 }}
+				>
+					<motion.span
+						className="h-px w-full origin-center bg-linear-to-r from-transparent via-[#d4af37] to-transparent"
+						initial={{ scaleX: 0 }}
+						animate={{ scaleX: 1 }}
+						transition={{ duration: 0.9, delay: 1.3, ease: EASE_LUXE }}
+					/>
+				</motion.div>
 
 				<motion.p
-					className="mt-5 max-w-md text-center text-sm text-white/55 sm:text-base"
-					initial={{ opacity: 0, y: 12 }}
+					className="mt-5 text-center text-[10px] font-medium uppercase tracking-[0.32em] text-white/40 sm:mt-6 sm:text-[11px] sm:tracking-[0.36em]"
+					initial={{ opacity: 0, y: 10 }}
 					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.65, delay: 1.6, ease: EASE }}
+					transition={{ duration: 0.7, delay: 1.5, ease: EASE_LUXE }}
 				>
-					Jobs & adverts across Ethiopia
+					Jobs &amp; adverts · Ethiopia
 				</motion.p>
 
-				{/* Load meter */}
-				<div className="mt-12 w-full max-w-[240px]">
-					<div className="mb-2 flex items-center justify-between text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-100/75">
-						<span>Booting board</span>
-						<span className="tabular-nums">
-							<motion.span>{progressLabel}</motion.span>%
-						</span>
-					</div>
-					<div className="relative h-[3px] overflow-hidden rounded-full bg-white/12">
+				{/* Progress hairline */}
+				<div className="absolute inset-x-0 bottom-10 flex justify-center px-8 sm:bottom-12">
+					<div className="h-px w-full max-w-48 overflow-hidden rounded-full bg-white/8">
 						<motion.div
-							className="absolute inset-y-0 left-0 rounded-full bg-linear-to-r from-amber-400 via-white to-amber-200"
-							style={{ width: progressWidth }}
-						/>
-						<motion.div
-							className="absolute inset-y-0 w-16 bg-linear-to-r from-transparent via-white/70 to-transparent"
-							animate={{ left: ["-20%", "120%"] }}
+							className="h-full origin-left bg-linear-to-r from-[#a88420] via-[#d4af37] to-[#f5e6a8]"
+							initial={{ scaleX: 0 }}
+							animate={{ scaleX: 1 }}
 							transition={{
-								duration: 1.4,
-								repeat: Number.POSITIVE_INFINITY,
+								duration: (BUILD_MS + HOLD_MS) / 1000,
 								ease: "linear",
 							}}
 						/>
 					</div>
 				</div>
-			</div>
+			</motion.div>
 		</motion.div>
+	);
+}
+
+function useIntroPending() {
+	return useSyncExternalStore(
+		subscribeNoop,
+		() => !sessionStorage.getItem(INTRO_KEY),
+		() => false,
 	);
 }
 
 export function PublicIntroGate({ children }: { children: React.ReactNode }) {
 	const pathname = usePathname();
 	const reduceMotion = useReducedMotion();
+	const isClient = useIsClient();
+	const introPending = useIntroPending();
 	const isHome = pathname === "/";
-	const [showIntro, setShowIntro] = useState(false);
-	const [ready, setReady] = useState(false);
+	const [dismissed, setDismissed] = useState(false);
 
-	useEffect(() => {
-		setReady(true);
-		if (!isHome || reduceMotion) return;
-		if (!sessionStorage.getItem(INTRO_KEY)) setShowIntro(true);
-	}, [isHome, reduceMotion]);
+	const showIntro =
+		isClient && isHome && !reduceMotion && !dismissed && introPending;
 
 	const handleComplete = useCallback(() => {
 		sessionStorage.setItem(INTRO_KEY, "1");
-		setShowIntro(false);
+		setDismissed(true);
 	}, []);
 
-	if (!ready && isHome) {
-		return <div className="min-h-screen bg-brand-deep" aria-hidden />;
+	if (!isClient && isHome) {
+		return <div className="min-h-screen bg-[#070605]" aria-hidden />;
 	}
 
 	return (

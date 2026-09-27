@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     type: "website",
     title: appName,
     description: "Job posts for Telegram channels and the web.",
-    images: [{ url: "/logo.png" }],
+    images: [{ url: "/images/photo_2026-09-27_19-36-28-Photoroom.png" }],
   },
   robots: { index: true, follow: true },
 };

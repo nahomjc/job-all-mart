@@ -1,10 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
 import { ArrowRight } from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import {
 	EASE,
 	MotionBlock,
@@ -18,79 +16,20 @@ import type { Category, Job } from "@/server/db/schema";
 
 type JobRow = { job: Job; category: Category | null };
 
-function FeaturedJobsBackground() {
-	const videoRef = useRef<HTMLVideoElement>(null);
-	const reduceMotion = useReducedMotion();
-
-	useEffect(() => {
-		const video = videoRef.current;
-		if (!video) return;
-		if (reduceMotion) {
-			video.pause();
-			return;
-		}
-		const play = () => {
-			void video.play().catch(() => {
-				/* autoplay can be blocked; poster still shows */
-			});
-		};
-		play();
-	}, [reduceMotion]);
-
-	return (
-		<>
-			{/* Poster / reduced-motion fallback */}
-			<Image
-				src="/images/featured-jobs-bg.jpg"
-				alt=""
-				fill
-				priority={false}
-				sizes="100vw"
-				className="object-cover object-center"
-			/>
-
-			{!reduceMotion && (
-				<video
-					ref={videoRef}
-					className="absolute inset-0 size-full object-cover object-center"
-					autoPlay
-					muted
-					loop
-					playsInline
-					preload="metadata"
-					aria-hidden
-					poster="/images/featured-jobs-bg.jpg"
-				>
-					<source src="/videos/featured-jobs-bg.mp4" type="video/mp4" />
-				</video>
-			)}
-
-			{/* Light scrim — keep copy readable without burying the video */}
-			<div aria-hidden className="absolute inset-0 bg-brand-deep/35" />
-			<div
-				aria-hidden
-				className="absolute inset-0 bg-linear-to-b from-black/25 via-brand-deep/25 to-brand-deep/45"
-			/>
-		</>
-	);
-}
-
 export function LatestJobsSection({ jobs }: { jobs: JobRow[] }) {
 	return (
-		<MotionSection className="relative overflow-hidden py-24 text-white">
-			<FeaturedJobsBackground />
-
-			<div className="container relative z-10 mx-auto px-4">
-				<div className="mb-10 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
+		<MotionSection className="bg-background py-20 md:py-24">
+			<div className="container mx-auto px-4">
+				<div className="mb-10 flex flex-col items-start justify-between gap-4 md:mb-12 md:flex-row md:items-end">
 					<MotionBlock variant="fadeUp">
-						<p className="text-sm font-semibold uppercase tracking-wider text-amber-200">
+						<p className="text-sm font-semibold uppercase tracking-wider text-primary">
 							Featured jobs
 						</p>
-						<h2 className="mt-2 text-balance text-3xl font-bold tracking-tight text-white md:text-4xl">
+						<h2 className="mt-2 text-balance text-3xl font-bold tracking-tight text-foreground md:text-4xl">
 							Latest openings
 						</h2>
-						<p className="mt-2 max-w-xl text-white/80">
-							Recent jobs from employers on our channels.
+						<p className="mt-3 max-w-xl text-muted-foreground">
+							Recent roles from employers on our channels.
 						</p>
 					</MotionBlock>
 					<motion.div
@@ -99,11 +38,7 @@ export function LatestJobsSection({ jobs }: { jobs: JobRow[] }) {
 						viewport={{ once: true }}
 						transition={{ duration: 0.45, ease: EASE }}
 					>
-						<Button
-							asChild
-							variant="outline"
-							className="rounded-full border-white/25 bg-white/10 text-white backdrop-blur-sm hover:bg-white/15 hover:text-white"
-						>
+						<Button asChild variant="outline" className="rounded-full">
 							<Link href="/jobs">
 								See all jobs <ArrowRight className="size-4" />
 							</Link>
@@ -112,11 +47,11 @@ export function LatestJobsSection({ jobs }: { jobs: JobRow[] }) {
 				</div>
 
 				{jobs.length === 0 ? (
-					<div className="rounded-2xl border border-dashed border-white/20 bg-white/10 px-6 py-16 text-center text-sm text-white/70 backdrop-blur-sm">
+					<div className="rounded-2xl border border-dashed border-border bg-muted/30 px-6 py-16 text-center text-sm text-muted-foreground">
 						No jobs posted yet. Check back soon.
 					</div>
 				) : (
-					<Stagger className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4 xl:gap-6">
+					<Stagger className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
 						{jobs.map(({ job, category }) => (
 							<StaggerChild key={job.id}>
 								<FeaturedJobCard job={job} category={category} />

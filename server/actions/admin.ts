@@ -283,6 +283,66 @@ export async function featureJobAction(
 	return okState();
 }
 
+const updateJobContentSchema = z.object({
+	jobId: z.string().uuid(),
+	title: z
+		.string()
+		.min(6, "Title must be at least 6 characters")
+		.max(200, "Title must be at most 200 characters"),
+	description: z
+		.string()
+		.min(10, "Description must be at least 10 characters"),
+});
+
+/* ──────────────────────────────────────────────
+ * Edit job title & description (admin)
+ * ────────────────────────────────────────────── */
+export async function updateJobContentAction(
+	_prev: AdminActionState,
+	formData: FormData,
+): Promise<AdminActionState> {
+	const admin = await requireAdmin();
+	const parsed = updateJobContentSchema.safeParse({
+		jobId: formData.get("jobId"),
+		title: formData.get("title"),
+		description: formData.get("description"),
+	});
+	if (!parsed.success) {
+		return failState(parsed.error.issues[0]?.message ?? "Invalid input");
+	}
+
+	const { jobId, title, description } = parsed.data;
+	const existing = await jobRepo.byId(jobId);
+	if (!existing) return failState("Job not found");
+
+	const updated = await jobRepo.update(jobId, {
+		title: title.trim(),
+		description: description.trim(),
+	});
+	if (!updated) return failState("Could not update job");
+
+	await auditLogRepo.log({
+		actorId: admin.id,
+		action: "job.update",
+		targetType: "job",
+		targetId: jobId,
+		metadata: {
+			fields: ["title", "description"],
+			fromTitle: existing.title,
+			toTitle: updated.title,
+		},
+		ip: null,
+		userAgent: null,
+	});
+
+	revalidatePath("/admin/jobs");
+	revalidatePath(`/admin/jobs/${jobId}`);
+	revalidatePath("/jobs");
+	revalidatePath(`/jobs/${existing.slug}`);
+	revalidatePath("/");
+	return okState({ title: updated.title, description: updated.description });
+}
+
 /* ──────────────────────────────────────────────
  * Payment verification
  * ────────────────────────────────────────────── */

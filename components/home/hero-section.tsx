@@ -32,9 +32,9 @@ function BrandMarquee() {
 		...TRUSTED_BRANDS.map((brand) => ({ id: `${brand}-second`, brand })),
 	];
 	return (
-		<div className="relative overflow-hidden border-t border-amber-200/60 bg-white/50 py-5 backdrop-blur-sm">
-			<div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-linear-to-r from-[#fff9eb] to-transparent" />
-			<div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-linear-to-l from-[#fff9eb] to-transparent" />
+		<div className="relative overflow-hidden border-t border-amber-200/60 bg-white/50 py-5 backdrop-blur-sm dark:border-border dark:bg-card/40">
+			<div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-linear-to-r from-[#fff9eb] to-transparent dark:from-background" />
+			<div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-linear-to-l from-[#fff9eb] to-transparent dark:from-background" />
 			<motion.div
 				className="flex w-max gap-16 px-8"
 				animate={{ x: ["0%", "-50%"] }}
@@ -43,7 +43,7 @@ function BrandMarquee() {
 				{items.map(({ id, brand }) => (
 					<span
 						key={id}
-						className="text-base font-bold tracking-tight text-stone-600 md:text-lg"
+						className="text-base font-bold tracking-tight text-stone-600 dark:text-muted-foreground md:text-lg"
 					>
 						{brand}
 					</span>
@@ -61,7 +61,7 @@ function HeroParticles({ reduce }: { reduce: boolean }) {
 			{dots.map((i) => (
 				<motion.span
 					key={i}
-					className="absolute size-1 rounded-full bg-amber-500/50"
+					className="absolute size-1 rounded-full bg-amber-500/50 dark:bg-primary/40"
 					style={{
 						left: `${8 + (i * 7) % 85}%`,
 						top: `${10 + (i * 11) % 80}%`,
@@ -95,11 +95,11 @@ export function HeroSection({
 	const reduceMotion = useReducedMotion();
 
 	return (
-		<section className="relative isolate min-h-[90vh] overflow-hidden bg-[#fff9eb] text-stone-900">
-			{/* Soft warm wash — matches site cream, not muddy brown */}
+		<section className="relative isolate min-h-[90vh] overflow-hidden bg-[#fff9eb] text-stone-900 dark:bg-background dark:text-foreground">
+			{/* Soft warm wash — cream in light, amber glow on dark */}
 			<div
 				aria-hidden
-				className="pointer-events-none absolute inset-0"
+				className="pointer-events-none absolute inset-0 dark:hidden"
 				style={{
 					background:
 						"radial-gradient(ellipse 80% 55% at 70% 20%, rgba(245,215,110,0.55), transparent 55%), radial-gradient(ellipse 60% 50% at 10% 80%, rgba(250,230,160,0.45), transparent 50%), linear-gradient(165deg, #fffdf5 0%, #fff6d9 42%, #f5e7b8 100%)",
@@ -107,7 +107,15 @@ export function HeroSection({
 			/>
 			<div
 				aria-hidden
-				className="pointer-events-none absolute inset-0 opacity-[0.35] mix-blend-soft-light"
+				className="pointer-events-none absolute inset-0 hidden dark:block"
+				style={{
+					background:
+						"radial-gradient(ellipse 75% 50% at 70% 15%, rgba(232,207,106,0.18), transparent 55%), radial-gradient(ellipse 55% 45% at 15% 85%, rgba(232,207,106,0.1), transparent 50%), linear-gradient(165deg, #12100a 0%, #18150c 45%, #1a160e 100%)",
+				}}
+			/>
+			<div
+				aria-hidden
+				className="pointer-events-none absolute inset-0 opacity-[0.35] mix-blend-soft-light dark:opacity-20 dark:mix-blend-overlay"
 				style={{
 					backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E")`,
 				}}
@@ -116,7 +124,7 @@ export function HeroSection({
 
 			<motion.div
 				aria-hidden
-				className="pointer-events-none absolute left-[-20%] top-[-15%] h-[70%] w-[70%] rounded-full bg-amber-300/40 blur-[110px]"
+				className="pointer-events-none absolute left-[-20%] top-[-15%] h-[70%] w-[70%] rounded-full bg-amber-300/40 blur-[110px] dark:bg-primary/15"
 				animate={
 					reduceMotion
 						? undefined
@@ -126,7 +134,7 @@ export function HeroSection({
 			/>
 			<motion.div
 				aria-hidden
-				className="pointer-events-none absolute right-[-15%] bottom-[-15%] h-[60%] w-[55%] rounded-full bg-yellow-200/50 blur-[100px]"
+				className="pointer-events-none absolute right-[-15%] bottom-[-15%] h-[60%] w-[55%] rounded-full bg-yellow-200/50 blur-[100px] dark:bg-amber-600/10"
 				animate={
 					reduceMotion ? undefined : { x: [0, -35, 0], y: [0, 25, 0] }
 				}
@@ -141,9 +149,9 @@ export function HeroSection({
 							variants={fadeUp}
 							initial="hidden"
 							animate="show"
-							className="inline-flex items-center gap-2 rounded-full border border-amber-300/70 bg-white/70 px-4 py-1.5 text-xs font-medium text-stone-700 shadow-sm backdrop-blur-md"
+							className="inline-flex items-center gap-2 rounded-full border border-amber-300/70 bg-white/70 px-4 py-1.5 text-xs font-medium text-stone-700 shadow-sm backdrop-blur-md dark:border-primary/25 dark:bg-card/70 dark:text-muted-foreground"
 						>
-							<Sparkles className="size-3.5 text-amber-600" />
+							<Sparkles className="size-3.5 text-amber-600 dark:text-primary" />
 							Live on Telegram and the web
 						</motion.span>
 
@@ -152,12 +160,12 @@ export function HeroSection({
 							variants={fadeUp}
 							initial="hidden"
 							animate="show"
-							className="mt-7 text-balance text-4xl font-bold leading-[1.05] tracking-tight text-stone-900 md:text-6xl lg:text-[4rem]"
+							className="mt-7 text-balance text-4xl font-bold leading-[1.05] tracking-tight text-stone-900 dark:text-foreground md:text-6xl lg:text-[4rem]"
 						>
 							Post jobs.
 							<br />
 							<motion.span
-								className="bg-linear-to-r from-amber-700 via-yellow-600 to-amber-500 bg-clip-text text-transparent"
+								className="bg-linear-to-r from-amber-700 via-yellow-600 to-amber-500 bg-clip-text text-transparent dark:from-primary dark:via-amber-300 dark:to-yellow-500"
 								animate={
 									reduceMotion
 										? undefined
@@ -175,7 +183,7 @@ export function HeroSection({
 							variants={fadeUp}
 							initial="hidden"
 							animate="show"
-							className="mx-auto mt-6 max-w-lg text-pretty text-lg leading-relaxed text-stone-600 lg:mx-0"
+							className="mx-auto mt-6 max-w-lg text-pretty text-lg leading-relaxed text-stone-600 dark:text-muted-foreground lg:mx-0"
 						>
 							Post jobs on {appName}, get them reviewed by our team, then
 							publish to Telegram and the website.
@@ -195,7 +203,7 @@ export function HeroSection({
 								<Button
 									asChild
 									size="lg"
-									className="h-14 rounded-full bg-brand-deep px-12 text-base font-bold text-white shadow-xl shadow-amber-900/20 hover:bg-brand-deep/90"
+									className="h-14 rounded-full bg-brand-deep px-12 text-base font-bold text-white shadow-xl shadow-amber-900/20 hover:bg-brand-deep/90 dark:bg-primary dark:text-primary-foreground dark:shadow-primary/20 dark:hover:bg-primary/90"
 								>
 									<Link href="/jobs">Get Started</Link>
 								</Button>
@@ -203,7 +211,7 @@ export function HeroSection({
 							<Button
 								asChild
 								variant="ghost"
-								className="h-12 text-stone-700 hover:bg-amber-100/80 hover:text-stone-900"
+								className="h-12 text-stone-700 hover:bg-amber-100/80 hover:text-stone-900 dark:text-muted-foreground dark:hover:bg-accent dark:hover:text-foreground"
 							>
 								<Link href="/post/new">
 									Post a job <ArrowRight className="size-4" />
@@ -228,15 +236,15 @@ export function HeroSection({
 												animate={{ opacity: 1, scale: 1, x: 0 }}
 												transition={{ delay: 0.6 + i * 0.08, type: "spring" }}
 												whileHover={{ y: -4, zIndex: 10 }}
-												className={`flex size-11 items-center justify-center rounded-full border-[3px] border-white ${bg} text-xs font-bold text-stone-900 shadow-lg`}
+												className={`flex size-11 items-center justify-center rounded-full border-[3px] border-white dark:border-background ${bg} text-xs font-bold text-stone-900 shadow-lg`}
 											>
 												{String.fromCharCode(65 + i)}
 											</motion.span>
 										),
 									)}
 								</div>
-								<p className="text-left text-sm font-medium text-stone-600">
-									<span className="text-lg font-bold text-stone-900">250K+</span>
+								<p className="text-left text-sm font-medium text-stone-600 dark:text-muted-foreground">
+									<span className="text-lg font-bold text-stone-900 dark:text-foreground">250K+</span>
 									<br />
 									people have joined
 								</p>
@@ -244,7 +252,7 @@ export function HeroSection({
 							<Button
 								asChild
 								variant="link"
-								className="h-auto p-0 text-stone-600 hover:text-stone-900"
+								className="h-auto p-0 text-stone-600 hover:text-stone-900 dark:text-muted-foreground dark:hover:text-foreground"
 							>
 								<a href={telegramJoinUrl} target="_blank" rel="noopener noreferrer">
 									<MessageSquare className="size-3.5" />
@@ -266,10 +274,10 @@ export function HeroSection({
 					<motion.div
 						animate={reduceMotion ? undefined : { y: [0, 8, 0] }}
 						transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-						className="flex flex-col items-center gap-2 text-stone-400"
+						className="flex flex-col items-center gap-2 text-stone-400 dark:text-muted-foreground"
 					>
 						<span className="text-xs">Scroll down</span>
-						<span className="h-8 w-px bg-linear-to-b from-stone-400/60 to-transparent" />
+						<span className="h-8 w-px bg-linear-to-b from-stone-400/60 to-transparent dark:from-muted-foreground/50" />
 					</motion.div>
 				</motion.div>
 			</div>

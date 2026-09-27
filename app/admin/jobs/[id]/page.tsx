@@ -1,5 +1,6 @@
 import { AdminJobActions } from "@/components/admin/admin-job-actions";
 import { AdminJobDetailsPanel } from "@/components/admin/admin-job-details-panel";
+import { AdminJobEditContentDialog } from "@/components/admin/admin-job-edit-content-dialog";
 import { AdminJobHeaderActions } from "@/components/admin/admin-job-header-actions";
 import { AdminJobReviewTourBar } from "@/components/onboarding/admin-job-review-tour-bar";
 import { Badge } from "@/components/ui/badge";
@@ -89,6 +90,11 @@ export default async function AdminJobReviewPage(props: {
 					</div>
 				</div>
 				<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
+					<AdminJobEditContentDialog
+						jobId={job.id}
+						title={job.title}
+						description={job.description}
+					/>
 					<AdminJobHeaderActions
 						jobId={job.id}
 						jobTitle={job.title}
@@ -169,6 +175,7 @@ export default async function AdminJobReviewPage(props: {
 						}
 						jobDetails={
 							<AdminJobDetailsPanel
+								jobId={job.id}
 								title={job.title}
 								company={job.company}
 								categoryName={category?.name ?? "Uncategorized"}
