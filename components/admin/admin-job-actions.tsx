@@ -11,6 +11,8 @@ import {
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
+	DialogFooter,
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
@@ -44,7 +46,7 @@ import {
 	XCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useTransition } from "react";
+import { useActionState, useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 const initial: AdminActionState = { ok: false };
@@ -61,6 +63,7 @@ interface AdminJobActionsProps {
 export function AdminJobActions(props: AdminJobActionsProps) {
 	const router = useRouter();
 	const [pending, startTransition] = useTransition();
+	const [repostOpen, setRepostOpen] = useState(false);
 
 	const isStuckAtApproved =
 		props.jobStatus === "approved" || props.jobStatus === "scheduled";
@@ -70,7 +73,8 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 		startTransition(async () => {
 			const r = await republishJobAction(props.jobId);
 			if (r.ok) {
-				toast.success("Re-published to Telegram");
+				toast.success("Re-posted to Telegram");
+				setRepostOpen(false);
 				router.refresh();
 			} else {
 				toast.error(r.error ?? "Publish failed");
@@ -89,6 +93,42 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 			}
 		});
 	};
+
+	const repostConfirmDialog = (
+		<Dialog
+			open={repostOpen}
+			onOpenChange={(open) => {
+				if (!pending) setRepostOpen(open);
+			}}
+		>
+			<DialogContent>
+				<DialogHeader>
+					<DialogTitle>Re-post to Telegram?</DialogTitle>
+					<DialogDescription>
+						This will send a new Telegram post for{" "}
+						<span className="font-medium text-foreground">
+							{props.jobTitle}
+						</span>{" "}
+						with the current job details. Continue?
+					</DialogDescription>
+				</DialogHeader>
+				<DialogFooter className="gap-2 sm:gap-0">
+					<Button
+						variant="outline"
+						className="h-11"
+						onClick={() => setRepostOpen(false)}
+						disabled={pending}
+					>
+						Cancel
+					</Button>
+					<Button className="h-11" onClick={runRepublish} disabled={pending}>
+						<Send className="size-4" />
+						{pending ? "Posting…" : "Yes, re-post"}
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
+	);
 
 	return (
 		<Card
@@ -177,7 +217,7 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 							<Button
 								className="h-11 w-full sm:w-auto"
 								variant="default"
-								onClick={runRepublish}
+								onClick={() => setRepostOpen(true)}
 								disabled={pending}
 							>
 								<Send className="size-3.5" />
@@ -200,7 +240,7 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 							<Button
 								className="h-11 w-full sm:w-auto"
 								variant="default"
-								onClick={runRepublish}
+								onClick={() => setRepostOpen(true)}
 								disabled={pending}
 							>
 								<Send className="size-3.5" />
@@ -262,6 +302,7 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 					</TabsContent>
 				</Tabs>
 			</CardContent>
+			{repostConfirmDialog}
 		</Card>
 	);
 }
