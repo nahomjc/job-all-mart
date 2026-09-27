@@ -1,8 +1,15 @@
 import { Link } from "@/i18n/routing";
 import Image from "next/image";
+import { useLocale, useTranslations } from "next-intl";
 import { BadgeCheck, Bookmark, Star } from "lucide-react";
 import type { Category, Job } from "@/server/db/schema";
-import { formatRelativeTime, formatSalary, statusLabel, truncate } from "@/lib/format";
+import {
+	formatLocation,
+	formatRelativeTime,
+	formatSalary,
+	statusLabel,
+	truncate,
+} from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 interface JobsBrowseCardProps {
@@ -10,34 +17,45 @@ interface JobsBrowseCardProps {
 	category?: Category | null;
 }
 
-function buildTags(job: Job, category?: Category | null): string[] {
+function buildTags(
+	job: Job,
+	category: Category | null | undefined,
+	locale: "en" | "am",
+	featuredLabel: string,
+): string[] {
 	const tags: string[] = [];
 	if (category?.name) tags.push(category.name);
-	tags.push(statusLabel(job.employmentType));
+	tags.push(statusLabel(job.employmentType, locale));
 	if (job.location) {
 		const loc = job.location.split(/[,·|/]/)[0]?.trim();
-		if (loc && loc.length <= 24) tags.push(loc);
+		const translatedLoc = formatLocation(loc, locale);
+		if (translatedLoc && translatedLoc.length <= 24) tags.push(translatedLoc);
 	}
-	if (job.isFeatured) tags.push("Featured");
+	if (job.isFeatured) tags.push(featuredLabel);
 	return tags.slice(0, 4);
 }
 
 export function JobsBrowseCard({ job, category }: JobsBrowseCardProps) {
+	const locale = useLocale() as "en" | "am";
+	const t = useTranslations("jobs");
 	const href = `/jobs/${job.slug}`;
-	const salary = formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency);
+	const salary = formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency, {
+		locale,
+	});
 	const hasSalary = Boolean(job.salaryMin || job.salaryMax);
 	const posted = job.postedAt
-		? formatRelativeTime(job.postedAt)
-		: "Just posted";
-	const tags = buildTags(job, category);
+		? formatRelativeTime(job.postedAt, locale)
+		: t("justPosted");
+	const tags = buildTags(job, category, locale, t("featured"));
 	const description = truncate(job.description.replace(/\s+/g, " ").trim(), 110);
+	const employment = statusLabel(job.employmentType, locale);
 
 	return (
 		<article className="group relative flex h-full flex-col rounded-2xl border border-border/70 bg-card p-5 shadow-sm transition-shadow hover:shadow-md">
 			<Link
 				href={href}
 				className="absolute inset-0 z-10 rounded-2xl"
-				aria-label={`View ${job.title} at ${job.company}`}
+				aria-label={`${job.title} - ${job.company}`}
 			/>
 
 			<div className="flex items-start gap-3">
@@ -65,7 +83,7 @@ export function JobsBrowseCard({ job, category }: JobsBrowseCardProps) {
 						<span className="truncate">{job.company}</span>
 						<BadgeCheck
 							className="size-3.5 shrink-0 text-primary"
-							aria-label="Verified employer"
+							aria-label={t("verifiedEmployer")}
 						/>
 					</p>
 				</div>
@@ -79,11 +97,11 @@ export function JobsBrowseCard({ job, category }: JobsBrowseCardProps) {
 			</div>
 
 			<p className="mt-3 text-[13px] text-muted-foreground">
-				{statusLabel(job.employmentType)}
+				{employment}
 				{hasSalary ? (
 					<>
 						{" "}
-						- Est. Budget :{" "}
+						- {t("estBudget")}{" "}
 						<span className="font-medium text-foreground/80">{salary}</span>
 					</>
 				) : null}
@@ -121,7 +139,7 @@ export function JobsBrowseCard({ job, category }: JobsBrowseCardProps) {
 					))}
 				</div>
 				<span className="text-[12px] text-muted-foreground">
-					Posted {posted.replace(/^about /i, "")}
+					{locale === "am" ? posted : `Posted ${posted.replace(/^about /i, "")}`}
 				</span>
 			</div>
 		</article>

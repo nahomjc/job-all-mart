@@ -32,6 +32,7 @@ import { jobRepo } from "@/server/repositories/job";
 import { paymentRepo } from "@/server/repositories/payment";
 import { env } from "@/lib/env";
 import {
+  formatLocation,
   formatRelativeTime,
   formatSalary,
   statusLabel,
@@ -49,9 +50,13 @@ export async function generateMetadata(props: {
 }
 
 export default async function MyJobDetailPage(props: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string; locale: string }>;
 }) {
-  const { id } = await props.params;
+  const { id, locale } = (await props.params) as {
+    id: string;
+    locale: "en" | "am";
+  };
+  const isAm = locale === "am";
   const user = await requireUser();
   const data = await jobRepo.byIdWithRelations(id);
   if (!data?.job) notFound();
@@ -71,7 +76,7 @@ export default async function MyJobDetailPage(props: {
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="My post"
+        eyebrow={isAm ? "የኔ የስራ ማስታወቂያ" : "My post"}
         title={job.title}
         description={
           <span className="flex flex-wrap items-center gap-2">
@@ -80,7 +85,7 @@ export default async function MyJobDetailPage(props: {
               {job.company}
             </span>
             <span className="text-muted-foreground/60">·</span>
-            <span>{category?.name ?? "Uncategorized"}</span>
+            <span>{category?.name ?? (isAm ? "ያልተመደበ" : "Uncategorized")}</span>
           </span>
         }
         actions={
@@ -89,14 +94,14 @@ export default async function MyJobDetailPage(props: {
               <Button asChild variant="outline" size="sm">
                 <a href={publicUrl} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="size-3.5" />
-                  View live post
+                  {isAm ? "ቀጥታ ማስታወቂያውን ይመልከቱ" : "View live post"}
                 </a>
               </Button>
             )}
             <Button asChild variant="outline" size="sm">
               <Link href="/dashboard/jobs">
                 <ArrowLeft className="size-3.5" />
-                Back to my jobs
+                {isAm ? "ወደ ስራዎቼ ተመለስ" : "Back to my jobs"}
               </Link>
             </Button>
           </div>
@@ -105,66 +110,81 @@ export default async function MyJobDetailPage(props: {
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <SnapshotTile
-          label="Status"
-          value={statusLabel(job.status)}
+          label={isAm ? "ሁኔታ" : "Status"}
+          value={statusLabel(job.status, locale)}
           badgeVariant={statusBadgeVariant(job.status)}
         />
         <SnapshotTile
-          label="Payment"
-          value={payment ? statusLabel(payment.status) : "Not uploaded"}
+          label={isAm ? "ክፍያ" : "Payment"}
+          value={
+            payment
+              ? statusLabel(payment.status, locale)
+              : isAm
+                ? "አልተሰቀለም"
+                : "Not uploaded"
+          }
           badgeVariant={
             payment ? paymentBadgeVariant(payment.status) : "outline"
           }
         />
         <SnapshotTile
-          label="Submitted"
-          value={formatRelativeTime(job.createdAt)}
+          label={isAm ? "የቀረበበት" : "Submitted"}
+          value={formatRelativeTime(job.createdAt, locale)}
           badgeVariant="outline"
         />
         <SnapshotTile
-          label="Source"
-          value={job.source === "telegram" ? "Telegram" : "Website"}
+          label={isAm ? "ምንጭ" : "Source"}
+          value={job.source === "telegram" ? "Telegram" : isAm ? "ድረ-ገጽ" : "Website"}
           badgeVariant="outline"
         />
       </div>
 
-      <StatusBanner job={job} payment={payment} />
+      <StatusBanner job={job} payment={payment} isAm={isAm} />
 
       <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
         <div className="space-y-6">
           <Card>
             <CardHeader className="border-b bg-muted/20">
-              <CardTitle className="text-lg">Job details</CardTitle>
+              <CardTitle className="text-lg">
+                {isAm ? "የስራው ዝርዝር መረጃ" : "Job details"}
+              </CardTitle>
               <CardDescription>
-                What you submitted for review and publishing.
+                {isAm
+                  ? "ለግምገማ እና ለማጽደቅ ያቀረቡት መረጃ።"
+                  : "What you submitted for review and publishing."}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 p-6">
               <div className="grid gap-4 sm:grid-cols-2">
                 <DetailItem
                   icon={Briefcase}
-                  label="Employment type"
-                  value={statusLabel(job.employmentType)}
+                  label={isAm ? "የስራ አይነት" : "Employment type"}
+                  value={statusLabel(job.employmentType, locale)}
                 />
-                <DetailItem icon={MapPin} label="Location" value={job.location} />
                 <DetailItem
-                  label="Salary"
+                  icon={MapPin}
+                  label={isAm ? "የስራ ቦታ" : "Location"}
+                  value={formatLocation(job.location, locale)}
+                />
+                <DetailItem
+                  label={isAm ? "ደመወዝ" : "Salary"}
                   value={formatSalary(
                     job.salaryMin,
                     job.salaryMax,
                     job.salaryCurrency,
+                    { locale },
                   )}
                 />
                 {job.postedAt && (
                   <DetailItem
                     icon={Calendar}
-                    label="Posted"
-                    value={formatRelativeTime(job.postedAt)}
+                    label={isAm ? "የተለጠፈበት" : "Posted"}
+                    value={formatRelativeTime(job.postedAt, locale)}
                   />
                 )}
                 {job.applyUrl && (
                   <DetailItem
-                    label="Apply link"
+                    label={isAm ? "የማመልከቻ ሊንክ" : "Apply link"}
                     value={
                       <a
                         href={job.applyUrl}
@@ -185,7 +205,7 @@ export default async function MyJobDetailPage(props: {
 
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Description
+                  {isAm ? "ዝርዝር ማብራሪያ" : "Description"}
                 </p>
                 <div className="mt-3 rounded-xl border bg-muted/20 p-4 text-sm leading-relaxed whitespace-pre-line">
                   {job.description}
@@ -201,47 +221,57 @@ export default async function MyJobDetailPage(props: {
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Receipt className="size-4 text-primary" />
-                  Action required
+                  {isAm ? "ክፍያ ማጠናቀቅ ያስፈልጋል" : "Action required"}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <p className="text-sm text-muted-foreground">
                   {payment?.status === "rejected"
-                    ? "Your payment was rejected. Upload a new screenshot to continue."
-                    : "Upload payment proof so our team can review and publish your job."}
+                    ? isAm
+                      ? "ክፍያዎ ውድቅ ተደርጓል። እባክዎ አዲስ የደረሰኝ ስክሪንሾት ይስቀሉ።"
+                      : "Your payment was rejected. Upload a new screenshot to continue."
+                    : isAm
+                      ? "ስራዎ ተገምግሞ እንዲጸድቅ የክፍያ ማስረጃ ይስቀሉ።"
+                      : "Upload payment proof so our team can review and publish your job."}
                 </p>
                 <Button asChild className="w-full">
                   <Link href={`/dashboard/jobs/${job.id}/payment`}>
-                    {payment ? "Re-upload payment" : "Upload payment proof"}
+                    {payment
+                      ? isAm
+                        ? "ክፍያውን በድጋሚ ይስቀሉ"
+                        : "Re-upload payment"
+                      : isAm
+                        ? "የክፍያ ማስረጃ ይስቀሉ"
+                        : "Upload payment proof"}
                   </Link>
                 </Button>
               </CardContent>
             </Card>
           )}
 
-          <SidebarCard title="Payment" icon={Receipt}>
+          <SidebarCard title={isAm ? "የክፍያ መረጃ" : "Payment"} icon={Receipt}>
             {payment ? (
               <div className="space-y-4">
                 <dl className="space-y-2 text-sm">
                   <SidebarRow
-                    label="Amount"
+                    label={isAm ? "የገንዘብ መጠን" : "Amount"}
                     value={`${payment.amount} ${payment.currency}`}
                   />
                   <SidebarRow
-                    label="Method"
-                    value={paymentMethodLabel(payment.method)}
+                    label={isAm ? "የክፍያ ዘዴ" : "Method"}
+                    value={paymentMethodLabel(payment.method, locale)}
                   />
                   <SidebarRow
-                    label="Status"
+                    label={isAm ? "የክፍያ ሁኔታ" : "Status"}
                     value={
                       <Badge variant={paymentBadgeVariant(payment.status)}>
-                        {statusLabel(payment.status)}
+                        {statusLabel(payment.status, locale)}
                       </Badge>
                     }
                   />
                   {payment.referenceCode && (
                     <SidebarRow
-                      label="Reference"
+                      label={isAm ? "የግብይት ቁጥር (Reference)" : "Reference"}
                       value={
                         <span className="font-mono text-xs">
                           {payment.referenceCode}
@@ -251,7 +281,7 @@ export default async function MyJobDetailPage(props: {
                   )}
                   {payment.accountSuffix && (
                     <SidebarRow
-                      label="Account suffix"
+                      label={isAm ? "የሂሳብ ቁጥር መጨረሻ" : "Account suffix"}
                       value={
                         <span className="font-mono text-xs">
                           {payment.accountSuffix}
@@ -260,7 +290,10 @@ export default async function MyJobDetailPage(props: {
                     />
                   )}
                   {payment.phoneNumber && (
-                    <SidebarRow label="Phone" value={payment.phoneNumber} />
+                    <SidebarRow
+                      label={isAm ? "ስልክ ቁጥር" : "Phone"}
+                      value={payment.phoneNumber}
+                    />
                   )}
                 </dl>
                 {payment.screenshotUrl ? (
@@ -272,34 +305,41 @@ export default async function MyJobDetailPage(props: {
                   >
                     <Image
                       src={payment.screenshotUrl}
-                      alt="Payment screenshot"
+                      alt={isAm ? "የክፍያ ደረሰኝ ስክሪንሾት" : "Payment screenshot"}
                       width={640}
                       height={480}
                       className="aspect-[4/3] w-full object-cover transition group-hover:scale-[1.02]"
                       unoptimized
                     />
                     <p className="border-t bg-background/80 px-3 py-2 text-center text-xs text-muted-foreground">
-                      View full screenshot
+                      {isAm ? "ሙሉውን ስክሪንሾት ይመልከቱ" : "View full screenshot"}
                     </p>
                   </a>
                 ) : (
                   <p className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
-                    No screenshot on file.
+                    {isAm ? "ምንም ስክሪንሾት አልተያያዘም።" : "No screenshot on file."}
                   </p>
                 )}
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
-                No payment uploaded yet.
+                {isAm ? "ምንም የክፍያ መረጃ አልቀረበም።" : "No payment uploaded yet."}
               </p>
             )}
           </SidebarCard>
 
-          <SidebarCard title="What happens next" icon={Send}>
+          <SidebarCard
+            title={isAm ? "ቀጣይ ደረጃዎች" : "What happens next"}
+            icon={Send}
+          >
             <ol className="space-y-3 text-sm">
               <TimelineStep
                 done={Boolean(payment)}
-                label="Payment proof submitted"
+                label={
+                  isAm
+                    ? "የክፍያ ማስረጃ ቀርቧል"
+                    : "Payment proof submitted"
+                }
               />
               <TimelineStep
                 done={
@@ -308,13 +348,24 @@ export default async function MyJobDetailPage(props: {
                     job.status,
                   )
                 }
-                label="Admin verifies payment"
+                label={
+                  isAm
+                    ? "አስተዳዳሪ ክፍያውን ያረጋግጣል"
+                    : "Admin verifies payment"
+                }
               />
               <TimelineStep
                 done={["approved", "scheduled", "posted"].includes(job.status)}
-                label="Job approved"
+                label={isAm ? "ስራው ጸድቋል" : "Job approved"}
               />
-              <TimelineStep done={isPosted} label="Published to Telegram & site" />
+              <TimelineStep
+                done={isPosted}
+                label={
+                  isAm
+                    ? "በቴሌግራም እና በድረ-ገጽ ይለጠፋል"
+                    : "Published to Telegram & site"
+                }
+              />
             </ol>
           </SidebarCard>
         </aside>
@@ -326,16 +377,20 @@ export default async function MyJobDetailPage(props: {
 function StatusBanner({
   job,
   payment,
+  isAm,
 }: {
   job: { status: string; rejectionReason: string | null };
   payment: { status: string } | null | undefined;
+  isAm?: boolean;
 }) {
   if (job.status === "rejected" && job.rejectionReason) {
     return (
       <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 p-4">
         <XCircle className="mt-0.5 size-5 shrink-0 text-destructive" />
         <div>
-          <p className="font-semibold text-destructive">Submission rejected</p>
+          <p className="font-semibold text-destructive">
+            {isAm ? "ማመልከቻው ውድቅ ተደርጓል" : "Submission rejected"}
+          </p>
           <p className="mt-1 text-sm text-muted-foreground">{job.rejectionReason}</p>
         </div>
       </div>
@@ -348,13 +403,12 @@ function StatusBanner({
         <Clock className="mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-400" />
         <div>
           <p className="font-semibold text-amber-800 dark:text-amber-300">
-            Under admin review
+            {isAm ? "በአስተዳዳሪ ግምገማ ላይ ይገኛል" : "Under admin review"}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            We&apos;re reviewing your job
-            {payment?.status === "pending" ? " and payment proof" : ""}. You&apos;ll
-            get a Telegram notification when it&apos;s approved or if changes are
-            needed.
+            {isAm
+              ? `የስራ ማስታወቂያዎን${payment?.status === "pending" ? " እና የክፍያ ማስረጃዎን" : ""} እየገመገምን ነው። እንደጸደቀ ወይም ማስተካከያ ካስፈለገ በቴሌግራም ማሳወቂያ ይደርስዎታል።`
+              : `We're reviewing your job${payment?.status === "pending" ? " and payment proof" : ""}. You'll get a Telegram notification when it's approved or if changes are needed.`}
           </p>
         </div>
       </div>
@@ -367,11 +421,12 @@ function StatusBanner({
         <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-400" />
         <div>
           <p className="font-semibold text-amber-800 dark:text-amber-300">
-            Your job is live
+            {isAm ? "የስራ ማስታወቂያዎ በቀጥታ ተለጥፏል" : "Your job is live"}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            This post has been published to Telegram and appears on the public job
-            board.
+            {isAm
+              ? "ይህ የስራ ማስታወቂያ በቴሌግራም ቻናላችን እና በድረ-ገጻችን ላይ በቀጥታ ተለጥፏል።"
+              : "This post has been published to Telegram and appears on the public job board."}
           </p>
         </div>
       </div>

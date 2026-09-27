@@ -1,9 +1,15 @@
 import { Link } from "@/i18n/routing";
 import Image from "next/image";
+import { useLocale, useTranslations } from "next-intl";
 import { MapPin, Briefcase, Clock } from "lucide-react";
 import type { Category, Job } from "@/server/db/schema";
 import { Badge } from "@/components/ui/badge";
-import { formatRelativeTime, formatSalary, statusLabel } from "@/lib/format";
+import {
+	formatLocation,
+	formatRelativeTime,
+	formatSalary,
+	statusLabel,
+} from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 interface JobCardProps {
@@ -13,12 +19,18 @@ interface JobCardProps {
 }
 
 export function JobCard({ job, category, className }: JobCardProps) {
+	const locale = useLocale() as "en" | "am";
+	const t = useTranslations("jobs");
 	const href = `/jobs/${job.slug}`;
-	const salary = formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency);
+	const salary = formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency, {
+		locale,
+	});
 	const hasSalary = Boolean(job.salaryMin || job.salaryMax);
 	const posted = job.postedAt
-		? formatRelativeTime(job.postedAt)
-		: "Just posted";
+		? formatRelativeTime(job.postedAt, locale)
+		: t("justPosted");
+	const displayLocation = formatLocation(job.location, locale);
+	const employment = statusLabel(job.employmentType, locale);
 
 	return (
 		<article
@@ -30,7 +42,7 @@ export function JobCard({ job, category, className }: JobCardProps) {
 			<Link
 				href={href}
 				className="absolute inset-0 z-10 rounded-2xl"
-				aria-label={`View ${job.title} at ${job.company}`}
+				aria-label={`${job.title} - ${job.company}`}
 			/>
 
 			<div className="flex gap-4 p-5 sm:gap-5 sm:p-6">
@@ -62,7 +74,7 @@ export function JobCard({ job, category, className }: JobCardProps) {
 										variant="warning"
 										className="pointer-events-none h-5 shrink-0 px-1.5 text-[10px] font-medium uppercase tracking-wide"
 									>
-										Featured
+										{t("featured")}
 									</Badge>
 								) : null}
 							</div>
@@ -87,12 +99,12 @@ export function JobCard({ job, category, className }: JobCardProps) {
 					<div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground sm:mt-3.5 sm:text-[13px]">
 						<span className="inline-flex items-center gap-1.5">
 							<MapPin className="size-3.5 shrink-0 opacity-70" />
-							<span className="truncate">{job.location}</span>
+							<span className="truncate">{displayLocation}</span>
 						</span>
 						<span className="hidden h-3 w-px bg-border sm:block" aria-hidden />
 						<span className="inline-flex items-center gap-1.5">
 							<Briefcase className="size-3.5 shrink-0 opacity-70" />
-							{statusLabel(job.employmentType)}
+							{employment}
 						</span>
 						<span className="hidden h-3 w-px bg-border sm:block" aria-hidden />
 						<span className="inline-flex items-center gap-1.5">

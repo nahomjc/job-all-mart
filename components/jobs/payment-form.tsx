@@ -10,6 +10,7 @@ import {
 	useTransition,
 } from "react";
 import { useRouter } from "@/i18n/routing";
+import { useLocale, useTranslations } from "next-intl";
 import { CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -47,12 +48,6 @@ import {
 
 const initial: ActionState = { ok: false };
 
-const STEPS: FormStep[] = [
-	{ id: "amount", title: "Payment amount", short: "Amount" },
-	{ id: "reference", title: "Verify reference", short: "Reference" },
-	{ id: "proof", title: "Upload proof", short: "Proof" },
-];
-
 const STEP_SCHEMAS = [
 	paymentFormStepSchemas.amount,
 	paymentFormStepSchemas.reference,
@@ -77,6 +72,9 @@ export function PaymentForm({
 	/** `single` shows all payment fields on one screen (no nested stepper). */
 	variant?: "steps" | "single";
 }) {
+	const locale = useLocale() as "en" | "am";
+	const tp = useTranslations("payment");
+	const tc = useTranslations("common");
 	const router = useRouter();
 	const formRef = useRef<HTMLFormElement>(null);
 	const [stepIndex, setStepIndex] = useState(0);
@@ -88,7 +86,28 @@ export function PaymentForm({
 	const doneHref = successHref ?? `/dashboard/jobs/${jobId}`;
 	const isSingle = variant === "single";
 
-	const isLastStep = isSingle || stepIndex === STEPS.length - 1;
+	const steps: FormStep[] = useMemo(
+		() => [
+			{
+				id: "amount",
+				title: tp("amountStep"),
+				short: locale === "am" ? "መጠን" : "Amount",
+			},
+			{
+				id: "reference",
+				title: tp("referenceStep"),
+				short: locale === "am" ? "ግብይት" : "Reference",
+			},
+			{
+				id: "proof",
+				title: tp("proofStep"),
+				short: locale === "am" ? "ደረሰኝ" : "Proof",
+			},
+		],
+		[tp, locale],
+	);
+
+	const isLastStep = isSingle || stepIndex === steps.length - 1;
 
 	const selectedMethod = useMemo(
 		() => PAYMENT_METHOD_OPTIONS.find((m) => m.value === method),
@@ -100,12 +119,12 @@ export function PaymentForm({
 
 	useEffect(() => {
 		if (state.ok) {
-			toast.success("Payment submitted. Awaiting admin review.");
+			toast.success(tp("successToast"));
 			router.push(doneHref);
 		} else if (state.error && !state.fieldErrors) {
 			toast.error(state.error);
 		}
-	}, [state.ok, state.error, state.fieldErrors, router, doneHref]);
+	}, [state.ok, state.error, state.fieldErrors, router, doneHref, tp]);
 
 	const clearVerification = () => setVerified(null);
 
@@ -125,7 +144,7 @@ export function PaymentForm({
 
 	const goNext = () => {
 		if (!validateCurrentStep()) return;
-		setStepIndex((i) => Math.min(i + 1, STEPS.length - 1));
+		setStepIndex((i) => Math.min(i + 1, steps.length - 1));
 	};
 
 	const goBack = () => {
@@ -140,21 +159,31 @@ export function PaymentForm({
 			const r = await checkPaymentReferenceAction(fd);
 			if (!r.ok) {
 				setVerified(null);
-				toast.error(r.error ?? "Reference check failed");
+				toast.error(
+					r.error ?? (locale === "am" ? "ማረጋገጥ አልተሳካም" : "Reference check failed"),
+				);
 				return;
 			}
 			const d = (r.data ?? {}) as VerificationResult;
 			setVerified(d);
 			const parts = [
-				d.provider ? `Provider: ${d.provider}` : null,
-				d.status ? `Status: ${d.status}` : null,
-				d.transactionId ? `Txn: ${d.transactionId}` : null,
-				d.amount != null ? `Amount: ${d.amount}` : null,
+				d.provider
+					? `${locale === "am" ? "አገልግሎት ሰጪ" : "Provider"}: ${d.provider}`
+					: null,
+				d.status
+					? `${locale === "am" ? "ሁኔታ" : "Status"}: ${d.status}`
+					: null,
+				d.transactionId
+					? `${locale === "am" ? "የግብይት ቁጥር" : "Txn"}: ${d.transactionId}`
+					: null,
+				d.amount != null
+					? `${locale === "am" ? "መጠን" : "Amount"}: ${d.amount}`
+					: null,
 			].filter(Boolean);
 			toast.success(
 				parts.length
-					? `Reference verified. ${parts.join(" · ")}`
-					: "Reference verified",
+					? `${tp("referenceVerified")}. ${parts.join(" · ")}`
+					: tp("referenceVerified"),
 			);
 		});
 	};
@@ -164,6 +193,46 @@ export function PaymentForm({
 		...(state.fieldErrors ?? {}),
 	};
 
+	const getMethodLabel = (val: PaymentVerifyMethod, defaultLabel: string) => {
+		if (locale === "am") {
+			switch (val) {
+				case "cbe":
+					return "የኢትዮጵያ ንግድ ባንክ (CBE)";
+				case "telebirr":
+					return "ቴሌብር (telebirr)";
+				case "dashen":
+					return "ዳሽን ባንክ (Dashen Bank)";
+				case "abyssinia":
+					return "አቢሲኒያ ባንክ (Bank of Abyssinia)";
+				case "cbebirr":
+					return "ሲቢኢ ብር (CBE Birr)";
+				case "mpesa":
+					return "ኤም-ፔሳ (M-Pesa)";
+			}
+		}
+		return defaultLabel;
+	};
+
+	const getMethodHint = (val: PaymentVerifyMethod, defaultHint: string) => {
+		if (locale === "am") {
+			switch (val) {
+				case "cbe":
+					return "ንግድ ባንክ፤ የደረሰኝ ቁጥር እና የሂሳብ ቁጥር የመጨረሻ 4 ድጅቶች";
+				case "telebirr":
+					return "ቴሌብር፤ የግብይት ቁጥር ብቻ (Transaction No.)";
+				case "dashen":
+					return "ዳሽን ባንክ፤ የደረሰኝ / ግብይት ቁጥር";
+				case "abyssinia":
+					return "አቢሲኒያ ባንክ፤ የደረሰኝ ቁጥር እና የሂሳብ ቁጥር ማጠቃለያ";
+				case "cbebirr":
+					return "ሲቢኢ ብር፤ የደረሰኝ ቁጥር እና ስልክ ቁጥር";
+				case "mpesa":
+					return "ኤም-ፔሳ፤ የደረሰኝ ቁጥር እና ስልክ ቁጥር";
+			}
+		}
+		return defaultHint;
+	};
+
 	return (
 		<form ref={formRef} action={action} noValidate className="space-y-5">
 			<input type="hidden" name="jobId" value={jobId} />
@@ -171,7 +240,7 @@ export function PaymentForm({
 
 			{!isSingle ? (
 				<FormStepper
-					steps={STEPS}
+					steps={steps}
 					stepIndex={stepIndex}
 					onStepClick={setStepIndex}
 					ariaLabel="Payment progress"
@@ -181,21 +250,19 @@ export function PaymentForm({
 			<div className={cn(!isSingle && stepIndex !== 0 && "hidden")}>
 				<Card className="border-primary/20">
 					<CardHeader className="pb-3">
-						<CardTitle className="text-base">How much did you pay?</CardTitle>
-						<CardDescription>
-							Enter the amount from your transfer receipt.
-						</CardDescription>
+						<CardTitle className="text-base">{tp("howMuchPaid")}</CardTitle>
+						<CardDescription>{tp("amountPaidDescription")}</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
 						<div className="grid gap-4 md:grid-cols-2">
 							<div className="space-y-1.5">
-								<Label htmlFor="amount">Amount paid</Label>
+								<Label htmlFor="amount">{tp("amountPaid")}</Label>
 								<Input
 									id="amount"
 									name="amount"
 									type="number"
 									min={0}
-									placeholder="10"
+									placeholder="500"
 								/>
 								{mergedErrors.amount?.[0] && (
 									<p className="text-xs text-destructive">
@@ -204,15 +271,21 @@ export function PaymentForm({
 								)}
 							</div>
 							<div className="space-y-1.5">
-								<Label htmlFor="currency">Currency</Label>
+								<Label htmlFor="currency">{tp("currency")}</Label>
 								<Select name="currency" defaultValue="ETB">
 									<SelectTrigger id="currency">
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>
-										<SelectItem value="ETB">ETB - Ethiopian Birr</SelectItem>
-										<SelectItem value="USD">USD - US Dollar</SelectItem>
-										<SelectItem value="EUR">EUR - Euro</SelectItem>
+										<SelectItem value="ETB">
+											ETB - {locale === "am" ? "የኢትዮጵያ ብር" : "Ethiopian Birr"}
+										</SelectItem>
+										<SelectItem value="USD">
+											USD - {locale === "am" ? "የአሜሪካ ዶላር" : "US Dollar"}
+										</SelectItem>
+										<SelectItem value="EUR">
+											EUR - {locale === "am" ? "ዩሮ" : "Euro"}
+										</SelectItem>
 									</SelectContent>
 								</Select>
 								{mergedErrors.currency?.[0] && (
@@ -237,23 +310,22 @@ export function PaymentForm({
 					<CardHeader className="pb-3">
 						<div className="flex items-start justify-between gap-3">
 							<div>
-								<CardTitle className="text-base">Reference verification</CardTitle>
-								<CardDescription>
-									Choose your payment method and verify the transaction
-									reference.
-								</CardDescription>
+								<CardTitle className="text-base">
+									{tp("referenceVerification")}
+								</CardTitle>
+								<CardDescription>{tp("referenceDescription")}</CardDescription>
 							</div>
 							{verified && (
 								<span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-1 text-xs font-medium text-amber-700 dark:text-amber-300">
 									<CheckCircle2 className="size-3.5" />
-									Verified
+									{tp("referenceVerified")}
 								</span>
 							)}
 						</div>
 					</CardHeader>
 					<CardContent className="space-y-4">
 						<div className="space-y-1.5">
-							<Label htmlFor="method">Payment method</Label>
+							<Label htmlFor="method">{tp("paymentMethod")}</Label>
 							<Select
 								value={method}
 								onValueChange={(v) => {
@@ -267,23 +339,23 @@ export function PaymentForm({
 								<SelectContent>
 									{PAYMENT_METHOD_OPTIONS.map((opt) => (
 										<SelectItem key={opt.value} value={opt.value}>
-											{opt.label}
+											{getMethodLabel(opt.value, opt.label)}
 										</SelectItem>
 									))}
 								</SelectContent>
 							</Select>
 							{selectedMethod && (
 								<p className="text-xs text-muted-foreground">
-									{selectedMethod.hint}
+									{getMethodHint(selectedMethod.value, selectedMethod.hint)}
 								</p>
 							)}
 						</div>
 
 						<div className="space-y-1.5">
 							<Label htmlFor="referenceCode">
-								Transaction reference{" "}
+								{tp("transactionReference")}{" "}
 								<span className="font-normal text-muted-foreground">
-									(optional)
+									{tp("optional")}
 								</span>
 							</Label>
 							<Input
@@ -295,15 +367,16 @@ export function PaymentForm({
 								onChange={clearVerification}
 							/>
 							<p className="text-xs text-muted-foreground">
-								From your CBE, Telebirr, or other receipt. Leave blank if you are
-								only uploading a screenshot while testing.
+								{locale === "am"
+									? "ከንግድ ባንክ፣ ከቴሌብር ወይም ከሌላ ደረሰኝዎ ላይ የተመለከተው የግብይት ቁጥር።"
+									: "From your CBE, Telebirr, or other receipt."}
 							</p>
 						</div>
 
 						<div className="grid gap-4 md:grid-cols-2">
 							{showSuffix && (
 								<div className="space-y-1.5">
-									<Label htmlFor="accountSuffix">Account number or suffix</Label>
+									<Label htmlFor="accountSuffix">{tp("accountSuffix")}</Label>
 									<Input
 										id="accountSuffix"
 										name="accountSuffix"
@@ -313,14 +386,16 @@ export function PaymentForm({
 										onChange={clearVerification}
 									/>
 									<p className="text-xs text-muted-foreground">
-										We auto-use the last digits required by your method.
+										{locale === "am"
+											? "የመረጡት የክፍያ መንገድ የሚፈልገውን የመጨረሻ ዲጂቶች በራሱ ይጠቀማል።"
+											: "We auto-use the last digits required by your method."}
 									</p>
 								</div>
 							)}
 
 							{showPhone && (
 								<div className="space-y-1.5">
-									<Label htmlFor="phoneNumber">Phone number</Label>
+									<Label htmlFor="phoneNumber">{tp("phoneNumber")}</Label>
 									<Input
 										id="phoneNumber"
 										name="phoneNumber"
@@ -335,13 +410,17 @@ export function PaymentForm({
 
 						{verified && (
 							<div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-800 dark:text-amber-200">
-								<p className="font-medium">Reference verified successfully</p>
+								<p className="font-medium">
+									{locale === "am"
+										? "የግብይት ቁጥሩ በትክክል ተረጋግጧል"
+										: "Reference verified successfully"}
+								</p>
 								{(verified.status || verified.amount != null) && (
 									<p className="mt-0.5 text-xs text-amber-700/90 dark:text-amber-300/90">
 										{[
 											verified.status,
 											verified.amount != null
-												? `Amount: ${verified.amount}`
+												? `${locale === "am" ? "መጠን" : "Amount"}: ${verified.amount}`
 												: null,
 										]
 											.filter(Boolean)
@@ -358,7 +437,13 @@ export function PaymentForm({
 								onClick={runCheck}
 								disabled={checking}
 							>
-								{checking ? "Checking…" : verified ? "Check again" : "Check reference"}
+								{checking
+									? tp("checking")
+									: verified
+										? locale === "am"
+											? "እንደገና አረጋግጥ"
+											: "Check again"
+										: tp("checkReference")}
 							</Button>
 						</div>
 					</CardContent>
@@ -368,16 +453,14 @@ export function PaymentForm({
 			<div className={cn(!isSingle && stepIndex !== 2 && "hidden")}>
 				<Card>
 					<CardHeader className="pb-3">
-						<CardTitle className="text-base">Payment screenshot</CardTitle>
-						<CardDescription>
-							Upload a clear image of your transfer receipt.
-						</CardDescription>
+						<CardTitle className="text-base">{tp("uploadProof")}</CardTitle>
+						<CardDescription>{tp("uploadProofDescription")}</CardDescription>
 					</CardHeader>
 					<CardContent>
 						<FileUploader
 							kind="payment"
 							name="screenshotKey"
-							label="Payment screenshot"
+							label={tp("proofScreenshot")}
 							helperText="PNG, JPG, WebP, or GIF. Up to 5 MB."
 						/>
 						{mergedErrors.screenshotKey?.[0] && (
@@ -411,15 +494,15 @@ export function PaymentForm({
 						router.back();
 					}}
 				>
-					{isSingle || stepIndex === 0 ? "Cancel" : "Back"}
+					{isSingle || stepIndex === 0 ? tc("cancel") : tc("back")}
 				</Button>
 				{isLastStep ? (
 					<Button type="submit" disabled={pending}>
-						{pending ? "Submitting..." : "Submit payment"}
+						{pending ? tp("submitting") : tp("submitPayment")}
 					</Button>
 				) : (
 					<Button type="button" onClick={goNext}>
-						Continue
+						{tc("continue")}
 					</Button>
 				)}
 			</div>

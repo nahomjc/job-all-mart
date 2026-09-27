@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "@/i18n/routing";
+import { useLocale, useTranslations } from "next-intl";
 import { useActionState } from "react";
 import { toast } from "sonner";
 import { FileUploader } from "@/components/file-uploader";
@@ -19,24 +20,12 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { formatLocation, statusLabel } from "@/lib/format";
 import { jobFormStepSchemas } from "@/lib/validations/job";
 import { type ActionState, submitJobAction } from "@/server/actions/jobs";
 import type { Category } from "@/server/db/schema";
 
 const initial: ActionState = { ok: false };
-
-const STEPS: FormStep[] = [
-	{ id: "basics", title: "Job basics", short: "Basics" },
-	{ id: "details", title: "Role details", short: "Details" },
-	{ id: "compensation", title: "Compensation", short: "Pay" },
-	{ id: "apply", title: "Apply & logo", short: "Apply" },
-	{ id: "review", title: "Review & submit", short: "Review" },
-];
-
-const SIMPLE_STEPS: FormStep[] = [
-	...STEPS,
-	{ id: "payment", title: "Payment proof", short: "Payment" },
-];
 
 const STEP_SCHEMAS = [
 	jobFormStepSchemas.basics,
@@ -45,27 +34,27 @@ const STEP_SCHEMAS = [
 	jobFormStepSchemas.apply,
 ] as const;
 
-const EMPLOYMENT_LABELS: Record<string, string> = {
-	full_time: "Full time",
-	part_time: "Part time",
-	contract: "Contract",
-	internship: "Internship",
-	remote: "Remote",
-};
-
-const ETHIOPIA_LOCATIONS = [
-	"Addis Ababa",
-	"Adama",
-	"Bahir Dar",
-	"Hawassa",
-	"Mekelle",
-	"Dire Dawa",
-	"Gondar",
-	"Jimma",
-	"Dessie",
-	"Bishoftu",
-	"Remote (Ethiopia)",
-	"Hybrid (Addis Ababa)",
+const ETHIOPIA_LOCATION_OPTIONS = [
+	{ value: "Addis Ababa", labelEn: "Addis Ababa", labelAm: "አዲስ አበባ" },
+	{ value: "Adama", labelEn: "Adama (Nazret)", labelAm: "አዳማ (ናዝሬት)" },
+	{ value: "Bahir Dar", labelEn: "Bahir Dar", labelAm: "ባሕር ዳር" },
+	{ value: "Hawassa", labelEn: "Hawassa", labelAm: "ሀዋሳ" },
+	{ value: "Mekelle", labelEn: "Mekelle", labelAm: "መቀሌ" },
+	{ value: "Dire Dawa", labelEn: "Dire Dawa", labelAm: "ድሬዳዋ" },
+	{ value: "Gondar", labelEn: "Gondar", labelAm: "ጎንደር" },
+	{ value: "Jimma", labelEn: "Jimma", labelAm: "ጅማ" },
+	{ value: "Dessie", labelEn: "Dessie", labelAm: "ደሴ" },
+	{ value: "Bishoftu", labelEn: "Bishoftu (Debre Zeyit)", labelAm: "ቢሾፍቱ (ደብረዘይት)" },
+	{
+		value: "Remote (Ethiopia)",
+		labelEn: "Remote (Ethiopia)",
+		labelAm: "የርቀት ስራ (Remote - Ethiopia)",
+	},
+	{
+		value: "Hybrid (Addis Ababa)",
+		labelEn: "Hybrid (Addis Ababa)",
+		labelAm: "ድብልቅ - አዲስ አበባ (Hybrid)",
+	},
 ];
 
 const SALARY_CURRENCIES = [
@@ -83,6 +72,9 @@ interface JobFormProps {
 type ReviewSnapshot = Record<string, string>;
 
 export function JobForm({ categories, flow = "dashboard" }: JobFormProps) {
+	const locale = useLocale() as "en" | "am";
+	const tj = useTranslations("jobs");
+	const tc = useTranslations("common");
 	const router = useRouter();
 	const formRef = useRef<HTMLFormElement>(null);
 	const [stepIndex, setStepIndex] = useState(0);
@@ -92,13 +84,51 @@ export function JobForm({ categories, flow = "dashboard" }: JobFormProps) {
 	const [state, action, pending] = useActionState(submitJobAction, initial);
 	const cancelHref = flow === "simple" ? "/" : undefined;
 	const isSimple = flow === "simple";
-	const steps = isSimple ? SIMPLE_STEPS : STEPS;
-	const reviewStepIndex = STEPS.length - 1;
-	const paymentStepIndex = STEPS.length;
+
+	const steps: FormStep[] = useMemo(() => {
+		const baseSteps: FormStep[] = [
+			{
+				id: "basics",
+				title: locale === "am" ? "መሰረታዊ መረጃ" : "Job basics",
+				short: locale === "am" ? "መሰረታዊ" : "Basics",
+			},
+			{
+				id: "details",
+				title: locale === "am" ? "የስራ ዝርዝር" : "Role details",
+				short: locale === "am" ? "ዝርዝር" : "Details",
+			},
+			{
+				id: "compensation",
+				title: locale === "am" ? "ደመወዝ / ክፍያ" : "Compensation",
+				short: locale === "am" ? "ደመወዝ" : "Pay",
+			},
+			{
+				id: "apply",
+				title: locale === "am" ? "ማመልከቻ እና አርማ" : "Apply & logo",
+				short: locale === "am" ? "ማመልከቻ" : "Apply",
+			},
+			{
+				id: "review",
+				title: locale === "am" ? "መርምረው ያቅርቡ" : "Review & submit",
+				short: locale === "am" ? "ግምገማ" : "Review",
+			},
+		];
+		if (isSimple) {
+			baseSteps.push({
+				id: "payment",
+				title: locale === "am" ? "የክፍያ ማስረጃ" : "Payment proof",
+				short: locale === "am" ? "ክፍያ" : "Payment",
+			});
+		}
+		return baseSteps;
+	}, [locale, isSimple]);
+
+	const reviewStepIndex = 4;
+	const paymentStepIndex = 5;
 	const isReviewStep = stepIndex === reviewStepIndex;
 	const isPaymentStep =
 		isSimple && stepIndex === paymentStepIndex && Boolean(submittedJobId);
-	const isLastInputStep = stepIndex === STEPS.length - 2;
+	const isLastInputStep = stepIndex === 3;
 
 	const categoryName = useMemo(() => {
 		if (!reviewData?.categoryId) return "—";
@@ -121,8 +151,12 @@ export function JobForm({ categories, flow = "dashboard" }: JobFormProps) {
 		if (!jobId) return;
 		setSubmittedJobId(jobId);
 		setStepIndex(paymentStepIndex);
-		toast.success("Job saved. Add your payment details.");
-	}, [isSimple, state.ok, state.data, paymentStepIndex]);
+		toast.success(
+			locale === "am"
+				? "ማስታወቂያው ተቀምጧል። አሁን የክፍያ ዝርዝርዎን ያስገቡ።"
+				: "Job saved. Add your payment details.",
+		);
+	}, [isSimple, state.ok, state.data, paymentStepIndex, locale]);
 
 	const validateCurrentStep = useCallback(() => {
 		if (!formRef.current || isReviewStep || isPaymentStep) return true;
@@ -158,6 +192,21 @@ export function JobForm({ categories, flow = "dashboard" }: JobFormProps) {
 		...(state.fieldErrors ?? {}),
 	};
 
+	const salaryCurrencies = [
+		{
+			value: "ETB",
+			label: locale === "am" ? "ETB - የኢትዮጵያ ብር" : "ETB - Ethiopian Birr",
+		},
+		{
+			value: "USD",
+			label: locale === "am" ? "USD - የአሜሪካ ዶላር" : "USD - US Dollar",
+		},
+		{
+			value: "EUR",
+			label: locale === "am" ? "EUR - ዩሮ" : "EUR - Euro",
+		},
+	];
+
 	if (isPaymentStep && submittedJobId) {
 		return (
 			<div className="space-y-6">
@@ -190,30 +239,50 @@ export function JobForm({ categories, flow = "dashboard" }: JobFormProps) {
 				<div className="space-y-6">
 					<div className="grid gap-4 md:grid-cols-2">
 						<Field
-							label="Job title"
+							label={tj("jobTitle")}
 							name="title"
 							error={mergedErrors.title?.[0]}
 						>
-							<Input name="title" placeholder="Senior React Engineer" />
+							<Input
+								name="title"
+								placeholder={
+									locale === "am"
+										? "ለምሳሌ ሲኒየር የሶፍትዌር ኢንጂነር"
+										: "Senior React Engineer"
+								}
+							/>
 						</Field>
 						<Field
-							label="Company"
+							label={tj("companyName")}
 							name="company"
 							error={mergedErrors.company?.[0]}
 						>
-							<Input name="company" placeholder="Acme Corp" />
+							<Input
+								name="company"
+								placeholder={
+									locale === "am" ? "የድርጅትዎ ስም" : "Acme Corp"
+								}
+							/>
 						</Field>
 					</div>
 					<Field
-						label="Job description"
+						label={tj("descriptionLabel")}
 						name="description"
 						error={mergedErrors.description?.[0]}
-						helperText="Min 10 characters. Markdown not yet supported."
+						helperText={
+							locale === "am"
+								? "ቢያንስ 10 ፊደላት መያዝ አለበት።"
+								: "Min 10 characters. Markdown not yet supported."
+						}
 					>
 						<Textarea
 							name="description"
 							rows={8}
-							placeholder="Tell candidates what they'll be doing, who you are, and what success looks like."
+							placeholder={
+								locale === "am"
+									? "ኃላፊነቶች፣ መስፈርቶች፣ ጥቅማጥቅሞች እና የስራው ዝርዝር ሁኔታ…"
+									: "Tell candidates what they'll be doing, who you are, and what success looks like."
+							}
 						/>
 					</Field>
 				</div>
@@ -222,13 +291,17 @@ export function JobForm({ categories, flow = "dashboard" }: JobFormProps) {
 			<div className={cn(stepIndex !== 1 && "hidden")}>
 				<div className="grid gap-4 md:grid-cols-3">
 					<Field
-						label="Category"
+						label={tj("category")}
 						name="categoryId"
 						error={mergedErrors.categoryId?.[0]}
 					>
 						<Select name="categoryId">
 							<SelectTrigger>
-								<SelectValue placeholder="Choose..." />
+								<SelectValue
+									placeholder={
+										locale === "am" ? "ዘርፍ ይምረጡ..." : "Choose..."
+									}
+								/>
 							</SelectTrigger>
 							<SelectContent>
 								{categories.map((c) => (
@@ -240,7 +313,7 @@ export function JobForm({ categories, flow = "dashboard" }: JobFormProps) {
 						</Select>
 					</Field>
 					<Field
-						label="Employment type"
+						label={tj("employmentType")}
 						name="employmentType"
 						error={mergedErrors.employmentType?.[0]}
 					>
@@ -249,27 +322,41 @@ export function JobForm({ categories, flow = "dashboard" }: JobFormProps) {
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="full_time">Full time</SelectItem>
-								<SelectItem value="part_time">Part time</SelectItem>
-								<SelectItem value="contract">Contract</SelectItem>
-								<SelectItem value="internship">Internship</SelectItem>
-								<SelectItem value="remote">Remote</SelectItem>
+								<SelectItem value="full_time">
+									{locale === "am" ? "ሙሉ ጊዜ (Full time)" : "Full time"}
+								</SelectItem>
+								<SelectItem value="part_time">
+									{locale === "am" ? "የትርፍ ሰዓት (Part time)" : "Part time"}
+								</SelectItem>
+								<SelectItem value="contract">
+									{locale === "am" ? "የኮንትራት (Contract)" : "Contract"}
+								</SelectItem>
+								<SelectItem value="internship">
+									{locale === "am" ? "የልምምድ (Internship)" : "Internship"}
+								</SelectItem>
+								<SelectItem value="remote">
+									{locale === "am" ? "የርቀት ስራ (Remote)" : "Remote"}
+								</SelectItem>
 							</SelectContent>
 						</Select>
 					</Field>
 					<Field
-						label="Location"
+						label={tj("location")}
 						name="location"
 						error={mergedErrors.location?.[0]}
 					>
 						<Select name="location" defaultValue="Addis Ababa">
 							<SelectTrigger>
-								<SelectValue placeholder="Choose location" />
+								<SelectValue
+									placeholder={
+										locale === "am" ? "የስራ ቦታ ይምረጡ" : "Choose location"
+									}
+								/>
 							</SelectTrigger>
 							<SelectContent>
-								{ETHIOPIA_LOCATIONS.map((location) => (
-									<SelectItem key={location} value={location}>
-										{location}
+								{ETHIOPIA_LOCATION_OPTIONS.map((loc) => (
+									<SelectItem key={loc.value} value={loc.value}>
+										{locale === "am" ? loc.labelAm : loc.labelEn}
 									</SelectItem>
 								))}
 							</SelectContent>
@@ -281,32 +368,34 @@ export function JobForm({ categories, flow = "dashboard" }: JobFormProps) {
 			<div className={cn(stepIndex !== 2 && "hidden")}>
 				<div className="space-y-4">
 					<p className="text-sm text-muted-foreground">
-						Optional, helps candidates understand your offer.
+						{locale === "am"
+							? "አማራጭ፤ አመልካቾች የስራውን ክፍያ እንዲረዱ ያግዛል።"
+							: "Optional, helps candidates understand your offer."}
 					</p>
 					<div className="grid gap-4 md:grid-cols-3">
-						<Field label="Salary min" name="salaryMin">
+						<Field label={tj("salaryMin")} name="salaryMin">
 							<Input
 								name="salaryMin"
 								type="number"
 								min={0}
-								placeholder="1500"
+								placeholder="15000"
 							/>
 						</Field>
-						<Field label="Salary max" name="salaryMax">
+						<Field label={tj("salaryMax")} name="salaryMax">
 							<Input
 								name="salaryMax"
 								type="number"
 								min={0}
-								placeholder="2500"
+								placeholder="25000"
 							/>
 						</Field>
-						<Field label="Currency" name="salaryCurrency">
+						<Field label={tj("currency")} name="salaryCurrency">
 							<Select name="salaryCurrency" defaultValue="ETB">
 								<SelectTrigger>
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									{SALARY_CURRENCIES.map((currency) => (
+									{salaryCurrencies.map((currency) => (
 										<SelectItem key={currency.value} value={currency.value}>
 											{currency.label}
 										</SelectItem>
@@ -321,9 +410,13 @@ export function JobForm({ categories, flow = "dashboard" }: JobFormProps) {
 			<div className={cn(stepIndex !== 3 && "hidden")}>
 				<div className="space-y-6">
 					<Field
-						label="Application URL"
+						label={tj("applyUrl")}
 						name="applyUrl"
-						helperText="Where should candidates apply? Optional if you fill contact info instead."
+						helperText={
+							locale === "am"
+								? "አመልካቾች የት ማመልከት አለባቸው? የማመልከቻ ድረ-ገጽ ከሌለ አድራሻ መሙላት ይችላሉ።"
+								: "Where should candidates apply? Optional if you fill contact info instead."
+						}
 						error={mergedErrors.applyUrl?.[0]}
 					>
 						<Input
@@ -333,16 +426,28 @@ export function JobForm({ categories, flow = "dashboard" }: JobFormProps) {
 						/>
 					</Field>
 					<Field
-						label="Contact info (optional)"
+						label={
+							locale === "am"
+								? "የማመልከቻ አድራሻ (አማራጭ)"
+								: "Contact info (optional)"
+						}
 						name="contactInfo"
-						helperText="Email, Telegram handle, or instructions if no application URL."
+						helperText={
+							locale === "am"
+								? "ኢሜይል፣ የቴሌግራም መለያ ወይም የማመልከቻ ድረ-ገጽ ከሌለ ዝርዝር መመሪያ ያስገቡ።"
+								: "Email, Telegram handle, or instructions if no application URL."
+						}
 					>
 						<Textarea name="contactInfo" rows={2} />
 					</Field>
 					<FileUploader
 						kind="logo"
 						name="logoKey"
-						label="Company logo (optional)"
+						label={
+							locale === "am"
+								? "የድርጅት አርማ (አማራጭ)"
+								: "Company logo (optional)"
+						}
 						helperText="PNG, JPG, WebP, or SVG. Max 2 MB."
 					/>
 				</div>
@@ -350,62 +455,70 @@ export function JobForm({ categories, flow = "dashboard" }: JobFormProps) {
 
 			<div className={cn(stepIndex !== 4 && "hidden")}>
 				{reviewData ? (
-				<div className="space-y-4 rounded-xl border bg-muted/20 p-4 sm:p-5">
-					<h3 className="font-semibold">Review your job post</h3>
-					<dl className="grid gap-3 text-sm sm:grid-cols-2">
-						<ReviewItem label="Title" value={reviewData.title} />
-						<ReviewItem label="Company" value={reviewData.company} />
-						<ReviewItem label="Category" value={categoryName} />
-						<ReviewItem
-							label="Employment"
-							value={
-								EMPLOYMENT_LABELS[reviewData.employmentType] ??
-								reviewData.employmentType
-							}
-						/>
-						<ReviewItem label="Location" value={reviewData.location} />
-						<ReviewItem
-							label="Salary"
-							value={
-								reviewData.salaryMin || reviewData.salaryMax
-									? [
-											reviewData.salaryMin,
-											reviewData.salaryMax,
-											reviewData.salaryCurrency ?? "ETB",
-										]
-											.filter(Boolean)
-											.join(" – ")
-									: "Not specified"
-							}
-						/>
-						<ReviewItem
-							label="Apply URL"
-							value={reviewData.applyUrl || ", "}
-							className="sm:col-span-2"
-						/>
-						<ReviewItem
-							label="Contact"
-							value={reviewData.contactInfo || ", "}
-							className="sm:col-span-2"
-						/>
-					</dl>
-					<div>
-						<p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-							Description
-						</p>
-						<p className="mt-1 whitespace-pre-wrap text-sm">
-							{reviewData.description}
-						</p>
+					<div className="space-y-4 rounded-xl border bg-muted/20 p-4 sm:p-5">
+						<h3 className="font-semibold">
+							{locale === "am"
+								? "የስራ ማስታወቂያዎን ይገምግሙ"
+								: "Review your job post"}
+						</h3>
+						<dl className="grid gap-3 text-sm sm:grid-cols-2">
+							<ReviewItem label={tj("jobTitle")} value={reviewData.title} />
+							<ReviewItem label={tj("companyName")} value={reviewData.company} />
+							<ReviewItem label={tj("category")} value={categoryName} />
+							<ReviewItem
+								label={tj("employmentType")}
+								value={statusLabel(reviewData.employmentType, locale)}
+							/>
+							<ReviewItem
+								label={tj("location")}
+								value={formatLocation(reviewData.location, locale)}
+							/>
+							<ReviewItem
+								label={tj("salary")}
+								value={
+									reviewData.salaryMin || reviewData.salaryMax
+										? [
+												reviewData.salaryMin,
+												reviewData.salaryMax,
+												reviewData.salaryCurrency ?? "ETB",
+											]
+												.filter(Boolean)
+												.join(" – ")
+										: tj("salaryNotSpecified")
+								}
+							/>
+							<ReviewItem
+								label={tj("applyUrl")}
+								value={reviewData.applyUrl || "—"}
+								className="sm:col-span-2"
+							/>
+							<ReviewItem
+								label={tj("contact")}
+								value={reviewData.contactInfo || "—"}
+								className="sm:col-span-2"
+							/>
+						</dl>
+						<div>
+							<p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+								{tj("descriptionLabel")}
+							</p>
+							<p className="mt-1 whitespace-pre-wrap text-sm">
+								{reviewData.description}
+							</p>
+						</div>
+						{reviewData?.logoKey && (
+							<p className="text-sm text-muted-foreground">
+								{locale === "am"
+									? "የድርጅት አርማ ተያይዟል።"
+									: "Company logo attached."}
+							</p>
+						)}
 					</div>
-					{reviewData?.logoKey && (
-						<p className="text-sm text-muted-foreground">
-							Company logo attached.
-						</p>
-					)}
-				</div>
 				) : (
 					<p className="text-sm text-muted-foreground">
-						Complete the previous steps to review your submission.
+						{locale === "am"
+							? "የቀደሙትን ደረጃዎች ሞልተው ሲጨርሱ ማጠቃለያው እዚህ ይታያል።"
+							: "Complete the previous steps to review your submission."}
 					</p>
 				)}
 			</div>
@@ -432,19 +545,25 @@ export function JobForm({ categories, flow = "dashboard" }: JobFormProps) {
 						router.back();
 					}}
 				>
-					{stepIndex === 0 ? "Cancel" : "Back"}
+					{stepIndex === 0 ? tc("cancel") : tc("back")}
 				</Button>
 				{isReviewStep ? (
 					<Button type="submit" disabled={pending || !reviewData}>
 						{pending
-							? "Saving..."
+							? locale === "am"
+								? "በማስቀመጥ ላይ..."
+								: "Saving..."
 							: isSimple
-								? "Continue to payment"
-								: "Submit & continue to payment"}
+								? locale === "am"
+									? "ወደ ክፍያ ይቀጥሉ"
+									: "Continue to payment"
+								: locale === "am"
+									? "አቅርበው ወደ ክፍያ ይቀጥሉ"
+									: "Submit & continue to payment"}
 					</Button>
 				) : (
 					<Button type="button" onClick={goNext}>
-						Continue
+						{tc("continue")}
 					</Button>
 				)}
 			</div>

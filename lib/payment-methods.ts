@@ -50,17 +50,28 @@ export const PAYMENT_METHOD_OPTIONS: {
 	},
 ];
 
-export function paymentMethodLabel(method: string): string {
+export function paymentMethodLabel(method: string, locale?: string): string {
+	const isAm = locale === "am";
+	if (method === "cbe") return isAm ? "የኢትዮጵያ ንግድ ባንክ (CBE)" : "CBE";
+	if (method === "telebirr") return isAm ? "ቴሌብር (Telebirr)" : "Telebirr";
+	if (method === "dashen") return isAm ? "ዳሽን ባንክ (Dashen Bank)" : "Dashen Bank";
+	if (method === "abyssinia") return isAm ? "አቢሲንያ ባንክ (Bank of Abyssinia)" : "Bank of Abyssinia";
+	if (method === "cbebirr") return isAm ? "ሲቢኢ ብር (CBE Birr)" : "CBE Birr";
+	if (method === "mpesa") return isAm ? "ኤም-ፔሳ (M-Pesa)" : "M-Pesa";
+
+	const legacy: Record<string, { en: string; am: string }> = {
+		bank_transfer: { en: "Bank transfer", am: "የባንክ ሂሳብ ማስተላለፍ" },
+		mobile_money: { en: "Mobile money", am: "የሞባይል ገንዘብ" },
+		crypto: { en: "Crypto", am: "ክሪፕቶ" },
+		card: { en: "Card", am: "ካርድ" },
+		other: { en: "Other", am: "ሌላ" },
+	};
+	if (legacy[method]) {
+		return isAm ? legacy[method].am : legacy[method].en;
+	}
 	const found = PAYMENT_METHOD_OPTIONS.find((o) => o.value === method);
 	if (found) return found.label;
-	const legacy: Record<string, string> = {
-		bank_transfer: "Bank transfer",
-		mobile_money: "Mobile money",
-		crypto: "Crypto",
-		card: "Card",
-		other: "Other",
-	};
-	return legacy[method] ?? method;
+	return method;
 }
 
 export function methodNeedsAccountSuffix(method: string): boolean {

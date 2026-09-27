@@ -42,9 +42,13 @@ export async function generateMetadata(props: {
 }
 
 export default async function AdminJobReviewPage(props: {
-	params: Promise<{ id: string }>;
+	params: Promise<{ id: string; locale: string }>;
 }) {
-	const { id } = await props.params;
+	const { id, locale } = (await props.params) as {
+		id: string;
+		locale: "en" | "am";
+	};
+	const isAm = locale === "am";
 	const data = await jobRepo.byIdWithRelations(id);
 	if (!data?.job) notFound();
 	const { job, category, employer } = data;
@@ -122,19 +126,25 @@ export default async function AdminJobReviewPage(props: {
 				className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-4"
 			>
 				<SnapshotTile
-					label="Job status"
-					value={statusLabel(job.status)}
+					label={isAm ? "የማስታወቂያ ሁኔታ" : "Job status"}
+					value={statusLabel(job.status, locale)}
 					badgeVariant={jobBadgeVariant(job.status)}
 				/>
 				<SnapshotTile
-					label="Payment"
-					value={payment ? statusLabel(payment.status) : "None"}
+					label={isAm ? "የክፍያ ሁኔታ" : "Payment"}
+					value={
+						payment
+							? statusLabel(payment.status, locale)
+							: isAm
+								? "አልተያያዘም"
+								: "None"
+					}
 					badgeVariant={
 						payment ? paymentBadgeVariant(payment.status) : "outline"
 					}
 				/>
 				<SnapshotTile
-					label="Spam score"
+					label={isAm ? "የአይፈለጌ መልእክት ነጥብ" : "Spam score"}
 					value={String(job.spamScore)}
 					badgeVariant={
 						job.spamScore >= 50
@@ -145,8 +155,8 @@ export default async function AdminJobReviewPage(props: {
 					}
 				/>
 				<SnapshotTile
-					label="Source"
-					value={job.source === "telegram" ? "Telegram" : "Website"}
+					label={isAm ? "ምንጭ" : "Source"}
+					value={job.source === "telegram" ? "Telegram" : isAm ? "ድረ-ገጽ" : "Website"}
 					badgeVariant="outline"
 				/>
 			</section>
@@ -229,29 +239,32 @@ export default async function AdminJobReviewPage(props: {
 					</div>
 
 					<div data-tour="job-review-payment">
-						<SidebarCard title="Payment proof" icon={Receipt}>
+						<SidebarCard
+							title={isAm ? "የክፍያ ማስረጃ" : "Payment proof"}
+							icon={Receipt}
+						>
 						{payment ? (
 							<div className="space-y-4">
 								<dl className="space-y-3 text-sm">
 									<SidebarRow
-										label="Amount"
+										label={isAm ? "የገንዘብ መጠን" : "Amount"}
 										value={`${payment.amount} ${payment.currency}`}
 									/>
 									<SidebarRow
-										label="Method"
-										value={paymentMethodLabel(payment.method)}
+										label={isAm ? "የክፍያ ዘዴ" : "Method"}
+										value={paymentMethodLabel(payment.method, locale)}
 									/>
 									<SidebarRow
-										label="Status"
+										label={isAm ? "የክፍያ ሁኔታ" : "Status"}
 										value={
 											<Badge variant={paymentBadgeVariant(payment.status)}>
-												{statusLabel(payment.status)}
+												{statusLabel(payment.status, locale)}
 											</Badge>
 										}
 									/>
 									{payment.referenceCode && (
 										<SidebarRow
-											label="Reference"
+											label={isAm ? "የግብይት ቁጥር (Reference)" : "Reference"}
 											value={
 												<span className="break-all font-mono text-xs">
 													{payment.referenceCode}
@@ -261,7 +274,7 @@ export default async function AdminJobReviewPage(props: {
 									)}
 									{payment.accountSuffix && (
 										<SidebarRow
-											label="Account suffix"
+											label={isAm ? "የሂሳብ ቁጥር መጨረሻ" : "Account suffix"}
 											value={
 												<span className="break-all font-mono text-xs">
 													{payment.accountSuffix}
@@ -271,7 +284,7 @@ export default async function AdminJobReviewPage(props: {
 									)}
 									{payment.phoneNumber && (
 										<SidebarRow
-											label="Phone"
+											label={isAm ? "ስልክ ቁጥር" : "Phone"}
 											value={
 												<span className="break-all">
 													{payment.phoneNumber}

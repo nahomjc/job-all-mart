@@ -4,7 +4,7 @@ import {
 	deliverAdminNotification,
 } from "@/lib/telegram/admin-notify";
 import { env } from "@/lib/env";
-import { formatSalary, statusLabel } from "@/lib/format";
+import { formatLocation, formatSalary, statusLabel } from "@/lib/format";
 import { telegramClient } from "@/lib/telegram/client";
 import type { Category, Job, User } from "@/server/db/schema";
 import { telegramPostRepo } from "@/server/repositories/telegramPost";
@@ -85,12 +85,18 @@ export function formatJobMessage(args: {
   const url = `${env.NEXT_PUBLIC_APP_URL}/jobs/${job.slug}`;
   const employmentLabel = statusLabel(job.employmentType);
 
+  const amLoc = formatLocation(job.location, "am");
+  const displayLocation =
+    amLoc && amLoc !== job.location
+      ? `${job.location} (${amLoc})`
+      : job.location;
+
   const header = [
     "🚀 <b>New Job Opportunity</b>",
     "",
     `🏢 <b>Company:</b> ${escapeHtml(job.company)}`,
     `💼 <b>Position:</b> ${escapeHtml(job.title)}`,
-    `📍 <b>Location:</b> ${escapeHtml(job.location)} · ${escapeHtml(employmentLabel)}`,
+    `📍 <b>Location:</b> ${escapeHtml(displayLocation)} · ${escapeHtml(employmentLabel)}`,
     `💰 <b>Salary:</b> ${escapeHtml(
       formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency),
     )}`,

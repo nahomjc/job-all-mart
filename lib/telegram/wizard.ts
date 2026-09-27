@@ -214,7 +214,7 @@ export async function handleWizardMessage(ctx: Context): Promise<boolean> {
         location: jobFields.location,
         salaryMin: draft.salaryMin ?? null,
         salaryMax: draft.salaryMax ?? null,
-        salaryCurrency: "USD",
+        salaryCurrency: "ETB",
         applyUrl: draft.applyUrl ?? null,
         status: "pending_payment",
         source: "telegram",
@@ -323,7 +323,7 @@ export async function handleCategoryPick(
   draft.categoryId = categoryId;
   draft.step = "awaiting_location";
   await ctx.answerCbQuery("Category set");
-  await ctx.reply("Where is the job located? (e.g. `Remote`, `Lagos, Nigeria`)");
+  await ctx.reply("Where is the job located? (e.g. `Addis Ababa`, `Hawassa`, `Remote`)");
 }
 
 export async function ensureCanPost(

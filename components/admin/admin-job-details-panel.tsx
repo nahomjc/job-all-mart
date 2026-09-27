@@ -1,9 +1,18 @@
+"use client";
+
 import type { LucideIcon } from "lucide-react";
 import { Briefcase, Building2, Calendar, ExternalLink, MapPin } from "lucide-react";
 import Image from "next/image";
+import { useLocale } from "next-intl";
 import { AdminJobEditContentDialog } from "@/components/admin/admin-job-edit-content-dialog";
 import { Separator } from "@/components/ui/separator";
-import { formatRelativeTime, formatSalary, statusLabel } from "@/lib/format";
+import {
+	formatLocation,
+	formatRelativeTime,
+	formatSalary,
+	statusLabel,
+	type FormatLocale,
+} from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export type AdminJobDetailsPanelProps = {
@@ -37,6 +46,10 @@ export function AdminJobDetailsPanel({
 	applyUrl,
 	description,
 }: AdminJobDetailsPanelProps) {
+	const rawLocale = useLocale();
+	const locale: FormatLocale = rawLocale === "am" ? "am" : "en";
+	const isAm = locale === "am";
+
 	return (
 		<div className="min-w-0 space-y-4 sm:space-y-6">
 			<div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -65,7 +78,7 @@ export function AdminJobDetailsPanel({
 					jobId={jobId}
 					title={title}
 					description={description}
-					triggerLabel="Edit"
+					triggerLabel={isAm ? "አስተካክል" : "Edit"}
 					triggerClassName="h-10 w-full shrink-0 gap-1.5 px-3 sm:w-auto"
 				/>
 			</div>
@@ -73,22 +86,26 @@ export function AdminJobDetailsPanel({
 			<div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2">
 				<DetailItem
 					icon={Briefcase}
-					label="Employment type"
-					value={statusLabel(employmentType)}
+					label={isAm ? "የስራ አይነት" : "Employment type"}
+					value={statusLabel(employmentType, locale)}
 				/>
-				<DetailItem icon={MapPin} label="Location" value={location} />
 				<DetailItem
-					label="Salary"
-					value={formatSalary(salaryMin, salaryMax, salaryCurrency)}
+					icon={MapPin}
+					label={isAm ? "የስራ ቦታ" : "Location"}
+					value={formatLocation(location, locale)}
+				/>
+				<DetailItem
+					label={isAm ? "ደመወዝ" : "Salary"}
+					value={formatSalary(salaryMin, salaryMax, salaryCurrency, { locale })}
 				/>
 				<DetailItem
 					icon={Calendar}
-					label="Submitted"
-					value={formatRelativeTime(createdAt)}
+					label={isAm ? "የቀረበበት" : "Submitted"}
+					value={formatRelativeTime(createdAt, locale)}
 				/>
 				{applyUrl && (
 					<DetailItem
-						label="Apply link"
+						label={isAm ? "የማመልከቻ ሊንክ" : "Apply link"}
 						value={
 							<a
 								href={applyUrl}
@@ -109,7 +126,7 @@ export function AdminJobDetailsPanel({
 
 			<div className="min-w-0">
 				<p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground sm:text-xs">
-					Description
+					{isAm ? "ዝርዝር ማብራሪያ" : "Description"}
 				</p>
 				<div className="mt-2 max-w-full overflow-hidden rounded-xl border bg-muted/20 p-3 text-sm leading-relaxed break-words whitespace-pre-line sm:mt-3 sm:p-4">
 					{description}

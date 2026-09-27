@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Link } from "@/i18n/routing";
+import { useLocale, useTranslations } from "next-intl";
 import type { LucideIcon } from "lucide-react";
 import {
 	ArrowLeft,
@@ -16,6 +17,7 @@ import {
 	Wallet,
 } from "lucide-react";
 import {
+	formatLocation,
 	formatRelativeTime,
 	formatSalary,
 	statusLabel,
@@ -35,17 +37,25 @@ export function PublicJobDetail({
 	category,
 	employer,
 }: PublicJobDetailProps) {
-	const salary = formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency);
+	const locale = useLocale() as "en" | "am";
+	const t = useTranslations("jobs");
+	const tc = useTranslations("common");
+
+	const salary = formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency, {
+		locale,
+	});
 	const hasSalary = Boolean(job.salaryMin || job.salaryMax);
 	const postedLabel = job.postedAt
-		? formatRelativeTime(job.postedAt)
-		: "Recently";
+		? formatRelativeTime(job.postedAt, locale)
+		: t("justPosted");
+	const displayLocation = formatLocation(job.location, locale);
+	const employmentLabel = statusLabel(job.employmentType, locale);
 
 	const tags = [
 		category?.name,
-		statusLabel(job.employmentType),
-		job.location.split(/[,·|/]/)[0]?.trim(),
-		job.isFeatured ? "Featured" : null,
+		employmentLabel,
+		formatLocation(job.location.split(/[,·|/]/)[0]?.trim(), locale),
+		job.isFeatured ? t("featured") : null,
 	].filter(Boolean) as string[];
 
 	return (
@@ -56,11 +66,11 @@ export function PublicJobDetail({
 					className="flex flex-wrap items-center gap-1 text-[13px] text-muted-foreground"
 				>
 					<Link href="/" className="hover:text-primary">
-						Home
+						{locale === "am" ? "መነሻ" : "Home"}
 					</Link>
 					<ChevronRight className="size-3.5 shrink-0" aria-hidden />
 					<Link href="/jobs" className="hover:text-primary">
-						Jobs
+						{t("title")}
 					</Link>
 					{category ? (
 						<>
@@ -104,12 +114,12 @@ export function PublicJobDetail({
 								<div className="flex flex-wrap items-center gap-2">
 									<span className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary">
 										<Shield className="size-3" />
-										Verified listing
+										{t("verifiedListing")}
 									</span>
 									{job.isFeatured ? (
 										<span className="inline-flex items-center gap-1 rounded-full border border-amber-500/25 bg-amber-500/10 px-2.5 py-0.5 text-[11px] font-medium text-amber-700 dark:text-amber-300">
 											<Sparkles className="size-3" />
-											Featured
+											{t("featured")}
 										</span>
 									) : null}
 								</div>
@@ -124,7 +134,7 @@ export function PublicJobDetail({
 									</span>
 									<BadgeCheck
 										className="size-4 text-primary"
-										aria-label="Verified employer"
+										aria-label={t("verifiedEmployer")}
 									/>
 								</p>
 
@@ -151,7 +161,7 @@ export function PublicJobDetail({
 									rel="noopener noreferrer"
 									className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90"
 								>
-									Apply now
+									{t("applyNow")}
 									<ExternalLink className="size-4" />
 								</a>
 							) : null}
@@ -160,24 +170,28 @@ export function PublicJobDetail({
 								className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-card px-5 text-sm font-medium text-foreground/80 transition hover:bg-muted"
 							>
 								<ArrowLeft className="size-3.5" />
-								All jobs
+								{t("allJobs")}
 							</Link>
 						</div>
 					</div>
 
 					<div className="relative mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-						<QuickFact icon={MapPin} label="Location" value={job.location} />
+						<QuickFact icon={MapPin} label={t("location")} value={displayLocation} />
 						<QuickFact
 							icon={Briefcase}
-							label="Employment"
-							value={statusLabel(job.employmentType)}
+							label={t("employmentType")}
+							value={employmentLabel}
 						/>
 						<QuickFact
 							icon={Wallet}
-							label="Salary"
-							value={hasSalary ? salary : "Not specified"}
+							label={t("salary")}
+							value={hasSalary ? salary : t("salaryNotSpecified")}
 						/>
-						<QuickFact icon={Calendar} label="Posted" value={postedLabel} />
+						<QuickFact
+							icon={Calendar}
+							label={locale === "am" ? "የወጣበት ቀን" : "Posted"}
+							value={postedLabel}
+						/>
 					</div>
 				</section>
 
@@ -185,10 +199,10 @@ export function PublicJobDetail({
 					<div className="space-y-5">
 						<section className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm sm:p-7">
 							<h2 className="text-lg font-bold tracking-tight text-foreground">
-								About this role
+								{t("aboutRole")}
 							</h2>
 							<p className="mt-1 text-[13px] text-muted-foreground">
-								Full description as published on our board and Telegram channels.
+								{t("aboutRoleSubtitle")}
 							</p>
 							<div className="mt-5 rounded-xl border border-border/60 bg-muted/40 p-5 text-[14px] leading-relaxed whitespace-pre-line text-foreground/85 sm:text-[15px]">
 								{job.description}
@@ -203,10 +217,10 @@ export function PublicJobDetail({
 									</span>
 									<div>
 										<h2 className="text-lg font-bold tracking-tight text-foreground">
-											How to apply
+											{t("howToApply")}
 										</h2>
 										<p className="text-[13px] text-muted-foreground">
-											Follow the instructions below to reach the employer.
+											{t("howToApplySubtitle")}
 										</p>
 									</div>
 								</div>
@@ -224,7 +238,7 @@ export function PublicJobDetail({
 										rel="noopener noreferrer"
 										className="mt-4 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90"
 									>
-										Open application link
+										{t("openApplicationLink")}
 										<ExternalLink className="size-4" />
 									</a>
 								) : null}
@@ -236,11 +250,10 @@ export function PublicJobDetail({
 						{job.applyUrl ? (
 							<div className="rounded-2xl border border-primary/25 bg-primary/10 p-5 shadow-sm">
 								<h3 className="text-[15px] font-bold text-foreground">
-									Ready to apply?
+									{t("readyToApply")}
 								</h3>
 								<p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
-									You will leave this site and continue on the employer&apos;s
-									page.
+									{t("directApplyBody")}
 								</p>
 								<a
 									href={job.applyUrl}
@@ -248,28 +261,31 @@ export function PublicJobDetail({
 									rel="noopener noreferrer"
 									className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90"
 								>
-									Apply on company site
+									{t("applyOnCompanySite")}
 									<ExternalLink className="size-4" />
 								</a>
 							</div>
 						) : null}
 
-						<Panel title="At a glance" icon={Briefcase}>
+						<Panel title={locale === "am" ? "አጠቃላይ መረጃ" : "At a glance"} icon={Briefcase}>
 							<dl className="space-y-3 text-[13px]">
-								<Row label="Company" value={job.company} />
-								<Row label="Location" value={job.location} />
+								<Row label={t("company")} value={job.company} />
+								<Row label={t("location")} value={displayLocation} />
 								<Row
-									label="Type"
-									value={statusLabel(job.employmentType)}
+									label={t("employmentType")}
+									value={employmentLabel}
 								/>
 								<Row
-									label="Salary"
-									value={hasSalary ? salary : "Not specified"}
+									label={t("salary")}
+									value={hasSalary ? salary : t("salaryNotSpecified")}
 								/>
-								<Row label="Posted" value={postedLabel} />
+								<Row
+									label={locale === "am" ? "የወጣበት ቀን" : "Posted"}
+									value={postedLabel}
+								/>
 								{category ? (
 									<Row
-										label="Category"
+										label={t("category")}
 										value={
 											<Link
 												href={`/jobs?category=${category.slug}`}
@@ -285,7 +301,7 @@ export function PublicJobDetail({
 
 						{employer &&
 						(employer.telegramUsername || employer.displayName) ? (
-							<Panel title="Posted by" icon={MessageCircle}>
+							<Panel title={t("postedBy")} icon={MessageCircle}>
 								<p className="text-[14px] font-semibold text-foreground">
 									{userDisplayName(employer)}
 								</p>
@@ -296,7 +312,7 @@ export function PublicJobDetail({
 										rel="noopener noreferrer"
 										className="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-border bg-card text-sm font-medium text-foreground/80 transition hover:bg-muted"
 									>
-										Message on Telegram
+										{t("messageOnTelegram")}
 										<ExternalLink className="size-3.5" />
 									</a>
 								) : null}
@@ -304,8 +320,9 @@ export function PublicJobDetail({
 						) : null}
 
 						<div className="rounded-2xl border border-dashed border-border bg-card px-4 py-3.5 text-center text-[12px] leading-relaxed text-muted-foreground">
-							Listings are payment-verified and reviewed by our team before they
-							go live.
+							{locale === "am"
+								? "የስራ ማስታወቂያዎች በቡድናችን ተገምግመው ክፍያቸው ከተረጋገጠ በኋላ የሚወጡ ናቸው።"
+								: "Listings are payment-verified and reviewed by our team before they go live."}
 						</div>
 					</aside>
 				</div>

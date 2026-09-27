@@ -9,9 +9,12 @@ import { jobRepo } from "@/server/repositories/job";
 export const metadata = { title: "Upload payment" };
 
 export default async function SimplePaymentPage(props: {
-	params: Promise<{ id: string }>;
+	params: Promise<{ id: string; locale: string }>;
 }) {
-	const { id } = await props.params;
+	const { id, locale } = (await props.params) as {
+		id: string;
+		locale: "en" | "am";
+	};
 	const user = await getCurrentUser();
 	if (!user) {
 		return await redirectTo(`/login?mode=signup&next=${encodeURIComponent(`/post/${id}/payment`)}`);
@@ -27,14 +30,15 @@ export default async function SimplePaymentPage(props: {
 		<div className="container mx-auto max-w-2xl px-4 pb-16 pt-28">
 			<div className="mb-8">
 				<p className="text-sm font-semibold uppercase tracking-wider text-primary">
-					Payment
+					{locale === "am" ? "ክፍያ እና ግብይት" : "Payment"}
 				</p>
 				<h1 className="mt-1 text-3xl font-bold tracking-tight">
-					Upload payment proof
+					{locale === "am" ? "የክፍያ ማስረጃ ይስቀሉ" : "Upload payment proof"}
 				</h1>
 				<p className="mt-2 text-sm text-muted-foreground">
-					For{" "}
-					<span className="font-medium text-foreground">{job.title}</span> at{" "}
+					{locale === "am" ? "ለ " : "For "}
+					<span className="font-medium text-foreground">{job.title}</span>{" "}
+					{locale === "am" ? "በ " : "at "}
 					{job.company}
 				</p>
 			</div>
@@ -48,9 +52,13 @@ export default async function SimplePaymentPage(props: {
 			</div>
 
 			<p className="mt-6 text-center text-sm text-muted-foreground">
-				Prefer the full tools?{" "}
+				{locale === "am"
+					? "ሁሉንም አማራጮች በዳሽቦርድ ማስተዳደር ይፈልጋሉ? "
+					: "Prefer the full tools? "}
 				<Button asChild variant="link" className="h-auto p-0">
-					<Link href={`/dashboard/jobs/${job.id}`}>Open in dashboard</Link>
+					<Link href={`/dashboard/jobs/${job.id}`}>
+						{locale === "am" ? "በዳሽቦርድ ይክፈቱ" : "Open in dashboard"}
+					</Link>
 				</Button>
 			</p>
 		</div>

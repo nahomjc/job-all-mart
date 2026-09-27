@@ -31,7 +31,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { statusLabel } from "@/lib/format";
+import { useLocale } from "next-intl";
+import { statusLabel, type FormatLocale } from "@/lib/format";
 import { paymentMethodLabel } from "@/lib/payment-methods";
 import { cn } from "@/lib/utils";
 import {
@@ -114,6 +115,9 @@ export function AdminJobReviewWizard({
 	payment,
 	embedded = false,
 }: AdminJobReviewWizardProps) {
+	const rawLocale = useLocale();
+	const locale: FormatLocale = rawLocale === "am" ? "am" : "en";
+	const isAm = locale === "am";
 	const router = useRouter();
 	const [pending, startTransition] = useTransition();
 	const [rejectPending, startRejectTransition] = useTransition();
@@ -368,19 +372,25 @@ export function AdminJobReviewWizard({
 							{payment && (
 								<dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
 									<div>
-										<dt className="text-xs text-muted-foreground">Amount</dt>
+										<dt className="text-xs text-muted-foreground">
+											{isAm ? "መጠን" : "Amount"}
+										</dt>
 										<dd className="font-medium">
 											{payment.amount} {payment.currency}
 										</dd>
 									</div>
 									<div>
-										<dt className="text-xs text-muted-foreground">Method</dt>
+										<dt className="text-xs text-muted-foreground">
+											{isAm ? "ዘዴ" : "Method"}
+										</dt>
 										<dd className="font-medium">
-											{paymentMethodLabel(payment.method)}
+											{paymentMethodLabel(payment.method, locale)}
 										</dd>
 									</div>
 									<div className="sm:col-span-2">
-										<dt className="text-xs text-muted-foreground">Status</dt>
+										<dt className="text-xs text-muted-foreground">
+											{isAm ? "ሁኔታ" : "Status"}
+										</dt>
 										<dd className="mt-0.5">
 											<Badge
 												variant={
@@ -388,7 +398,7 @@ export function AdminJobReviewWizard({
 												}
 												className="capitalize"
 											>
-												{statusLabel(payment.status)}
+												{statusLabel(payment.status, locale)}
 											</Badge>
 										</dd>
 									</div>

@@ -17,31 +17,13 @@ import { cn } from "@/lib/utils";
 
 export const metadata = { title: "Submitted" };
 
-const NEXT_STEPS = [
-	{
-		icon: CheckCircle2,
-		title: "Submission received",
-		description: "Your job details and payment proof are on file.",
-		done: true,
-	},
-	{
-		icon: Shield,
-		title: "Admin review",
-		description: "We verify payment and check the posting for quality.",
-		done: false,
-	},
-	{
-		icon: Send,
-		title: "Go live",
-		description: "Once approved, it appears on the site and Telegram.",
-		done: false,
-	},
-] as const;
-
 export default async function SimplePostDonePage(props: {
-	params: Promise<{ id: string }>;
+	params: Promise<{ id: string; locale: string }>;
 }) {
-	const { id } = await props.params;
+	const { id, locale } = (await props.params) as {
+		id: string;
+		locale: "en" | "am";
+	};
 	const user = await getCurrentUser();
 	if (!user) {
 		return await redirectTo(`/login?next=${encodeURIComponent(`/post/${id}/done`)}`);
@@ -55,6 +37,36 @@ export default async function SimplePostDonePage(props: {
 
 	const payment = await paymentRepo.byJobId(job.id);
 	const paymentDone = Boolean(payment);
+
+	const nextSteps = [
+		{
+			icon: CheckCircle2,
+			title: locale === "am" ? "ማመልከቻው ደርሷል" : "Submission received",
+			description:
+				locale === "am"
+					? "የስራው ዝርዝር እና የክፍያ ማስረጃው በትክክል ተመዝግቧል።"
+					: "Your job details and payment proof are on file.",
+			done: true,
+		},
+		{
+			icon: Shield,
+			title: locale === "am" ? "የአስተዳዳሪ ግምገማ" : "Admin review",
+			description:
+				locale === "am"
+					? "የክፍያውን ትክክለኛነት አረጋግጠን የስራውን ይዘት እንገመግማለን።"
+					: "We verify payment and check the posting for quality.",
+			done: false,
+		},
+		{
+			icon: Send,
+			title: locale === "am" ? "ቀጥታ ይለቀቃል" : "Go live",
+			description:
+				locale === "am"
+					? "ልክ እንደጸደቀ በድረ-ገጹ እና በቴሌግራም ቻናላችን ይለጠፋል።"
+					: "Once approved, it appears on the site and Telegram.",
+			done: false,
+		},
+	];
 
 	return (
 		<div className="relative overflow-hidden">
@@ -84,14 +96,17 @@ export default async function SimplePostDonePage(props: {
 					</div>
 
 					<p className="mt-6 text-sm font-semibold uppercase tracking-wider text-primary">
-						All set
+						{locale === "am" ? "ተጠናቋል" : "All set"}
 					</p>
 					<h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
-						Job submitted successfully
+						{locale === "am"
+							? "የስራ ማስታወቂያው በተሳካ ሁኔታ ቀርቧል"
+							: "Job submitted successfully"}
 					</h1>
 					<p className="mt-3 max-w-md text-muted-foreground">
-						We&apos;re reviewing your posting now. You&apos;ll be notified when
-						it goes live, usually within a few hours.
+						{locale === "am"
+							? "ማስታወቂያዎን እየገመገምን ነው። እንደጸደቀ እና በቀጥታ እንደተለቀቀ ማሳወቂያ ይደርስዎታል (ብዙውን ጊዜ በጥቂት ሰዓታት ውስጥ)።"
+							: "We're reviewing your posting now. You'll be notified when it goes live, usually within a few hours."}
 					</p>
 				</div>
 
@@ -115,28 +130,28 @@ export default async function SimplePostDonePage(props: {
 					<div className="flex items-center gap-2 border-b px-5 py-3 text-sm sm:px-6">
 						<span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-800 dark:text-amber-300">
 							<Clock className="size-3.5" />
-							Under review
+							{locale === "am" ? "በግምገማ ላይ" : "Under review"}
 						</span>
 						{paymentDone ? (
 							<span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
-								Payment received
+								{locale === "am" ? "ክፍያው ደርሷል" : "Payment received"}
 							</span>
 						) : null}
 					</div>
 
 					<div className="px-5 py-5 sm:px-6">
 						<p className="mb-4 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-							What happens next
+							{locale === "am" ? "ቀጣይ ሂደቶች" : "What happens next"}
 						</p>
 						<ol className="space-y-0">
-							{NEXT_STEPS.map((step, index) => {
+							{nextSteps.map((step, index) => {
 								const Icon = step.icon;
 								return (
 									<li
 										key={step.title}
 										className={cn(
 											"relative flex gap-4 pb-6 last:pb-0",
-											index < NEXT_STEPS.length - 1 &&
+											index < nextSteps.length - 1 &&
 												"before:absolute before:left-[15px] before:top-8 before:h-[calc(100%-1.5rem)] before:w-px before:bg-border",
 										)}
 									>
@@ -173,21 +188,27 @@ export default async function SimplePostDonePage(props: {
 				<div className="mt-8 flex w-full flex-col gap-3 sm:flex-row sm:justify-center">
 					<Button asChild size="lg" className="rounded-full">
 						<Link href={`/dashboard/jobs/${job.id}`}>
-							Track this job
+							{locale === "am" ? "የስራውን ሁኔታ ይከታተሉ" : "Track this job"}
 							<ArrowRight className="size-4" />
 						</Link>
 					</Button>
 					<Button asChild size="lg" variant="outline" className="rounded-full">
-						<Link href="/post/new">Post another job</Link>
+						<Link href="/post/new">
+							{locale === "am" ? "ሌላ ስራ ይለጥፉ" : "Post another job"}
+						</Link>
 					</Button>
 				</div>
 
 				<p className="mt-6 text-center text-sm text-muted-foreground">
-					Or browse everything in your{" "}
+					{locale === "am"
+						? "ወይም ሁሉንም ስራዎችዎን በ "
+						: "Or browse everything in your "}
 					<Button asChild variant="link" className="h-auto p-0">
-						<Link href="/dashboard/jobs">job dashboard</Link>
+						<Link href="/dashboard/jobs">
+							{locale === "am" ? "የስራ ዳሽቦርድ" : "job dashboard"}
+						</Link>
 					</Button>
-					.
+					{locale === "am" ? " ይመልከቱ።" : "."}
 				</p>
 			</div>
 		</div>

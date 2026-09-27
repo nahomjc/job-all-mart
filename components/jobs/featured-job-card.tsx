@@ -1,8 +1,9 @@
 import { Link } from "@/i18n/routing";
 import Image from "next/image";
+import { useLocale, useTranslations } from "next-intl";
 import { ArrowRight, MapPin } from "lucide-react";
 import type { Category, Job } from "@/server/db/schema";
-import { formatRelativeTime, statusLabel } from "@/lib/format";
+import { formatLocation, formatRelativeTime, statusLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 interface FeaturedJobCardProps {
@@ -15,11 +16,12 @@ function compactSalary(
 	min: number | null | undefined,
 	max: number | null | undefined,
 	currency?: string | null,
+	locale: "en" | "am" = "en",
 ): string | null {
 	const value = max || min;
 	if (!value) return null;
 
-	const code = (currency?.trim() || "USD").toUpperCase();
+	const code = (currency?.trim() || "ETB").toUpperCase();
 	const absolute = Math.abs(value);
 	let amount: string;
 
@@ -28,13 +30,20 @@ function compactSalary(
 	} else if (absolute >= 1_000) {
 		amount = `${(value / 1_000).toFixed(value % 1_000 === 0 ? 0 : 1)}K`;
 	} else {
-		amount = value.toLocaleString();
+		amount = value.toLocaleString(locale === "am" ? "am-ET" : "en-US");
 	}
 
 	const symbol =
-		code === "USD" ? "$" : code === "ETB" ? "Br " : `${code} `;
+		code === "USD"
+			? "$"
+			: code === "ETB"
+				? locale === "am"
+					? "ብር "
+					: "Br "
+				: `${code} `;
 
-	return `${symbol}${amount}/yr`;
+	const unit = locale === "am" ? "/ዓመት" : "/yr";
+	return `${symbol}${amount}${unit}`;
 }
 
 function plainDescription(raw: string): string {
@@ -49,14 +58,22 @@ export function FeaturedJobCard({
 	category,
 	className,
 }: FeaturedJobCardProps) {
+	const locale = useLocale() as "en" | "am";
+	const t = useTranslations("jobs");
 	const href = `/jobs/${job.slug}`;
-	const salary = compactSalary(job.salaryMin, job.salaryMax, job.salaryCurrency);
-	const employment = statusLabel(job.employmentType);
+	const salary = compactSalary(
+		job.salaryMin,
+		job.salaryMax,
+		job.salaryCurrency,
+		locale,
+	);
+	const employment = statusLabel(job.employmentType, locale);
+	const displayLocation = formatLocation(job.location, locale);
 	const initial = job.company.trim().charAt(0).toUpperCase() || "·";
 	const description = plainDescription(job.description);
 	const posted = job.postedAt
-		? formatRelativeTime(job.postedAt)
-		: "Just posted";
+		? formatRelativeTime(job.postedAt, locale)
+		: t("justPosted");
 
 	return (
 		<article
@@ -68,7 +85,7 @@ export function FeaturedJobCard({
 			<Link
 				href={href}
 				className="absolute inset-0 z-10 rounded-2xl"
-				aria-label={`View ${job.title} at ${job.company}`}
+				aria-label={`${job.title} - ${job.company}`}
 			/>
 
 			<div className="flex flex-1 flex-col p-6 sm:p-7">
@@ -125,7 +142,7 @@ export function FeaturedJobCard({
 					<div className="flex items-center gap-3 border-t border-border/60 pt-4 text-sm text-muted-foreground">
 						<span className="inline-flex min-w-0 items-center gap-1.5">
 							<MapPin className="size-3.5 shrink-0 opacity-70" />
-							<span className="truncate">{job.location}</span>
+							<span className="truncate">{displayLocation}</span>
 						</span>
 						<span className="ml-auto shrink-0 tabular-nums">{posted}</span>
 					</div>
@@ -133,7 +150,7 @@ export function FeaturedJobCard({
 						className="pointer-events-none mt-4 inline-flex h-8 w-full items-center justify-center gap-2 rounded-md border border-input bg-background px-3 text-xs font-medium shadow-sm transition-colors group-hover:border-primary/40 group-hover:bg-accent group-hover:text-accent-foreground"
 						aria-hidden
 					>
-						View details
+						{t("viewDetails")}
 						<ArrowRight className="size-3.5" />
 					</div>
 				</div>

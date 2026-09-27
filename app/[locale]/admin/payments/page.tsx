@@ -46,8 +46,10 @@ const SORT_DIR_OPTIONS = [
 ] as const;
 
 export default async function AdminPaymentsPage(props: {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<SearchParams>;
 }) {
+  const { locale } = (await props.params) as { locale: "en" | "am" };
   const sp = await props.searchParams;
   const status = normalizeStatus(sp.status);
   const q = (sp.q ?? "").trim();
@@ -62,12 +64,23 @@ export default async function AdminPaymentsPage(props: {
     limit: 100,
   });
 
+  const statusesList = [
+    ["all", locale === "am" ? "ሁሉም ሁኔታዎች" : "All statuses"],
+    ["pending", locale === "am" ? "በመጠባበቅ ላይ" : "Pending"],
+    ["verified", locale === "am" ? "ተረጋግጧል" : "Verified"],
+    ["rejected", locale === "am" ? "ውድቅ ተደርጓል" : "Rejected"],
+  ] as const;
+
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Finance"
-        title="Payments"
-        description="Verify submitted payment screenshots before publishing the linked job."
+        eyebrow={locale === "am" ? "ፋይናንስ" : "Finance"}
+        title={locale === "am" ? "ክፍያዎች እና ግብይቶች" : "Payments"}
+        description={
+          locale === "am"
+            ? "የስራ ማስታወቂያውን ከማውጣትዎ በፊት የገቡትን የክፍያ ማስረጃዎች (ስክሪንሾቶች) ያረጋግጡ።"
+            : "Verify submitted payment screenshots before publishing the linked job."
+        }
       />
 
       <form
@@ -80,7 +93,11 @@ export default async function AdminPaymentsPage(props: {
           <Input
             name="q"
             defaultValue={q}
-            placeholder="Search reference, method, job title..."
+            placeholder={
+              locale === "am"
+                ? "የግብይት ቁጥር፣ የክፍያ መንገድ፣ የስራ መደብ ይፈልጉ..."
+                : "Search reference, method, job title..."
+            }
             className="pl-8"
           />
         </div>
@@ -90,7 +107,7 @@ export default async function AdminPaymentsPage(props: {
           defaultValue={status}
           className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-sm"
         >
-          {STATUSES.map(([value, label]) => (
+          {statusesList.map(([value, label]) => (
             <option key={value} value={value}>
               {label}
             </option>
@@ -104,7 +121,7 @@ export default async function AdminPaymentsPage(props: {
         >
           {SORT_OPTIONS.map(([value, label]) => (
             <option key={value} value={value}>
-              Sort: {label}
+              {locale === "am" ? `አደራደር፦ ${label}` : `Sort: ${label}`}
             </option>
           ))}
         </select>
@@ -122,10 +139,12 @@ export default async function AdminPaymentsPage(props: {
             ))}
           </select>
           <Button type="submit" size="sm">
-            Apply
+            {locale === "am" ? "አሳይ" : "Apply"}
           </Button>
           <Button asChild variant="ghost" size="sm">
-            <Link href="/admin/payments">Reset</Link>
+            <Link href="/admin/payments">
+              {locale === "am" ? "እንደገና ጀምር" : "Reset"}
+            </Link>
           </Button>
         </div>
       </form>
@@ -138,19 +157,21 @@ export default async function AdminPaymentsPage(props: {
                 <Receipt className="size-6" />
               </span>
               <p className="text-sm text-muted-foreground">
-                No payments match your filters.
+                {locale === "am"
+                  ? "ምንም አይነት የተዛመደ ክፍያ አልተገኘም።"
+                  : "No payments match your filters."}
               </p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/40 hover:bg-muted/40">
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Currency</TableHead>
-                  <TableHead>Method</TableHead>
-                  <TableHead>Ref</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Submitted</TableHead>
+                  <TableHead>{locale === "am" ? "መጠን" : "Amount"}</TableHead>
+                  <TableHead>{locale === "am" ? "ምንዛሬ" : "Currency"}</TableHead>
+                  <TableHead>{locale === "am" ? "የክፍያ መንገድ" : "Method"}</TableHead>
+                  <TableHead>{locale === "am" ? "የግብይት ቁጥር" : "Ref"}</TableHead>
+                  <TableHead>{locale === "am" ? "ሁኔታ" : "Status"}</TableHead>
+                  <TableHead>{locale === "am" ? "የቀረበበት ቀን" : "Submitted"}</TableHead>
                   <TableHead className="text-right" />
                 </TableRow>
               </TableHeader>
@@ -159,19 +180,21 @@ export default async function AdminPaymentsPage(props: {
                   <TableRow key={p.id}>
                     <TableCell className="font-medium">{p.amount}</TableCell>
                     <TableCell>{p.currency}</TableCell>
-                    <TableCell>{statusLabel(p.method)}</TableCell>
+                    <TableCell>{statusLabel(p.method, locale)}</TableCell>
                     <TableCell>{p.referenceCode ?? "—"}</TableCell>
                     <TableCell>
                       <Badge variant={paymentBadgeVariant(p.status)}>
-                        {statusLabel(p.status)}
+                        {statusLabel(p.status, locale)}
                       </Badge>
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-muted-foreground">
-                      {formatRelativeTime(p.createdAt)}
+                      {formatRelativeTime(p.createdAt, locale)}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button asChild size="sm">
-                        <Link href={`/admin/jobs/${p.jobId}`}>Open job</Link>
+                        <Link href={`/admin/jobs/${p.jobId}`}>
+                          {locale === "am" ? "ማስታወቂያውን ይክፈቱ" : "Open job"}
+                        </Link>
                       </Button>
                     </TableCell>
                   </TableRow>

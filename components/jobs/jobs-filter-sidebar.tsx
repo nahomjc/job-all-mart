@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 import {
 	useCallback,
 	useEffect,
@@ -11,26 +12,6 @@ import {
 import { cn } from "@/lib/utils";
 
 type CategoryOption = { slug: string; name: string };
-
-const JOB_TYPES = [
-	{ value: "full_time", label: "Full-time" },
-	{ value: "contract", label: "Freelance" },
-	{ value: "internship", label: "Internship" },
-	{ value: "part_time", label: "Part-time" },
-] as const;
-
-const EXPERIENCE = [
-	{ value: "entry", label: "Entry level" },
-	{ value: "intermediate", label: "intermediate" },
-	{ value: "expert", label: "Expert" },
-] as const;
-
-const SALARY_PRESETS = [
-	{ value: "under_100", label: "Under $100", max: 100 },
-	{ value: "100_1k", label: "$100 to $1K", min: 100, max: 1000 },
-	{ value: "1k_5k", label: "$1K to $5K", min: 1000, max: 5000 },
-	{ value: "hourly", label: "Hourly", hourly: true },
-] as const;
 
 export type JobsFilterValues = {
 	q?: string;
@@ -93,8 +74,29 @@ function FilterCheck({
 
 export function JobsFilterSidebar({ categories, values }: JobsFilterSidebarProps) {
 	const router = useRouter();
+	const t = useTranslations("jobs");
 	const [pending, startTransition] = useTransition();
 	const [budget, setBudget] = useState(Number(values.budget ?? "60") || 60);
+
+	const jobTypes = [
+		{ value: "full_time", label: t("fullTime") },
+		{ value: "contract", label: t("contract") },
+		{ value: "internship", label: t("internship") },
+		{ value: "part_time", label: t("partTime") },
+	] as const;
+
+	const experienceOptions = [
+		{ value: "entry", label: t("entryLevel") },
+		{ value: "intermediate", label: t("intermediate") },
+		{ value: "expert", label: t("expert") },
+	] as const;
+
+	const salaryPresets = [
+		{ value: "under_100", label: t("under100") },
+		{ value: "100_1k", label: t("oneHundredToOneThousand") },
+		{ value: "1k_5k", label: t("oneThousandToFiveThousand") },
+		{ value: "hourly", label: t("hourly") },
+	] as const;
 
 	useEffect(() => {
 		setBudget(Number(values.budget ?? "60") || 60);
@@ -140,7 +142,9 @@ export function JobsFilterSidebar({ categories, values }: JobsFilterSidebarProps
 				pending && "opacity-80",
 			)}
 		>
-			<h2 className="text-lg font-bold tracking-tight text-foreground">Filter</h2>
+			<h2 className="text-lg font-bold tracking-tight text-foreground">
+				{t("filters")}
+			</h2>
 
 			<div className="mt-5 space-y-5">
 				<div>
@@ -148,7 +152,7 @@ export function JobsFilterSidebar({ categories, values }: JobsFilterSidebarProps
 						htmlFor="jobs-category"
 						className="mb-2 block text-[13px] font-semibold text-foreground"
 					>
-						Category
+						{t("category")}
 					</label>
 					<div className="relative">
 						<select
@@ -162,7 +166,7 @@ export function JobsFilterSidebar({ categories, values }: JobsFilterSidebarProps
 							}
 							className="h-11 w-full appearance-none rounded-xl border border-border bg-card px-3 pr-9 text-[13px] text-foreground outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
 						>
-							<option value="">All categories</option>
+							<option value="">{t("allCategories")}</option>
 							{categories.map((c) => (
 								<option key={c.slug} value={c.slug}>
 									{c.name}
@@ -184,9 +188,11 @@ export function JobsFilterSidebar({ categories, values }: JobsFilterSidebarProps
 				</div>
 
 				<div>
-					<p className="mb-3 text-[13px] font-semibold text-foreground">Job Type</p>
+					<p className="mb-3 text-[13px] font-semibold text-foreground">
+						{t("employmentType")}
+					</p>
 					<div className="grid grid-cols-2 gap-x-3 gap-y-3">
-						{JOB_TYPES.map((t) => (
+						{jobTypes.map((t) => (
 							<FilterCheck
 								key={t.value}
 								label={t.label}
@@ -205,10 +211,10 @@ export function JobsFilterSidebar({ categories, values }: JobsFilterSidebarProps
 
 				<div>
 					<p className="mb-3 text-[13px] font-semibold text-foreground">
-						Experience level
+						{t("experienceLevel")}
 					</p>
 					<div className="grid grid-cols-2 gap-x-3 gap-y-3">
-						{EXPERIENCE.map((t) => (
+						{experienceOptions.map((t) => (
 							<FilterCheck
 								key={t.value}
 								label={t.label}
@@ -227,10 +233,10 @@ export function JobsFilterSidebar({ categories, values }: JobsFilterSidebarProps
 
 				<div>
 					<p className="mb-3 text-[13px] font-semibold text-foreground">
-						Expected salary
+						{t("salary")}
 					</p>
 					<div className="grid grid-cols-2 gap-x-3 gap-y-3">
-						{SALARY_PRESETS.map((t) => (
+						{salaryPresets.map((t) => (
 							<FilterCheck
 								key={t.value}
 								label={t.label}
