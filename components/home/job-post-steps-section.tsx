@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import {
 	AnimatePresence,
 	motion,
@@ -487,6 +488,7 @@ function StepVisual({
 
 export function JobPostStepsSection() {
 	const reduceMotion = useReducedMotion();
+	const t = useTranslations("home");
 	const [active, setActive] = useState(0);
 	const sectionRef = useRef<HTMLDivElement>(null);
 	const stepRefs = useRef<(HTMLLIElement | null)[]>([]);
@@ -533,14 +535,13 @@ export function JobPostStepsSection() {
 					className="mx-auto mb-14 max-w-2xl text-center"
 				>
 					<p className="text-sm font-semibold uppercase tracking-widest text-primary">
-						Steps
+						{t("howItWorks")}
 					</p>
 					<h2 className="mt-3 text-balance text-3xl font-bold tracking-tight md:text-4xl">
-						Post a job in five steps
+						{t("stepsTitle")}
 					</h2>
 					<p className="mt-4 text-pretty text-muted-foreground md:text-lg">
-						Create an account, submit the job, pay, wait for review, then go live
-						on Telegram.
+						{t("stepsSubtitle")}
 					</p>
 				</motion.div>
 
@@ -651,11 +652,11 @@ export function JobPostStepsSection() {
 						>
 							<Button asChild className="rounded-full">
 								<Link href="/post/new">
-									Start posting <ArrowRight className="size-4" />
+									{t("ctaPost")} <ArrowRight className="size-4" />
 								</Link>
 							</Button>
 							<Button asChild variant="outline" className="rounded-full">
-								<Link href="/pricing">View pricing</Link>
+								<Link href="/pricing">{t("stepsViewPricing")}</Link>
 							</Button>
 						</motion.div>
 					</div>

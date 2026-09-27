@@ -8,7 +8,7 @@ const steps: Step[] = [
 		target: '[data-tour="brand"]',
 		title: "Welcome, admin",
 		content:
-			"A quick tour of the moderation tools. It takes less than a minute — replay it anytime from Help.",
+			"A quick tour of the moderation tools. It takes less than a minute, replay it anytime from Help.",
 		placement: "right",
 	},
 	{
@@ -29,7 +29,7 @@ const steps: Step[] = [
 		target: '[data-tour="nav-settings"]',
 		title: "Settings",
 		content:
-			"Configure Telegram delivery — including the broadcast channel where approved jobs are posted.",
+			"Configure Telegram delivery, including the broadcast channel where approved jobs are posted.",
 		placement: "right",
 	},
 	{

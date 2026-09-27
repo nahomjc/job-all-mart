@@ -7,7 +7,7 @@ import {
 	useState,
 	useSyncExternalStore,
 } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname } from "@/i18n/routing";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { BrandLogo } from "@/components/brand-logo";
 import { EASE } from "@/components/home/motion";

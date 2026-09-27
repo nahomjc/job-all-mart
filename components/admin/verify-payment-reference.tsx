@@ -83,7 +83,7 @@ export function VerifyPaymentReference({
 			].filter(Boolean);
 			toast.success(
 				parts.length > 0
-					? `Reference verified — ${parts.join(" · ")}`
+					? `Reference verified, ${parts.join(" · ")}`
 					: "Reference verified",
 			);
 		} else if (state.error) {

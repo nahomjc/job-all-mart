@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { ArrowRight, MessageSquare, Sparkles } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { HeroPhoneMockup } from "@/components/home/hero-phone-mockup";
@@ -93,10 +94,12 @@ export function HeroSection({
 	appName = DEFAULT_APP_NAME,
 }: HeroSectionProps) {
 	const reduceMotion = useReducedMotion();
+	const t = useTranslations("home");
+	const tn = useTranslations("nav");
 
 	return (
 		<section className="relative isolate min-h-[90vh] overflow-hidden bg-[#fff9eb] text-stone-900 dark:bg-background dark:text-foreground">
-			{/* Soft warm wash — cream in light, amber glow on dark */}
+			{/* Soft warm wash, cream in light, amber glow on dark */}
 			<div
 				aria-hidden
 				className="pointer-events-none absolute inset-0 dark:hidden"
@@ -152,7 +155,7 @@ export function HeroSection({
 							className="inline-flex items-center gap-2 rounded-full border border-amber-300/70 bg-white/70 px-4 py-1.5 text-xs font-medium text-stone-700 shadow-sm backdrop-blur-md dark:border-primary/25 dark:bg-card/70 dark:text-muted-foreground"
 						>
 							<Sparkles className="size-3.5 text-amber-600 dark:text-primary" />
-							Live on Telegram and the web
+							{t("liveOnTelegram")}
 						</motion.span>
 
 						<motion.h1
@@ -162,8 +165,6 @@ export function HeroSection({
 							animate="show"
 							className="mt-7 text-balance text-4xl font-bold leading-[1.05] tracking-tight text-stone-900 dark:text-foreground md:text-6xl lg:text-[4rem]"
 						>
-							Post jobs.
-							<br />
 							<motion.span
 								className="bg-linear-to-r from-amber-700 via-yellow-600 to-amber-500 bg-clip-text text-transparent dark:from-primary dark:via-amber-300 dark:to-yellow-500"
 								animate={
@@ -174,7 +175,7 @@ export function HeroSection({
 								transition={{ duration: 6, repeat: Number.POSITIVE_INFINITY }}
 								style={{ backgroundSize: "200% auto" }}
 							>
-								Publish on Telegram.
+								{t("headline")}
 							</motion.span>
 						</motion.h1>
 
@@ -185,8 +186,7 @@ export function HeroSection({
 							animate="show"
 							className="mx-auto mt-6 max-w-lg text-pretty text-lg leading-relaxed text-stone-600 dark:text-muted-foreground lg:mx-0"
 						>
-							Post jobs on {appName}, get them reviewed by our team, then
-							publish to Telegram and the website.
+							{t("subheadline")}
 						</motion.p>
 
 						<motion.div
@@ -205,7 +205,7 @@ export function HeroSection({
 									size="lg"
 									className="h-14 rounded-full bg-brand-deep px-12 text-base font-bold text-white shadow-xl shadow-amber-900/20 hover:bg-brand-deep/90 dark:bg-primary dark:text-primary-foreground dark:shadow-primary/20 dark:hover:bg-primary/90"
 								>
-									<Link href="/jobs">Get Started</Link>
+									<Link href="/jobs">{t("getStarted")}</Link>
 								</Button>
 							</motion.div>
 							<Button
@@ -214,7 +214,7 @@ export function HeroSection({
 								className="h-12 text-stone-700 hover:bg-amber-100/80 hover:text-stone-900 dark:text-muted-foreground dark:hover:bg-accent dark:hover:text-foreground"
 							>
 								<Link href="/post/new">
-									Post a job <ArrowRight className="size-4" />
+									{tn("postJob")} <ArrowRight className="size-4" />
 								</Link>
 							</Button>
 						</motion.div>
@@ -256,7 +256,7 @@ export function HeroSection({
 							>
 								<a href={telegramJoinUrl} target="_blank" rel="noopener noreferrer">
 									<MessageSquare className="size-3.5" />
-									Or use the Telegram bot
+									{t("orTelegramBot")}
 								</a>
 							</Button>
 						</motion.div>

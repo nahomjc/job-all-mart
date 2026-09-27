@@ -34,12 +34,12 @@ export function TelegramConnectButton() {
 				<ExternalLink className="size-3.5 opacity-70" />
 			</Button>
 			<ol className="space-y-1 text-xs text-muted-foreground">
-				<li>1. Tap the button — the bot opens in your Telegram app.</li>
+				<li>1. Tap the button, the bot opens in your Telegram app.</li>
 				<li>
 					2. In the chat, tap <strong>Start</strong> to confirm the connection.
 				</li>
 				<li>
-					3. Come back and refresh — your account will show as connected.
+					3. Come back and refresh, your account will show as connected.
 				</li>
 			</ol>
 			{opened && (

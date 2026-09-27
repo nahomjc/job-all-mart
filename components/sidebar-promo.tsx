@@ -1,8 +1,14 @@
-import Link from "next/link";
+"use client";
+
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function SidebarPromo() {
+	const t = useTranslations("nav");
+	const th = useTranslations("home");
+
 	return (
 		<div className="relative overflow-hidden rounded-2xl bg-brand-deep p-4 text-white">
 			<div
@@ -14,17 +20,17 @@ export function SidebarPromo() {
 					<Sparkles className="size-4" />
 				</span>
 				<p className="mt-3 text-sm font-semibold leading-snug">
-					Post a job to Telegram
+					{th("headline")}
 				</p>
 				<p className="mt-1 text-xs text-white/70">
-					Submit once. We review it, then publish.
+					{th("subheadline")}
 				</p>
 				<Button
 					asChild
 					size="sm"
 					className="mt-4 h-9 w-full rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
 				>
-					<Link href="/dashboard/jobs/new">Post a job</Link>
+					<Link href="/dashboard/jobs/new">{t("postJob")}</Link>
 				</Button>
 			</div>
 		</div>

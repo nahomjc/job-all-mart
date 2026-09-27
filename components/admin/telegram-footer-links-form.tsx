@@ -120,7 +120,7 @@ export function TelegramFooterLinksForm({
 								htmlFor={`footer-popup-${i}`}
 								className="text-xs text-muted-foreground"
 							>
-								Popup text (optional — used only when no URL is set)
+								Popup text (optional, used only when no URL is set)
 							</Label>
 							<Textarea
 								id={`footer-popup-${i}`}

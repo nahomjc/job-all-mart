@@ -46,13 +46,13 @@ const GUIDE_STEPS = [
 		icon: FileText,
 		label: "Basics",
 		title: "Write a role people will open",
-		body: "Start with a precise title, company name, and a full description. This is what candidates read first — and what appears on Telegram.",
+		body: "Start with a precise title, company name, and a full description. This is what candidates read first, and what appears on Telegram.",
 		points: [
 			"Title: specific role, not “Hiring now”",
 			"Company: the hiring brand candidates will trust",
 			"Description: responsibilities, requirements, culture",
 		],
-		tip: "Example title: “Senior React Engineer” — not “Urgent vacancy”.",
+		tip: "Example title: “Senior React Engineer”, not “Urgent vacancy”.",
 	},
 	{
 		id: "details",
@@ -76,7 +76,7 @@ const GUIDE_STEPS = [
 		points: [
 			"Share a range when possible",
 			"Use the correct currency (ETB, USD, …)",
-			"Negotiable is fine — still give a ballpark",
+			"Negotiable is fine, still give a ballpark",
 		],
 		tip: "Transparent pay gets stronger applications.",
 	},
@@ -100,7 +100,7 @@ const GUIDE_STEPS = [
 		title: "Check once, then submit",
 		body: "Confirm every field on the summary screen. After you submit, this flow moves you to payment.",
 		points: [
-			"Scan for typos — they show on Telegram",
+			"Scan for typos, they show on Telegram",
 			"Confirm category and salary one more time",
 			"Submit only when the summary looks final",
 		],
@@ -115,7 +115,7 @@ const GUIDE_STEPS = [
 		points: [
 			"Screenshot should show amount and date",
 			"Include the transfer reference if visible",
-			"PNG, JPG, WebP, or GIF — keep it readable",
+			"PNG, JPG, WebP, or GIF, keep it readable",
 		],
 		tip: "Blurry or cropped receipts slow approval.",
 	},
@@ -123,7 +123,7 @@ const GUIDE_STEPS = [
 		id: "live",
 		icon: Rocket,
 		label: "Go live",
-		title: "We review — then you go live",
+		title: "We review, then you go live",
 		body: "An admin checks the job and payment. When approved, the listing appears on the website and the matching Telegram topic.",
 		points: [
 			"Most reviews finish within a few hours",
@@ -211,7 +211,7 @@ export function PostJobHelpDialog() {
 								How to post a job
 							</DialogTitle>
 							<DialogDescription className="mt-2 max-w-xl text-sm leading-relaxed text-white/70 sm:text-[15px]">
-								A clear walkthrough of every step — from writing the role to
+								A clear walkthrough of every step, from writing the role to
 								going live on Telegram.
 							</DialogDescription>
 						</div>

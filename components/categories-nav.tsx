@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { ArrowRight, ChevronDown, LayoutGrid } from "lucide-react";
 import {
 	DropdownMenu,
@@ -13,6 +14,9 @@ import { cn } from "@/lib/utils";
 type CategoryItem = { id: string; name: string; slug: string };
 
 export function CategoriesNav({ categories }: { categories: CategoryItem[] }) {
+	const t = useTranslations("nav");
+	const tj = useTranslations("jobs");
+
 	if (categories.length === 0) return null;
 
 	return (
@@ -25,7 +29,7 @@ export function CategoriesNav({ categories }: { categories: CategoryItem[] }) {
 					"dark:hover:text-white dark:focus-visible:text-white dark:data-[state=open]:text-white",
 				)}
 			>
-				Categories
+				{t("categories")}
 				<ChevronDown className="size-3.5 opacity-60 transition-transform duration-200 group-data-[state=open]:rotate-180" />
 			</DropdownMenuTrigger>
 
@@ -41,10 +45,10 @@ export function CategoriesNav({ categories }: { categories: CategoryItem[] }) {
 						</span>
 						<div>
 							<p className="text-sm font-semibold tracking-tight">
-								Browse by category
+								{tj("browseTitle")}
 							</p>
 							<p className="text-xs text-muted-foreground">
-								Find roles in your field
+								{tj("browseSubtitle")}
 							</p>
 						</div>
 					</div>
@@ -81,7 +85,7 @@ export function CategoriesNav({ categories }: { categories: CategoryItem[] }) {
 							href="/jobs"
 							className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-primary/5 focus:bg-primary/5"
 						>
-							View all jobs
+							{tj("viewAllJobs")}
 							<ArrowRight className="size-4" aria-hidden />
 						</Link>
 					</DropdownMenuItem>

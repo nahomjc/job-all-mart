@@ -137,8 +137,8 @@ export function PricingPlanFields({
 						defaultValue={active ? "true" : "false"}
 						className={selectClassName}
 					>
-						<option value="true">Active — shown on /pricing</option>
-						<option value="false">Inactive — hidden</option>
+						<option value="true">Active, shown on /pricing</option>
+						<option value="false">Inactive, hidden</option>
 					</select>
 				</div>
 			) : (

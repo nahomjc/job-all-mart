@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { LayoutGrid, Menu } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,8 @@ interface MobileNavProps {
 export function MobileNav({ brandName, categories, signedIn }: MobileNavProps) {
 	const [open, setOpen] = useState(false);
 	const close = () => setOpen(false);
+	const t = useTranslations("nav");
+	const tc = useTranslations("common");
 
 	return (
 		<>
@@ -31,7 +34,7 @@ export function MobileNav({ brandName, categories, signedIn }: MobileNavProps) {
 				size="icon"
 				className="size-10 shrink-0 rounded-xl md:hidden"
 				onClick={() => setOpen(true)}
-				aria-label="Open menu"
+				aria-label={tc("menu")}
 			>
 				<Menu className="size-5" />
 			</Button>
@@ -41,7 +44,7 @@ export function MobileNav({ brandName, categories, signedIn }: MobileNavProps) {
 					className="fixed inset-y-0 left-0 top-0 z-50 flex h-full w-[min(100vw-3rem,20rem)] max-w-none translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden rounded-none border-r p-0 shadow-xl duration-300 data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-xs"
 					aria-describedby={undefined}
 				>
-					<DialogTitle className="sr-only">Navigation</DialogTitle>
+					<DialogTitle className="sr-only">{tc("menu")}</DialogTitle>
 					<div className="flex h-full min-h-0 flex-col bg-background">
 						<div className="shrink-0 border-b px-5 pb-4 pt-6">
 							<Link
@@ -59,13 +62,13 @@ export function MobileNav({ brandName, categories, signedIn }: MobileNavProps) {
 						<nav className="flex-1 space-y-6 overflow-y-auto overscroll-contain px-4 py-5">
 							<div className="space-y-1">
 								<p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-									Menu
+									{tc("menu")}
 								</p>
 								<MobileLink href="/jobs" onNavigate={close}>
-									Jobs
+									{t("jobs")}
 								</MobileLink>
 								<MobileLink href="/pricing" onNavigate={close}>
-									Pricing
+									{t("pricing")}
 								</MobileLink>
 							</div>
 
@@ -73,7 +76,7 @@ export function MobileNav({ brandName, categories, signedIn }: MobileNavProps) {
 								<div>
 									<p className="mb-2 flex items-center gap-2 px-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
 										<LayoutGrid className="size-3.5" aria-hidden />
-										Categories
+										{t("categories")}
 									</p>
 									<div className="space-y-1">
 										{categories.map((c) => (
@@ -93,7 +96,7 @@ export function MobileNav({ brandName, categories, signedIn }: MobileNavProps) {
 						<div className="shrink-0 space-y-2 border-t p-4">
 							<Button asChild className="h-11 w-full rounded-xl">
 								<Link href="/post/new" onClick={close}>
-									Post a job
+									{t("postJob")}
 								</Link>
 							</Button>
 							{!signedIn ? (
@@ -103,7 +106,7 @@ export function MobileNav({ brandName, categories, signedIn }: MobileNavProps) {
 									className="h-11 w-full rounded-xl"
 								>
 									<Link href="/login" onClick={close}>
-										Sign in
+										{t("signIn")}
 									</Link>
 								</Button>
 							) : null}

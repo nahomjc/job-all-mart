@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import {
@@ -17,19 +18,21 @@ import type { Category, Job } from "@/server/db/schema";
 type JobRow = { job: Job; category: Category | null };
 
 export function LatestJobsSection({ jobs }: { jobs: JobRow[] }) {
+	const t = useTranslations("home");
+
 	return (
 		<MotionSection className="bg-background py-20 md:py-24">
 			<div className="container mx-auto px-4">
 				<div className="mb-10 flex flex-col items-start justify-between gap-4 md:mb-12 md:flex-row md:items-end">
 					<MotionBlock variant="fadeUp">
 						<p className="text-sm font-semibold uppercase tracking-wider text-primary">
-							Featured jobs
+							{t("featuredJobs")}
 						</p>
 						<h2 className="mt-2 text-balance text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-							Latest openings
+							{t("latestOpenings")}
 						</h2>
 						<p className="mt-3 max-w-xl text-muted-foreground">
-							Recent roles from employers on our channels.
+							{t("latestOpeningsBody")}
 						</p>
 					</MotionBlock>
 					<motion.div
@@ -40,7 +43,7 @@ export function LatestJobsSection({ jobs }: { jobs: JobRow[] }) {
 					>
 						<Button asChild variant="outline" className="rounded-full">
 							<Link href="/jobs">
-								See all jobs <ArrowRight className="size-4" />
+								{t("seeAllJobs")} <ArrowRight className="size-4" />
 							</Link>
 						</Button>
 					</motion.div>
@@ -48,7 +51,7 @@ export function LatestJobsSection({ jobs }: { jobs: JobRow[] }) {
 
 				{jobs.length === 0 ? (
 					<div className="rounded-2xl border border-dashed border-border bg-muted/30 px-6 py-16 text-center text-sm text-muted-foreground">
-						No jobs posted yet. Check back soon.
+						{t("noJobsYet")}
 					</div>
 				) : (
 					<Stagger className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">

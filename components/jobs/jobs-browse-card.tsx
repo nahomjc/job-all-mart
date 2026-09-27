@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { BadgeCheck, Bookmark, Star } from "lucide-react";
 import type { Category, Job } from "@/server/db/schema";

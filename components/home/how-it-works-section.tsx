@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import {
 	ArrowRight,
 	BadgeCheck,
@@ -18,31 +19,22 @@ import { EASE, MotionBlock, MotionSection } from "@/components/home/motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const STEPS = [
-	{
-		n: "01",
-		title: "Create your account",
-		body: "Sign up on the website or through Telegram.",
-	},
-	{
-		n: "02",
-		title: "Post job details",
-		body: "Add the title, company, location, salary, and description.",
-	},
-	{
-		n: "03",
-		title: "Upload payment proof",
-		body: "Send a screenshot of your payment so we can verify it.",
-	},
-	{
-		n: "04",
-		title: "Go live on Telegram",
-		body: "After approval, your job goes live on the board and Telegram.",
-	},
+const STEP_KEYS = [
+	{ n: "01", title: "stepSignup", body: "stepSignupBody" },
+	{ n: "02", title: "stepPost", body: "stepPostBody" },
+	{ n: "03", title: "stepPay", body: "stepPayBody" },
+	{ n: "04", title: "stepLive", body: "stepLiveBody" },
 ] as const;
 
 export function HowItWorksSection({ appName }: { appName: string }) {
+	const t = useTranslations("home");
 	const reduce = useReducedMotion();
+
+	const steps = STEP_KEYS.map((step) => ({
+		n: step.n,
+		title: t(step.title),
+		body: t(step.body),
+	}));
 
 	return (
 		<MotionSection className="container mx-auto px-4 py-20 md:py-24">
@@ -50,36 +42,36 @@ export function HowItWorksSection({ appName }: { appName: string }) {
 				<div className="border-b border-white/10 px-6 py-8 sm:px-8 sm:py-10 lg:px-10">
 					<MotionBlock>
 						<span className="inline-flex items-center rounded-md border border-primary/50 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
-							How it works
+							{t("howItWorks")}
 						</span>
 						<h2 className="mt-4 max-w-2xl text-balance text-3xl font-bold tracking-tight text-white sm:text-4xl">
-							How posting works on {appName}
+							{t("howPostingWorks", { appName })}
 						</h2>
 						<p className="mt-3 max-w-xl text-sm leading-relaxed text-white/70 sm:text-base">
-							Sign up, add the job, pay, then we publish it to Telegram.
+							{t("howItWorksSubtitle")}
 						</p>
 					</MotionBlock>
 				</div>
 
 				<div className="grid lg:grid-cols-3">
 					<StepCell className="border-b border-white/10 lg:border-b-0 lg:border-r">
-						<StepCopy step={STEPS[0]} />
+						<StepCopy step={steps[0]} />
 						<HubVisual reduce={!!reduce} />
 					</StepCell>
 
 					<div className="flex flex-col border-b border-white/10 lg:border-b-0 lg:border-r">
 						<StepCell className="flex-1 border-b border-white/10">
 							<OverviewVisual reduce={!!reduce} />
-							<StepCopy step={STEPS[1]} className="mt-5" />
+							<StepCopy step={steps[1]} className="mt-5" />
 						</StepCell>
 						<StepCell className="flex-1">
 							<UploadVisual reduce={!!reduce} />
-							<StepCopy step={STEPS[2]} className="mt-5" />
+							<StepCopy step={steps[2]} className="mt-5" />
 						</StepCell>
 					</div>
 
 					<StepCell>
-						<StepCopy step={STEPS[3]} />
+						<StepCopy step={steps[3]} />
 						<PublishVisual reduce={!!reduce} />
 						<div className="mt-6">
 							<Button
@@ -87,7 +79,7 @@ export function HowItWorksSection({ appName }: { appName: string }) {
 								className="h-11 rounded-xl bg-primary px-5 font-semibold text-primary-foreground hover:bg-primary/90"
 							>
 								<Link href="/post/new">
-									Start posting
+									{t("ctaPost")}
 									<ArrowRight className="size-4" />
 								</Link>
 							</Button>
@@ -117,7 +109,7 @@ function StepCopy({
 	step,
 	className,
 }: {
-	step: (typeof STEPS)[number];
+	step: { n: string; title: string; body: string };
 	className?: string;
 }) {
 	return (

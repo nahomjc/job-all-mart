@@ -1,12 +1,15 @@
 "use client";
 
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { ArrowRight, Handshake, MessageSquare } from "lucide-react";
 import { motion } from "framer-motion";
 import { EASE, MotionSection } from "@/components/home/motion";
 import { Button } from "@/components/ui/button";
 
 export function CtaSection({ telegramJoinUrl }: { telegramJoinUrl: string }) {
+	const t = useTranslations("home");
+
 	return (
 		<MotionSection className="container mx-auto px-4 pb-24">
 			<motion.div
@@ -40,14 +43,13 @@ export function CtaSection({ telegramJoinUrl }: { telegramJoinUrl: string }) {
 					>
 						<span className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-white">
 							<Handshake className="size-3.5" />
-							Hiring
+							{t("pipelineEmployers")}
 						</span>
 						<h2 className="mt-4 text-balance text-3xl font-bold tracking-tight text-white md:text-4xl lg:text-5xl">
-							Ready to post a job?
+							{t("ctaTitle")}
 						</h2>
 						<p className="mt-4 max-w-xl text-pretty text-lg text-white/85">
-							Create an account, submit your job, and we&apos;ll publish it after
-							review.
+							{t("ctaBody")}
 						</p>
 					</motion.div>
 
@@ -65,7 +67,7 @@ export function CtaSection({ telegramJoinUrl }: { telegramJoinUrl: string }) {
 								className="h-12 w-full rounded-full bg-white text-brand-deep hover:bg-white/90 sm:w-auto md:w-full"
 							>
 								<Link href="/post/new">
-									Post a job <ArrowRight className="size-4" />
+									{t("ctaPost")} <ArrowRight className="size-4" />
 								</Link>
 							</Button>
 						</motion.div>
@@ -81,7 +83,7 @@ export function CtaSection({ telegramJoinUrl }: { telegramJoinUrl: string }) {
 									target="_blank"
 									rel="noopener noreferrer"
 								>
-									<MessageSquare className="size-4" /> Telegram bot
+									<MessageSquare className="size-4" /> {t("ctaTelegram")}
 								</a>
 							</Button>
 						</motion.div>

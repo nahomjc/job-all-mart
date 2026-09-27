@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { BrandLogo } from "@/components/brand-logo";
 import { MobileSidebar } from "@/components/mobile-sidebar";
 import { ShellSearch } from "@/components/shell-search";

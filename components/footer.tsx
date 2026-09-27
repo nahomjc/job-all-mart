@@ -1,7 +1,11 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/routing";
 import { env } from "@/lib/env";
 
-export function Footer() {
+export async function Footer() {
+  const t = await getTranslations("footer");
+  const tc = await getTranslations("common");
+
   return (
     <footer className="mt-24 border-t bg-muted/30">
       <div className="container mx-auto grid gap-8 px-4 py-12 md:grid-cols-4">
@@ -10,39 +14,38 @@ export function Footer() {
             {env.NEXT_PUBLIC_APP_NAME}
           </h3>
           <p className="text-sm text-muted-foreground">
-            Job posts for Telegram channels and the website.
+            {tc("appTagline")}
           </p>
         </div>
         <div>
-          <h4 className="mb-2 text-sm font-semibold">Product</h4>
+          <h4 className="mb-2 text-sm font-semibold">{t("product")}</h4>
           <ul className="space-y-1 text-sm text-muted-foreground">
-            <li><Link href="/jobs" className="hover:text-foreground">Browse jobs</Link></li>
-            <li><Link href="/pricing" className="hover:text-foreground">Pricing</Link></li>
-            <li><Link href="/post/new" className="hover:text-foreground">Post a job</Link></li>
+            <li><Link href="/jobs" className="hover:text-foreground">{t("browseJobs")}</Link></li>
+            <li><Link href="/pricing" className="hover:text-foreground">{t("pricing")}</Link></li>
+            <li><Link href="/post/new" className="hover:text-foreground">{t("postJob")}</Link></li>
           </ul>
         </div>
         <div>
-          <h4 className="mb-2 text-sm font-semibold">Telegram</h4>
+          <h4 className="mb-2 text-sm font-semibold">{t("telegram")}</h4>
           <ul className="space-y-1 text-sm text-muted-foreground">
-            <li>Use our bot to post from Telegram.</li>
-            <li>Start with /start in the bot chat.</li>
+            <li>{t("telegramBot")}</li>
+            <li>{t("telegramStart")}</li>
           </ul>
         </div>
         <div>
-          <h4 className="mb-2 text-sm font-semibold">Legal</h4>
+          <h4 className="mb-2 text-sm font-semibold">{t("legal")}</h4>
           <ul className="space-y-1 text-sm text-muted-foreground">
-            <li><Link href="/terms" className="hover:text-foreground">Terms</Link></li>
-            <li><Link href="/privacy" className="hover:text-foreground">Privacy</Link></li>
+            <li><Link href="/terms" className="hover:text-foreground">{t("terms")}</Link></li>
+            <li><Link href="/privacy" className="hover:text-foreground">{t("privacy")}</Link></li>
           </ul>
         </div>
       </div>
       <div className="border-t py-4 text-center text-xs text-muted-foreground">
         <p>
-          © {new Date().getFullYear()} {env.NEXT_PUBLIC_APP_NAME}. All rights
-          reserved.
+          © {new Date().getFullYear()} {env.NEXT_PUBLIC_APP_NAME}. {tc("allRightsReserved")}
         </p>
         <p className="mt-1.5">
-          Powered by{" "}
+          {tc("poweredBy")}{" "}
           <a
             href="https://build-with-nahom.com/"
             target="_blank"

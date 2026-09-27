@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import type { LucideIcon } from "lucide-react";
 import {
 	ArrowRight,
@@ -17,50 +18,57 @@ import { EASE, MotionBlock, MotionSection } from "@/components/home/motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const STEPS: {
+const STEP_META: {
 	n: string;
 	icon: LucideIcon;
-	title: string;
-	body: string;
 	screen: "publish" | "reach" | "close";
+	titleKey: "pipelineEmployers" | "pipelineSeekers" | "whyReview";
+	bodyKey: "pipelineEmployersBody" | "pipelineSeekersBody" | "whyReviewBody";
 }[] = [
 	{
 		n: "01",
 		icon: Briefcase,
-		title: "Publish your job",
-		body: "Write the role, submit it for review, and go live on the web and Telegram.",
 		screen: "publish",
+		titleKey: "pipelineEmployers",
+		bodyKey: "pipelineEmployersBody",
 	},
 	{
 		n: "02",
 		icon: Users,
-		title: "Shown to job seekers",
-		body: "People find jobs through search, categories, and Telegram channels.",
 		screen: "reach",
+		titleKey: "pipelineSeekers",
+		bodyKey: "pipelineSeekersBody",
 	},
 	{
 		n: "03",
 		icon: Shield,
-		title: "Payment and spam checks",
-		body: "We verify payment and remove spam before anything goes live.",
 		screen: "close",
+		titleKey: "whyReview",
+		bodyKey: "whyReviewBody",
 	},
 ];
 
 export function PipelineSection() {
 	const reduce = useReducedMotion();
+	const t = useTranslations("home");
 	const [active, setActive] = useState(0);
 	const [paused, setPaused] = useState(false);
+
+	const steps = STEP_META.map((item) => ({
+		...item,
+		title: t(item.titleKey),
+		body: t(item.bodyKey),
+	}));
 
 	useEffect(() => {
 		if (reduce || paused) return;
 		const id = window.setInterval(() => {
-			setActive((i) => (i + 1) % STEPS.length);
+			setActive((i) => (i + 1) % steps.length);
 		}, 4500);
 		return () => window.clearInterval(id);
-	}, [reduce, paused]);
+	}, [reduce, paused, steps.length]);
 
-	const step = STEPS[active];
+	const step = steps[active];
 
 	return (
 		<MotionSection className="relative overflow-hidden py-20 md:py-24">
@@ -74,18 +82,18 @@ export function PipelineSection() {
 					<div>
 						<MotionBlock variant="fadeUp">
 							<p className="text-sm font-semibold uppercase tracking-wider text-primary">
-								For employers
+								{t("pipelineEmployers")}
 							</p>
 							<h2 className="mt-3 text-balance text-3xl font-bold tracking-tight md:text-4xl">
-								What you get
+								{t("pipelineTitle")}
 							</h2>
 							<p className="mt-4 max-w-md text-pretty text-muted-foreground">
-								Post once. Show up on the website and Telegram. We handle review.
+								{t("pipelineSubtitle")}
 							</p>
 						</MotionBlock>
 
 						<ul className="mt-8 space-y-2">
-							{STEPS.map((item, i) => {
+							{steps.map((item, i) => {
 								const Icon = item.icon;
 								const selected = i === active;
 								return (
@@ -130,7 +138,7 @@ export function PipelineSection() {
 						<div className="mt-8">
 							<Button asChild className="h-12 rounded-full px-8" size="lg">
 								<Link href="/post/new">
-									Start hiring <ArrowRight className="size-4" />
+									{t("ctaPost")} <ArrowRight className="size-4" />
 								</Link>
 							</Button>
 						</div>
@@ -224,7 +232,7 @@ export function PipelineSection() {
 
 						{/* progress dots */}
 						<div className="mt-6 flex justify-center gap-2">
-							{STEPS.map((s, i) => (
+							{steps.map((s, i) => (
 								<button
 									key={s.n}
 									type="button"

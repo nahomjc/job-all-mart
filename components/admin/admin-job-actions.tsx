@@ -210,7 +210,7 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 						<ActionBlock
 							icon={XCircle}
 							title="Reject payment"
-							description="Invalid or mismatched proof — blocks approval."
+							description="Invalid or mismatched proof, blocks approval."
 							tone="destructive"
 						>
 							<RejectPaymentForm paymentId={props.payment.id} />

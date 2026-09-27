@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { ExternalLink, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -8,6 +9,7 @@ type TelegramAuthButtonProps = {
 };
 
 export function TelegramAuthButton({ mode }: TelegramAuthButtonProps) {
+  const t = useTranslations("auth");
   const botUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME;
   if (!botUsername) return null;
 
@@ -21,11 +23,9 @@ export function TelegramAuthButton({ mode }: TelegramAuthButtonProps) {
             <Send className="size-4" />
           </span>
           <div>
-            <p className="text-sm font-semibold">Continue with Telegram</p>
+            <p className="text-sm font-semibold">{t("continueWithTelegram")}</p>
             <p className="text-xs text-muted-foreground">
-              {mode === "signup"
-                ? "No email needed. Confirm inside the bot chat."
-                : "Opens the bot chat. No phone form on the website."}
+              {t("preferTelegram")}
             </p>
           </div>
         </div>
@@ -38,15 +38,15 @@ export function TelegramAuthButton({ mode }: TelegramAuthButtonProps) {
         >
           <a href={botLoginUrl} target="_blank" rel="noopener noreferrer">
             <Send className="size-4" />
-            Open Telegram to {mode === "signup" ? "sign up" : "sign in"}
+            {mode === "signup" ? t("openTelegramSignup") : t("openTelegram")}
             <ExternalLink className="size-3.5 opacity-60" />
           </a>
         </Button>
 
         <ol className="mt-3 space-y-1 text-xs text-muted-foreground">
-          <li>1. Tap the button. Your Telegram app opens.</li>
-          <li>2. In the bot chat, tap <strong>Confirm website login</strong>.</li>
-          <li>3. Come back here. You will be signed in.</li>
+          <li>1. {t("telegramSteps1")}</li>
+          <li>2. {t("telegramSteps2")}</li>
+          <li>3. {t("telegramSteps3")}</li>
         </ol>
       </div>
 
@@ -56,7 +56,7 @@ export function TelegramAuthButton({ mode }: TelegramAuthButtonProps) {
         </div>
         <div className="relative flex justify-center text-xs uppercase tracking-wide">
           <span className="bg-background px-3 text-muted-foreground">
-            or continue with email
+            {t("email")}
           </span>
         </div>
       </div>

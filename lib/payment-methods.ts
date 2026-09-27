@@ -21,32 +21,32 @@ export const PAYMENT_METHOD_OPTIONS: {
 	{
 		value: "cbe",
 		label: "CBE",
-		hint: "Commercial Bank of Ethiopia — reference + account suffix",
+		hint: "Commercial Bank of Ethiopia, reference + account suffix",
 	},
 	{
 		value: "telebirr",
 		label: "Telebirr",
-		hint: "Telebirr — reference number only",
+		hint: "Telebirr, reference number only",
 	},
 	{
 		value: "dashen",
 		label: "Dashen Bank",
-		hint: "Dashen — reference number",
+		hint: "Dashen, reference number",
 	},
 	{
 		value: "abyssinia",
 		label: "Bank of Abyssinia",
-		hint: "Abyssinia — reference + suffix",
+		hint: "Abyssinia, reference + suffix",
 	},
 	{
 		value: "cbebirr",
 		label: "CBE Birr",
-		hint: "CBE Birr — receipt reference + phone",
+		hint: "CBE Birr, receipt reference + phone",
 	},
 	{
 		value: "mpesa",
 		label: "M-Pesa",
-		hint: "M-Pesa — receipt reference + phone",
+		hint: "M-Pesa, receipt reference + phone",
 	},
 ];
 

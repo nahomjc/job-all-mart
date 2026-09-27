@@ -8,14 +8,14 @@ const steps: Step[] = [
 		target: '[data-tour="brand"]',
 		title: "Welcome to your dashboard",
 		content:
-			"Quick tour of the essentials — it takes less than a minute. You can replay it anytime from Help.",
+			"Quick tour of the essentials, it takes less than a minute. You can replay it anytime from Help.",
 		placement: "right",
 	},
 	{
 		target: '[data-tour="nav-dashboard"]',
 		title: "Your overview",
 		content:
-			"See all your posts at a glance — totals, pending review, posted, and rejected.",
+			"See all your posts at a glance, totals, pending review, posted, and rejected.",
 		placement: "right",
 	},
 	{
@@ -29,7 +29,7 @@ const steps: Step[] = [
 		target: '[data-tour="nav-jobs"]',
 		title: "Track your jobs",
 		content:
-			"View every submission and its status — pending payment, in review, posted, or rejected.",
+			"View every submission and its status, pending payment, in review, posted, or rejected.",
 		placement: "right",
 	},
 	{

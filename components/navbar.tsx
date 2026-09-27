@@ -1,6 +1,7 @@
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { BrandLogo } from "@/components/brand-logo";
 import { CategoriesNav } from "@/components/categories-nav";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { MobileNav } from "@/components/mobile-nav";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -8,8 +9,10 @@ import { UserMenu } from "@/components/user-menu";
 import { getCurrentUser } from "@/lib/auth";
 import { env } from "@/lib/env";
 import { categoryRepo } from "@/server/repositories/category";
+import { getTranslations } from "next-intl/server";
 
 export async function Navbar() {
+	const t = await getTranslations("nav");
 	const [user, categories] = await Promise.all([
 		getCurrentUser(),
 		categoryRepo.list(),
@@ -46,18 +49,19 @@ export async function Navbar() {
 							href="/jobs"
 							className="transition-colors hover:text-black dark:hover:text-white"
 						>
-							Jobs
+							{t("jobs")}
 						</Link>
 						<Link
 							href="/pricing"
 							className="transition-colors hover:text-black dark:hover:text-white"
 						>
-							Pricing
+							{t("pricing")}
 						</Link>
 					</nav>
 
 					{/* Right: actions / profile pill */}
 					<div className="flex items-center justify-end gap-1.5 sm:gap-2">
+						<LanguageSwitcher compact />
 						<ThemeToggle className="rounded-full text-black hover:bg-black/5 dark:text-white dark:hover:bg-white/10 dark:hover:text-white" />
 						{user ? (
 							<>
@@ -66,7 +70,7 @@ export async function Navbar() {
 									size="sm"
 									className="hidden rounded-full sm:inline-flex"
 								>
-									<Link href="/post/new">Post a job</Link>
+									<Link href="/post/new">{t("postJob")}</Link>
 								</Button>
 								<UserMenu
 									name={user.displayName ?? user.email ?? "User"}
@@ -84,14 +88,14 @@ export async function Navbar() {
 									size="sm"
 									className="hidden rounded-full text-black hover:bg-black/5 dark:text-white dark:hover:bg-white/10 dark:hover:text-white sm:inline-flex"
 								>
-									<Link href="/login">Sign in</Link>
+									<Link href="/login">{t("signIn")}</Link>
 								</Button>
 								<Button
 									asChild
 									size="sm"
 									className="hidden rounded-full sm:inline-flex"
 								>
-									<Link href="/post/new">Post a job</Link>
+									<Link href="/post/new">{t("postJob")}</Link>
 								</Button>
 							</>
 						)}

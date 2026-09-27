@@ -46,7 +46,7 @@ export function TelegramBroadcastForm({
 		startTest(async () => {
 			const result = await testTelegramBroadcastAction();
 			if (result.ok) {
-				toast.success("Test message sent — check your channel");
+				toast.success("Test message sent, check your channel");
 			} else {
 				toast.error(result.error ?? "Test failed");
 			}

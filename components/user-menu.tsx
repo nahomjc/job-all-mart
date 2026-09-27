@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { Link, usePathname } from "@/i18n/routing";
 import {
 	Check,
 	ChevronDown,
@@ -33,9 +33,12 @@ export interface UserMenuProps {
 	align?: "start" | "end" | "center";
 }
 
-function roleLabel(role: string): string {
-	if (role === "admin" || role === "owner") return "Admin";
-	if (role === "user") return "Employer";
+function roleLabel(
+	role: string,
+	labels: { admin: string; employer: string },
+): string {
+	if (role === "admin" || role === "owner") return labels.admin;
+	if (role === "user") return labels.employer;
 	return role.charAt(0).toUpperCase() + role.slice(1);
 }
 
@@ -48,6 +51,8 @@ export function UserMenu({
 	align = "end",
 }: UserMenuProps) {
 	const pathname = usePathname();
+	const t = useTranslations("userMenu");
+	const tc = useTranslations("common");
 	const initials =
 		name
 			.split(/\s+/)
@@ -60,13 +65,16 @@ export function UserMenu({
 	const onAdmin = pathname.startsWith("/admin");
 	const onDashboard = pathname.startsWith("/dashboard");
 	const onNewPost = pathname === "/post/new";
-	const label = roleLabel(role);
+	const label = roleLabel(role, {
+		admin: t("admin"),
+		employer: t("employer"),
+	});
 	const isCapsule = variant === "capsule";
 
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger
-				aria-label="Open account menu"
+				aria-label={tc("menu")}
 				className={cn(
 					"outline-none transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
 					isCapsule
@@ -144,7 +152,7 @@ export function UserMenu({
 						</div>
 						{!isCapsule && isAdmin && (
 							<span className="hidden rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary sm:inline">
-								Admin
+								{t("admin")}
 							</span>
 						)}
 						<ChevronDown
@@ -176,13 +184,13 @@ export function UserMenu({
 				<DropdownMenuSeparator />
 
 				<p className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-					Switch workspace
+					{tc("menu")}
 				</p>
 
 				<DropdownMenuItem asChild className="cursor-pointer gap-2">
 					<Link href="/post/new" className="flex w-full items-center gap-2">
 						<PlusCircle className="size-4" />
-						<span className="flex-1">New post</span>
+						<span className="flex-1">{t("postJob")}</span>
 						{onNewPost && <Check className="size-4 text-primary" />}
 					</Link>
 				</DropdownMenuItem>
@@ -190,7 +198,7 @@ export function UserMenu({
 				<DropdownMenuItem asChild className="cursor-pointer gap-2">
 					<Link href="/dashboard" className="flex w-full items-center gap-2">
 						<LayoutDashboard className="size-4" />
-						<span className="flex-1">Dashboard</span>
+						<span className="flex-1">{t("dashboard")}</span>
 						{onDashboard && <Check className="size-4 text-primary" />}
 					</Link>
 				</DropdownMenuItem>
@@ -199,7 +207,7 @@ export function UserMenu({
 					<DropdownMenuItem asChild className="cursor-pointer gap-2">
 						<Link href="/admin" className="flex w-full items-center gap-2">
 							<Shield className="size-4" />
-							<span className="flex-1">Admin console</span>
+							<span className="flex-1">{t("admin")}</span>
 							{onAdmin && <Check className="size-4 text-primary" />}
 						</Link>
 					</DropdownMenuItem>
@@ -214,7 +222,7 @@ export function UserMenu({
 					>
 						<button type="submit" className="flex w-full items-center gap-2">
 							<LogOut className="size-4" />
-							Sign out
+							{t("signOut")}
 						</button>
 					</DropdownMenuItem>
 				</form>

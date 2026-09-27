@@ -1,28 +1,61 @@
+import createMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { routing } from "@/i18n/routing";
 
 /**
  * Next.js 16 renamed middleware → proxy.
  * Runs on the Node.js runtime (no `runtime: "edge"`).
  *
  * Responsibilities:
- *   1. Refresh the Supabase session cookies on every request.
- *   2. Guard /dashboard and /admin. /admin additionally requires admin role
- *      (the actual role check is enforced in server components/actions; here
- *      we just gate unauthenticated users).
+ *   1. Locale negotiation + redirects (/jobs → /en/jobs).
+ *   2. Refresh the Supabase session cookies on every request.
+ *   3. Guard /{locale}/dashboard and /{locale}/admin.
  */
-export async function proxy(request: NextRequest) {
+const handleI18nRouting = createMiddleware(routing);
+
+function stripLocale(pathname: string): {
+  locale: string;
+  pathnameWithoutLocale: string;
+} {
+  const segments = pathname.split("/");
+  const maybeLocale = segments[1];
+  if (
+    maybeLocale &&
+    routing.locales.includes(maybeLocale as (typeof routing.locales)[number])
+  ) {
+    const rest = "/" + segments.slice(2).join("/");
+    return {
+      locale: maybeLocale,
+      pathnameWithoutLocale: rest === "/" ? "/" : rest.replace(/\/$/, "") || "/",
+    };
+  }
+  return {
+    locale: routing.defaultLocale,
+    pathnameWithoutLocale: pathname,
+  };
+}
+
+export default async function proxy(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
   // Email confirm / recovery links sometimes land on Site URL with ?code=
   // instead of /auth/callback — forward them so the session can be exchanged.
-  if (pathname === "/" && searchParams.has("code")) {
+  if (
+    (pathname === "/" || pathname === `/${routing.defaultLocale}`) &&
+    searchParams.has("code")
+  ) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/callback";
     return NextResponse.redirect(url);
   }
 
-  const response = NextResponse.next({ request });
+  const response = handleI18nRouting(request);
+
+  // If i18n redirected (missing locale prefix), return that first.
+  if (response.status >= 300 && response.status < 400) {
+    return response;
+  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -32,7 +65,13 @@ export async function proxy(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(values: { name: string; value: string; options?: Record<string, unknown> }[]) {
+        setAll(
+          values: {
+            name: string;
+            value: string;
+            options?: Record<string, unknown>;
+          }[],
+        ) {
           for (const { name, value } of values) {
             request.cookies.set(name, value);
           }
@@ -47,13 +86,15 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const { locale, pathnameWithoutLocale } = stripLocale(pathname);
   const protectedPath =
-    pathname.startsWith("/dashboard") || pathname.startsWith("/admin");
+    pathnameWithoutLocale.startsWith("/dashboard") ||
+    pathnameWithoutLocale.startsWith("/admin");
 
   if (protectedPath && !user) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("next", pathname);
+    url.pathname = `/${locale}/login`;
+    url.searchParams.set("next", pathnameWithoutLocale);
     return NextResponse.redirect(url);
   }
 
@@ -64,12 +105,11 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization)
-     * - favicon.ico, robots.txt, sitemap.xml
-     * - api/telegram (webhook is verified by its own secret)
-     * - api/cron     (cron is verified by its own secret)
+     * - api (including telegram webhook & cron — verified by their own secrets)
+     * - _next internals
+     * - static files with a dot (favicon.ico, images, etc.)
+     * - auth/callback (OAuth exchange — unprefixed)
      */
-    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|api/telegram|api/cron).*)",
+    "/((?!api|_next|_vercel|auth/callback|.*\\..*).*)",
   ],
 };

@@ -98,8 +98,8 @@ export function CategoryFields({
             defaultValue={active ? "true" : "false"}
             className={selectClassName}
           >
-            <option value="true">Active — visible on site & bot</option>
-            <option value="false">Inactive — hidden from pickers</option>
+            <option value="true">Active, visible on site & bot</option>
+            <option value="false">Inactive, hidden from pickers</option>
           </select>
         </div>
       ) : (

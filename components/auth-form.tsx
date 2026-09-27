@@ -2,7 +2,8 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import {
   AlertCircle,
   CheckCircle2,
@@ -37,6 +38,9 @@ function resolveMode(raw: string | null): AuthMode {
 }
 
 export function AuthForm() {
+  const t = useTranslations("auth");
+  const tn = useTranslations("nav");
+  const tc = useTranslations("common");
   const sp = useSearchParams();
   const mode = resolveMode(sp.get("mode"));
   const oauthError = sp.get("error");
@@ -59,15 +63,15 @@ export function AuthForm() {
 
   useEffect(() => {
     if (state.ok && mode === "signup") {
-      toast.success("Account created! Check your email to verify.");
+      toast.success(t("checkEmail"));
     }
-  }, [state.ok, mode]);
+  }, [state.ok, mode, t]);
 
   useEffect(() => {
     if (existingNotice && mode === "login") {
-      toast.message("You already have an account. Please sign in.");
+      toast.message(t("hasAccount"));
     }
-  }, [existingNotice, mode]);
+  }, [existingNotice, mode, t]);
 
   const isSignup = mode === "signup";
 
@@ -75,21 +79,19 @@ export function AuthForm() {
     <div className="space-y-6">
       <div className="space-y-2 text-center sm:text-left">
         <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
-          {isSignup ? "Create your account" : "Welcome back"}
+          {isSignup ? t("createAccount") : t("welcomeBack")}
         </h1>
         <p className="text-sm text-muted-foreground">
-          {isSignup
-            ? "Create an account to post a job."
-            : "Sign in to post a job or manage your listings."}
+          {isSignup ? t("loginSubtitle") : t("loginBody")}
         </p>
       </div>
 
       <div className="grid grid-cols-2 rounded-xl bg-muted p-1 text-sm">
-        <ModeTab href={`/login${nextSuffix}`} active={!isSignup} label="Sign in" />
+        <ModeTab href={`/login${nextSuffix}`} active={!isSignup} label={tn("signIn")} />
         <ModeTab
           href={`/login?mode=signup${nextQuery}`}
           active={isSignup}
-          label="Sign up"
+          label={tn("signUp")}
         />
       </div>
 
@@ -104,7 +106,7 @@ export function AuthForm() {
             {isSignup && (
               <Field
                 id="displayName"
-                label="Display name"
+                label={t("displayName")}
                 icon={UserIcon}
                 error={state.fieldErrors?.displayName?.[0]}
               >
@@ -122,7 +124,7 @@ export function AuthForm() {
 
             <Field
               id="email"
-              label="Email address"
+              label={t("email")}
               icon={Mail}
               error={state.fieldErrors?.email?.[0]}
             >
@@ -140,7 +142,7 @@ export function AuthForm() {
 
             <Field
               id="password"
-              label="Password"
+              label={t("password")}
               icon={Lock}
               error={state.fieldErrors?.password?.[0]}
               headerExtra={
@@ -153,7 +155,7 @@ export function AuthForm() {
                     }
                     className="text-xs font-medium text-primary hover:underline"
                   >
-                    Forgot password?
+                    {t("forgotPassword")}
                   </Link>
                 ) : null
               }
@@ -177,14 +179,12 @@ export function AuthForm() {
             {existingNotice && !isSignup && !state.error && !oauthError ? (
               <div className="flex items-start gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-sm text-foreground">
                 <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
-                <span>
-                  You already have an account with this email. Please sign in.
-                </span>
+                <span>{t("hasAccount")}</span>
               </div>
             ) : null}
 
             {(state.error || oauthError) && (
-              <ErrorAlert message={state.error ?? oauthError ?? "Something went wrong"} />
+              <ErrorAlert message={state.error ?? oauthError ?? tc("error")} />
             )}
 
             <Button
@@ -195,34 +195,34 @@ export function AuthForm() {
               {pending ? (
                 <>
                   <Loader2 className="size-4 animate-spin" />
-                  {isSignup ? "Creating account..." : "Signing in..."}
+                  {isSignup ? t("creatingAccount") : t("signingIn")}
                 </>
               ) : isSignup ? (
-                "Create account"
+                t("signupTitle")
               ) : (
-                "Sign in"
+                t("loginTitle")
               )}
             </Button>
 
             <p className="text-center text-sm text-muted-foreground">
               {isSignup ? (
                 <>
-                  Already have an account?{" "}
+                  {t("hasAccount")}{" "}
                   <Link
                     href={`/login${nextSuffix}`}
                     className="font-medium text-primary hover:underline"
                   >
-                    Sign in
+                    {tn("signIn")}
                   </Link>
                 </>
               ) : (
                 <>
-                  New here?{" "}
+                  {t("noAccount")}{" "}
                   <Link
                     href={`/login?mode=signup${nextQuery}`}
                     className="font-medium text-primary hover:underline"
                   >
-                    Create an account
+                    {t("createAccount")}
                   </Link>
                 </>
               )}
@@ -241,6 +241,8 @@ function ForgotPasswordForm({
   nextSuffix: string;
   emailPrefill?: string;
 }) {
+  const t = useTranslations("auth");
+  const tn = useTranslations("nav");
   const [state, formAction, pending] = useActionState(
     forgotPasswordAction,
     initial,
@@ -248,19 +250,17 @@ function ForgotPasswordForm({
 
   useEffect(() => {
     if (state.ok) {
-      toast.success("If an account exists, we sent a reset link.");
+      toast.success(t("resetSent"));
     }
-  }, [state.ok]);
+  }, [state.ok, t]);
 
   return (
     <div className="space-y-6">
       <div className="space-y-2 text-center sm:text-left">
         <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
-          Reset your password
+          {t("resetPassword")}
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Enter your email and we&apos;ll send you a reset link.
-        </p>
+        <p className="text-sm text-muted-foreground">{t("email")}</p>
       </div>
 
       {state.ok ? (
@@ -269,21 +269,20 @@ function ForgotPasswordForm({
             <CheckCircle2 className="size-6" />
           </span>
           <div>
-            <h2 className="text-lg font-semibold">Check your inbox</h2>
+            <h2 className="text-lg font-semibold">{t("checkEmail")}</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              If an account exists for that email, we sent a password reset
-              link. Open it to choose a new password.
+              {t("resetSent")}
             </p>
           </div>
           <Button asChild variant="outline" size="sm">
-            <Link href={`/login${nextSuffix}`}>Back to sign in</Link>
+            <Link href={`/login${nextSuffix}`}>{t("backToLogin")}</Link>
           </Button>
         </div>
       ) : (
         <form action={formAction} className="space-y-4">
           <Field
             id="email"
-            label="Email address"
+            label={t("email")}
             icon={Mail}
             error={state.fieldErrors?.email?.[0]}
           >
@@ -309,20 +308,19 @@ function ForgotPasswordForm({
             {pending ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
-                Sending link...
+                {t("sendResetLink")}
               </>
             ) : (
-              "Send reset link"
+              t("sendResetLink")
             )}
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">
-            Remembered it?{" "}
             <Link
               href={`/login${nextSuffix}`}
               className="font-medium text-primary hover:underline"
             >
-              Sign in
+              {tn("signIn")}
             </Link>
           </p>
         </form>
@@ -332,6 +330,7 @@ function ForgotPasswordForm({
 }
 
 function ResetPasswordForm({ next }: { next: string | null }) {
+  const t = useTranslations("auth");
   const [state, formAction, pending] = useActionState(
     updatePasswordAction,
     initial,
@@ -342,11 +341,8 @@ function ResetPasswordForm({ next }: { next: string | null }) {
     <div className="space-y-6">
       <div className="space-y-2 text-center sm:text-left">
         <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
-          Choose a new password
+          {t("resetPassword")}
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Enter a new password for your account.
-        </p>
       </div>
 
       <form action={formAction} className="space-y-4">
@@ -354,7 +350,7 @@ function ResetPasswordForm({ next }: { next: string | null }) {
 
         <Field
           id="password"
-          label="New password"
+          label={t("password")}
           icon={Lock}
           error={state.fieldErrors?.password?.[0]}
         >
@@ -376,7 +372,7 @@ function ResetPasswordForm({ next }: { next: string | null }) {
 
         <Field
           id="confirmPassword"
-          label="Confirm password"
+          label={t("confirmPassword")}
           icon={Lock}
           error={state.fieldErrors?.confirmPassword?.[0]}
         >
@@ -402,20 +398,19 @@ function ResetPasswordForm({ next }: { next: string | null }) {
           {pending ? (
             <>
               <Loader2 className="size-4 animate-spin" />
-              Updating...
+              {t("resetPassword")}
             </>
           ) : (
-            "Update password"
+            t("resetPassword")
           )}
         </Button>
 
         <p className="text-center text-sm text-muted-foreground">
-          Link expired?{" "}
           <Link
             href="/login?mode=forgot"
             className="font-medium text-primary hover:underline"
           >
-            Request a new one
+            {t("forgotPassword")}
           </Link>
         </p>
       </form>
@@ -513,6 +508,7 @@ function ErrorAlert({ message }: { message: string }) {
 }
 
 function SignupSuccess({ next }: { next: string | null }) {
+  const t = useTranslations("auth");
   const signInHref = next
     ? `/login?next=${encodeURIComponent(next)}`
     : "/login";
@@ -522,14 +518,13 @@ function SignupSuccess({ next }: { next: string | null }) {
         <CheckCircle2 className="size-6" />
       </span>
       <div>
-        <h2 className="text-lg font-semibold">Check your inbox</h2>
+        <h2 className="text-lg font-semibold">{t("checkEmail")}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          We sent a verification link to confirm your email. Once verified,
-          come back and sign in.
+          {t("checkEmail")}
         </p>
       </div>
       <Button asChild variant="outline" size="sm">
-        <Link href={signInHref}>Back to sign in</Link>
+        <Link href={signInHref}>{t("backToLogin")}</Link>
       </Button>
     </div>
   );

@@ -36,7 +36,7 @@ const steps: Step[] = [
 		target: '[data-tour="job-review-view-details"]',
 		title: "View job details",
 		content:
-			"Click here to open the full posting — title, company, salary, description, and apply link — in a pop-up before you approve.",
+			"Click here to open the full posting, title, company, salary, description, and apply link, in a pop-up before you approve.",
 		placement: "bottom",
 	},
 	{

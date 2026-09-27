@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { useActionState } from "react";
 import { toast } from "sonner";
 import { FileUploader } from "@/components/file-uploader";
@@ -281,7 +281,7 @@ export function JobForm({ categories, flow = "dashboard" }: JobFormProps) {
 			<div className={cn(stepIndex !== 2 && "hidden")}>
 				<div className="space-y-4">
 					<p className="text-sm text-muted-foreground">
-						Optional — helps candidates understand your offer.
+						Optional, helps candidates understand your offer.
 					</p>
 					<div className="grid gap-4 md:grid-cols-3">
 						<Field label="Salary min" name="salaryMin">
@@ -380,12 +380,12 @@ export function JobForm({ categories, flow = "dashboard" }: JobFormProps) {
 						/>
 						<ReviewItem
 							label="Apply URL"
-							value={reviewData.applyUrl || "—"}
+							value={reviewData.applyUrl || ", "}
 							className="sm:col-span-2"
 						/>
 						<ReviewItem
 							label="Contact"
-							value={reviewData.contactInfo || "—"}
+							value={reviewData.contactInfo || ", "}
 							className="sm:col-span-2"
 						/>
 					</dl>

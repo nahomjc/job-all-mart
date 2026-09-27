@@ -423,7 +423,7 @@ export function AdminJobReviewWizard({
 							</p>
 						) : (
 							<p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
-								No payment record — review the job details below, then continue
+								No payment record, review the job details below, then continue
 								to approval.
 							</p>
 						)}

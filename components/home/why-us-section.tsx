@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import type { LucideIcon } from "lucide-react";
 import {
 	BadgeCheck,
@@ -12,50 +13,65 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { EASE, MotionBlock, MotionSection } from "@/components/home/motion";
 import { cn } from "@/lib/utils";
 
-const SLIDES: {
+const SLIDE_META: {
 	icon: LucideIcon;
-	title: string;
-	body: string;
-	screenTitle: string;
-	rows: string[];
+	titleKey: "whyReach" | "whyReview" | "whyTelegram";
+	bodyKey?: "whyReachBody" | "whyReviewBody";
+	telegramBody?: boolean;
+	rowKeys?: ("whyTelegramRows1" | "whyTelegramRows2" | "whyTelegramRows3")[];
 }[] = [
 	{
 		icon: Shield,
-		title: "Reviewed by people",
-		body: "An admin looks at every post before it is published.",
-		screenTitle: "Review queue",
-		rows: ["Spam check passed", "Admin assigned", "Awaiting approval"],
+		titleKey: "whyReach",
+		bodyKey: "whyReachBody",
 	},
 	{
 		icon: CheckCircle2,
-		title: "Payment confirmed",
-		body: "Jobs go live only after payment proof is approved.",
-		screenTitle: "Payment proof",
-		rows: ["Screenshot uploaded", "Reference matched", "Marked verified"],
+		titleKey: "whyReview",
+		bodyKey: "whyReviewBody",
 	},
 	{
 		icon: Zap,
-		title: "Goes to Telegram quickly",
-		body: "Approved jobs are sent to the matching channel topic.",
-		screenTitle: "Published",
-		rows: ["Posted to board", "Sent to Telegram", "Listed for seekers"],
+		titleKey: "whyTelegram",
+		telegramBody: true,
+		rowKeys: ["whyTelegramRows1", "whyTelegramRows2", "whyTelegramRows3"],
 	},
 ];
 
 export function WhyUsSection() {
+	const t = useTranslations("home");
+	const ta = useTranslations("auth");
+	const td = useTranslations("dashboard");
 	const reduce = useReducedMotion();
 	const [active, setActive] = useState(0);
 	const [paused, setPaused] = useState(false);
 
+	const slides = SLIDE_META.map((meta) => {
+		const title = t(meta.titleKey);
+		const body = meta.telegramBody
+			? ta("featureTelegramBody")
+			: t(meta.bodyKey!);
+		const rows = meta.rowKeys
+			? meta.rowKeys.map((key) => t(key))
+			: [body];
+		return {
+			icon: meta.icon,
+			title,
+			body,
+			screenTitle: title,
+			rows,
+		};
+	});
+
 	useEffect(() => {
 		if (reduce || paused) return;
 		const id = window.setInterval(() => {
-			setActive((i) => (i + 1) % SLIDES.length);
+			setActive((i) => (i + 1) % slides.length);
 		}, 4200);
 		return () => window.clearInterval(id);
-	}, [reduce, paused]);
+	}, [reduce, paused, slides.length]);
 
-	const slide = SLIDES[active];
+	const slide = slides[active];
 
 	return (
 		<MotionSection className="container mx-auto px-4 py-20 md:py-24">
@@ -63,18 +79,18 @@ export function WhyUsSection() {
 				<div>
 					<MotionBlock variant="fadeUp">
 						<p className="text-sm font-semibold uppercase tracking-wider text-primary">
-							Why us
+							{t("whyUs")}
 						</p>
 						<h2 className="mt-2 text-balance text-3xl font-bold tracking-tight md:text-4xl">
-							Checked before it goes live
+							{t("whyUsTitle")}
 						</h2>
 						<p className="mt-3 max-w-md text-muted-foreground">
-							Every job is reviewed and payment-checked by a person first.
+							{t("whyUsBody")}
 						</p>
 					</MotionBlock>
 
 					<ul className="mt-8 space-y-2">
-						{SLIDES.map((item, i) => {
+						{slides.map((item, i) => {
 							const Icon = item.icon;
 							const selected = i === active;
 							return (
@@ -149,7 +165,7 @@ export function WhyUsSection() {
 											<div className="flex items-center justify-between gap-2 border-b border-border pb-3">
 												<div>
 													<p className="text-[10px] font-semibold uppercase tracking-wider text-primary">
-														Dashboard
+														{td("title")}
 													</p>
 													<p className="text-sm font-semibold text-foreground">
 														{slide.screenTitle}
@@ -178,9 +194,9 @@ export function WhyUsSection() {
 											</ul>
 
 											<div className="mt-auto flex gap-1.5 pt-4">
-												{SLIDES.map((_, i) => (
+												{slides.map((_, i) => (
 													<span
-														key={SLIDES[i].title}
+														key={slides[i].title}
 														className={cn(
 															"h-1 flex-1 rounded-full transition-colors",
 															i === active ? "bg-primary" : "bg-muted",
