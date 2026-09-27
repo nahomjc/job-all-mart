@@ -224,7 +224,7 @@ export async function handleWizardMessage(ctx: Context): Promise<boolean> {
       draft.jobId = job.id;
       draft.step = "awaiting_payment_amount";
       await ctx.reply(
-        "💵 How much did you pay? (e.g. `25` for $25 USD, send `0` if you're using a free quota)",
+        "💵 How much did you pay? (e.g. `500` for 500 Birr, send `0` if you're using a free quota)",
       );
       return true;
     }
@@ -279,7 +279,7 @@ export async function handleWizardMessage(ctx: Context): Promise<boolean> {
         jobId,
         userId: user.id,
         amount: paymentAmount,
-        currency: "USD",
+        currency: "ETB",
         method: "bank_transfer",
         screenshotUrl,
         status: "pending",
