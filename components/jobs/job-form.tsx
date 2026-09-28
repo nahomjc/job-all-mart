@@ -4,6 +4,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "@/i18n/routing";
 import { useLocale, useTranslations } from "next-intl";
 import { useActionState } from "react";
+import {
+	Banknote,
+	Briefcase,
+	ClipboardCheck,
+	CreditCard,
+	FileText,
+	ImagePlus,
+} from "lucide-react";
 import { toast } from "sonner";
 import { FileUploader } from "@/components/file-uploader";
 import { FormStepper, type FormStep } from "@/components/form-stepper";
@@ -91,26 +99,31 @@ export function JobForm({ categories, flow = "dashboard" }: JobFormProps) {
 				id: "basics",
 				title: locale === "am" ? "መሰረታዊ መረጃ" : "Job basics",
 				short: locale === "am" ? "መሰረታዊ" : "Basics",
+				icon: Briefcase,
 			},
 			{
 				id: "details",
 				title: locale === "am" ? "የስራ ዝርዝር" : "Role details",
 				short: locale === "am" ? "ዝርዝር" : "Details",
+				icon: FileText,
 			},
 			{
 				id: "compensation",
 				title: locale === "am" ? "ደመወዝ / ክፍያ" : "Compensation",
 				short: locale === "am" ? "ደመወዝ" : "Pay",
+				icon: Banknote,
 			},
 			{
 				id: "apply",
 				title: locale === "am" ? "ማመልከቻ እና አርማ" : "Apply & logo",
 				short: locale === "am" ? "ማመልከቻ" : "Apply",
+				icon: ImagePlus,
 			},
 			{
 				id: "review",
 				title: locale === "am" ? "መርምረው ያቅርቡ" : "Review & submit",
 				short: locale === "am" ? "ግምገማ" : "Review",
+				icon: ClipboardCheck,
 			},
 		];
 		if (isSimple) {
@@ -118,6 +131,7 @@ export function JobForm({ categories, flow = "dashboard" }: JobFormProps) {
 				id: "payment",
 				title: locale === "am" ? "የክፍያ ማስረጃ" : "Payment proof",
 				short: locale === "am" ? "ክፍያ" : "Payment",
+				icon: CreditCard,
 			});
 		}
 		return baseSteps;

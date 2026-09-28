@@ -11,7 +11,7 @@ import {
 } from "react";
 import { useRouter } from "@/i18n/routing";
 import { useLocale, useTranslations } from "next-intl";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Hash, Receipt, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { FileUploader } from "@/components/file-uploader";
@@ -93,16 +93,19 @@ export function PaymentForm({
 				id: "amount",
 				title: tp("amountStep"),
 				short: locale === "am" ? "መጠን" : "Amount",
+				icon: Receipt,
 			},
 			{
 				id: "reference",
 				title: tp("referenceStep"),
 				short: locale === "am" ? "ግብይት" : "Reference",
+				icon: Hash,
 			},
 			{
 				id: "proof",
 				title: tp("proofStep"),
 				short: locale === "am" ? "ደረሰኝ" : "Proof",
+				icon: Upload,
 			},
 		],
 		[tp, locale],
