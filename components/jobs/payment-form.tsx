@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { FileUploader } from "@/components/file-uploader";
 import { FormStepper, type FormStep } from "@/components/form-stepper";
+import { PayToTelebirrCard } from "@/components/jobs/pay-to-telebirr-card";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -246,6 +247,8 @@ export function PaymentForm({
 					ariaLabel="Payment progress"
 				/>
 			) : null}
+
+			<PayToTelebirrCard />
 
 			<div className={cn(!isSingle && stepIndex !== 0 && "hidden")}>
 				<Card className="border-primary/20">

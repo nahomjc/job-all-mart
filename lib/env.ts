@@ -20,6 +20,7 @@ function optional(value: string | undefined): string | undefined {
 }
 
 export const DEFAULT_APP_NAME = "MAK Adverts";
+export const DEFAULT_TELEBIRR_ACCOUNT = "0936967899";
 
 /** Old deploy env values — map to current brand on read */
 const LEGACY_APP_NAMES = new Set([
@@ -129,6 +130,15 @@ export const env = {
   },
   get TELEGRAM_ADMIN_NOTIFY_CHAT_ID() {
     return optional(process.env.TELEGRAM_ADMIN_NOTIFY_CHAT_ID);
+  },
+
+  /** Telebirr number employers send payments to (default: 0936967899). */
+  get PAYMENT_TELEBIRR_ACCOUNT() {
+    return (
+      optional(process.env.PAYMENT_TELEBIRR_ACCOUNT) ??
+      optional(process.env.NEXT_PUBLIC_PAYMENT_TELEBIRR_ACCOUNT) ??
+      DEFAULT_TELEBIRR_ACCOUNT
+    );
   },
 
   // Cron

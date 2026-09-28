@@ -32,6 +32,7 @@ import {
 import { requiredChannelLabel } from "@/lib/telegram/required-channel";
 import { createBotLoginToken } from "@/lib/telegram/bot-login-token";
 import { telegramWebLoginRepo } from "@/server/repositories/telegramWebLogin";
+import { getTelebirrAccount } from "@/lib/payment-accounts";
 
 let registered = false;
 
@@ -196,6 +197,7 @@ Then use the menu under the text box — Post a job, Help, or Contact.`,
   bot.command("testnotify", handleTestNotify);
 
   bot.command("pricing", async (ctx) => {
+    const telebirr = getTelebirrAccount();
     await ctx.reply(
       `💎 Pricing
 
@@ -203,6 +205,8 @@ Then use the menu under the text box — Post a job, Help, or Contact.`,
 • Basic (ETB 500/post): goes live in <2h after admin approval
 • Pro (ETB 1,250/post): featured + pinned for 24h
 • Enterprise: contact admin
+
+💵 Pay via Telebirr to: ${telebirr}
 
 Full details: ${env.NEXT_PUBLIC_APP_URL}/pricing`,
       mainMenuKeyboard(),

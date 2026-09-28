@@ -13,6 +13,7 @@ import { slugify } from "@/lib/format";
 import { checkRequiredChannelMembership } from "@/lib/telegram/client";
 import { requiredChannelLabel } from "@/lib/telegram/required-channel";
 import { notifyAdminsNewSubmission } from "@/lib/telegram/publisher";
+import { getTelebirrAccount } from "@/lib/payment-accounts";
 import {
   isMainMenuButton,
   mainMenuKeyboard,
@@ -285,10 +286,13 @@ export async function handleWizardMessage(ctx: Context): Promise<boolean> {
       });
       draft.jobId = job.id;
       draft.step = "awaiting_payment_amount";
+      const telebirr = getTelebirrAccount();
+      const payIntro = draft.logoUrl ? "✅ Logo saved.\n\n" : "";
       await ctx.reply(
-        draft.logoUrl
-          ? "✅ Logo saved.\n\n💵 How much did you pay? (e.g. `500` for 500 Birr, send `0` if you're using a free quota)"
-          : "💵 How much did you pay? (e.g. `500` for 500 Birr, send `0` if you're using a free quota)",
+        `${payIntro}` +
+          `💵 Pay via Telebirr to: <code>${telebirr}</code>\n\n` +
+          "Then send the amount you paid (e.g. `500` for 500 Birr, or `0` if you're using a free quota).",
+        { parse_mode: "HTML" },
       );
       return true;
     }
@@ -300,8 +304,12 @@ export async function handleWizardMessage(ctx: Context): Promise<boolean> {
       }
       draft.paymentAmount = amount;
       draft.step = "awaiting_payment_screenshot";
+      const telebirr = getTelebirrAccount();
       await ctx.reply(
-        "📸 Send a screenshot of your payment as a photo. (If amount was 0, send a plain `noproof`.)",
+        amount === 0
+          ? "No payment needed for free quota. Send `noproof` to continue."
+          : `📸 Send a screenshot of your Telebirr payment to <code>${telebirr}</code> as a photo.\n(If amount was 0, send \`noproof\`.)`,
+        amount === 0 ? undefined : { parse_mode: "HTML" },
       );
       return true;
     }
