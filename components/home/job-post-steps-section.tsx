@@ -12,13 +12,15 @@ import {
 import {
 	ArrowRight,
 	Briefcase,
+	Check,
 	CheckCircle2,
 	CreditCard,
 	FileText,
+	Mail,
 	Rocket,
 	Shield,
 	Send,
-	Sparkles,
+	Upload,
 } from "lucide-react";
 import { EASE, MotionSection } from "@/components/home/motion";
 import { Button } from "@/components/ui/button";
@@ -31,7 +33,6 @@ const STEPS = [
 		titleKey: "stepsAccountTitle",
 		bodyKey: "stepsAccountBody",
 		icon: Briefcase,
-		color: "from-amber-400 to-yellow-600",
 	},
 	{
 		id: "details",
@@ -39,7 +40,6 @@ const STEPS = [
 		titleKey: "stepsDetailsTitle",
 		bodyKey: "stepsDetailsBody",
 		icon: FileText,
-		color: "from-amber-400 to-yellow-600",
 	},
 	{
 		id: "payment",
@@ -47,7 +47,6 @@ const STEPS = [
 		titleKey: "stepsPaymentTitle",
 		bodyKey: "stepsPaymentBody",
 		icon: CreditCard,
-		color: "from-violet-500 to-purple-600",
 	},
 	{
 		id: "review",
@@ -55,7 +54,6 @@ const STEPS = [
 		titleKey: "stepsReviewTitle",
 		bodyKey: "stepsReviewBody",
 		icon: Shield,
-		color: "from-amber-500 to-orange-600",
 	},
 	{
 		id: "live",
@@ -63,19 +61,482 @@ const STEPS = [
 		titleKey: "stepsLiveTitle",
 		bodyKey: "stepsLiveBody",
 		icon: Rocket,
-		color: "from-primary to-brand-deep",
 	},
 ] as const;
 
 type StepId = (typeof STEPS)[number]["id"];
 
-const CYCLE_MS = 4200;
+const CYCLE_MS = 5200;
 
-const panel = {
-	initial: { opacity: 0, y: 28, scale: 0.94, filter: "blur(6px)" },
-	animate: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" },
-	exit: { opacity: 0, y: -20, scale: 0.97, filter: "blur(4px)" },
+const scene = {
+	initial: { opacity: 0, scale: 0.96, y: 18 },
+	animate: { opacity: 1, scale: 1, y: 0 },
+	exit: { opacity: 0, scale: 0.98, y: -14 },
 };
+
+function StageGlow({ reduce }: { reduce: boolean }) {
+	return (
+		<>
+			<motion.div
+				aria-hidden
+				className="pointer-events-none absolute left-1/2 top-[42%] size-[240px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/25 blur-3xl sm:size-[300px]"
+				animate={
+					reduce
+						? undefined
+						: { scale: [1, 1.12, 1], opacity: [0.35, 0.55, 0.35] }
+				}
+				transition={{ duration: 4.5, repeat: Number.POSITIVE_INFINITY }}
+			/>
+			<div
+				aria-hidden
+				className="pointer-events-none absolute inset-0 opacity-40 [background-image:radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.12)_1px,transparent_0)] [background-size:22px_22px] [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_72%)]"
+			/>
+		</>
+	);
+}
+
+type HomeT = (key: string) => string;
+
+function AccountScene({
+	reduce,
+	t,
+}: {
+	reduce: boolean;
+	t: HomeT;
+}) {
+	return (
+		<div className="relative w-full max-w-[300px]">
+			<div className="overflow-hidden rounded-2xl border border-white/12 bg-black/35 p-5 shadow-2xl shadow-black/40 backdrop-blur-sm">
+				<p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
+					{t("animSignUp")}
+				</p>
+				<p className="mt-2 text-lg font-semibold tracking-tight text-white">
+					{t("animCreateAccount")}
+				</p>
+
+				<div className="mt-5 space-y-2.5">
+					{[
+						{
+							key: "tg",
+							icon: Send,
+							label: "Telegram",
+							tone: "bg-[#229ED9] text-white",
+						},
+						{
+							key: "mail",
+							icon: Mail,
+							label: t("animEmail"),
+							tone: "border border-white/15 bg-white/8 text-white",
+						},
+					].map((opt, i) => {
+						const Icon = opt.icon;
+						return (
+							<motion.div
+								key={opt.key}
+								initial={reduce ? false : { opacity: 0, x: -12 }}
+								animate={{ opacity: 1, x: 0 }}
+								transition={{ delay: 0.15 + i * 0.15, duration: 0.4, ease: EASE }}
+								className={cn(
+									"flex h-11 items-center justify-center gap-2 rounded-xl text-sm font-semibold",
+									opt.tone,
+								)}
+							>
+								<Icon className="size-4" />
+								{opt.label}
+							</motion.div>
+						);
+					})}
+				</div>
+
+				<motion.div
+					initial={reduce ? false : { opacity: 0, y: 8, scale: 0.94 }}
+					animate={{ opacity: 1, y: 0, scale: 1 }}
+					transition={{ delay: 0.7, duration: 0.4, ease: EASE }}
+					className="mt-4 flex items-center gap-2.5 rounded-xl border border-primary/35 bg-primary/15 px-3 py-2.5"
+				>
+					<span className="relative flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground">
+						{!reduce && (
+							<motion.span
+								aria-hidden
+								className="absolute inset-0 rounded-full bg-primary/50"
+								animate={{ scale: [1, 1.6], opacity: [0.6, 0] }}
+								transition={{
+									duration: 1.4,
+									repeat: Number.POSITIVE_INFINITY,
+									ease: "easeOut",
+								}}
+							/>
+						)}
+						<Check className="relative size-3.5 stroke-[3]" />
+					</span>
+					<span className="text-sm font-medium text-white">
+						{t("animAccountReady")}
+					</span>
+				</motion.div>
+			</div>
+		</div>
+	);
+}
+
+function DetailsScene({
+	reduce,
+	t,
+}: {
+	reduce: boolean;
+	t: HomeT;
+}) {
+	const fields = [
+		{
+			key: "title",
+			label: t("animJobTitle"),
+			value: t("animJobTitleValue"),
+			delay: 0.12,
+		},
+		{
+			key: "company",
+			label: t("animCompany"),
+			value: t("animCompanyValue"),
+			delay: 0.38,
+		},
+	];
+
+	return (
+		<div className="relative w-full max-w-[300px] overflow-hidden rounded-2xl border border-white/12 bg-black/35 p-4 shadow-2xl shadow-black/40 backdrop-blur-sm">
+			<div className="mb-3 flex items-center gap-1.5">
+				<span className="size-2 rounded-full bg-rose-400/80" />
+				<span className="size-2 rounded-full bg-amber-300/80" />
+				<span className="size-2 rounded-full bg-emerald-400/80" />
+				<span className="ml-auto text-[10px] font-medium uppercase tracking-wider text-white/40">
+					{t("animNewJobPost")}
+				</span>
+			</div>
+
+			<div className="space-y-3">
+				{fields.map((field) => (
+					<div
+						key={field.key}
+						className="rounded-xl border border-white/10 bg-white/5 px-3 py-2.5"
+					>
+						<p className="text-[10px] font-medium uppercase tracking-wide text-white/45">
+							{field.label}
+						</p>
+						<motion.p
+							className="mt-1 text-sm font-semibold text-white"
+							initial={
+								reduce
+									? false
+									: { clipPath: "inset(0 100% 0 0)", opacity: 0.4 }
+							}
+							animate={{ clipPath: "inset(0 0% 0 0)", opacity: 1 }}
+							transition={{
+								delay: field.delay,
+								duration: 0.55,
+								ease: EASE,
+							}}
+						>
+							{field.value}
+							{!reduce && (
+								<motion.span
+									aria-hidden
+									className="ml-0.5 inline-block h-3.5 w-px translate-y-0.5 bg-primary"
+									animate={{ opacity: [1, 0, 1] }}
+									transition={{
+										duration: 0.9,
+										repeat: Number.POSITIVE_INFINITY,
+										delay: field.delay + 0.5,
+									}}
+								/>
+							)}
+						</motion.p>
+					</div>
+				))}
+
+				<div className="space-y-2 rounded-xl bg-white/5 p-3">
+					{[78, 58, 42].map((w, i) => (
+						<motion.div
+							key={`d-${w}`}
+							className="h-1.5 origin-left rounded-full bg-white/15"
+							style={{ width: `${w}%` }}
+							initial={reduce ? false : { scaleX: 0 }}
+							animate={{ scaleX: 1 }}
+							transition={{ delay: 0.7 + i * 0.1, duration: 0.4, ease: EASE }}
+						/>
+					))}
+				</div>
+
+				<motion.div
+					initial={reduce ? false : { opacity: 0, y: 8 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ delay: 1.05, duration: 0.4, ease: EASE }}
+					className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary px-3 py-1.5 text-[11px] font-semibold text-primary-foreground shadow-lg shadow-primary/25"
+				>
+					<CheckCircle2 className="size-3.5" />
+					{t("animNewJobPost")}
+				</motion.div>
+			</div>
+		</div>
+	);
+}
+
+function PaymentScene({
+	reduce,
+	t,
+}: {
+	reduce: boolean;
+	t: HomeT;
+}) {
+	return (
+		<div className="relative w-full max-w-[300px] rounded-2xl border border-white/12 bg-black/35 p-4 shadow-2xl shadow-black/40 backdrop-blur-sm">
+			<p className="text-[10px] font-medium uppercase tracking-wider text-white/40">
+				{t("animPendingPayment")}
+			</p>
+
+			<div className="relative mt-3 overflow-hidden rounded-xl border border-dashed border-white/20 bg-black/25 px-3 py-4">
+				{!reduce && (
+					<motion.span
+						aria-hidden
+						className="pointer-events-none absolute inset-y-0 w-16 bg-linear-to-r from-transparent via-white/10 to-transparent"
+						animate={{ x: ["-40%", "240%"] }}
+						transition={{
+							duration: 2.2,
+							repeat: Number.POSITIVE_INFINITY,
+							ease: "easeInOut",
+							repeatDelay: 0.9,
+						}}
+					/>
+				)}
+
+				<div className="relative flex items-center gap-3">
+					<motion.span
+						className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary"
+						animate={reduce ? undefined : { y: [0, -5, 0] }}
+						transition={{
+							duration: 1.8,
+							repeat: Number.POSITIVE_INFINITY,
+							ease: "easeInOut",
+						}}
+					>
+						<Upload className="size-5" />
+					</motion.span>
+					<div className="min-w-0 flex-1">
+						<p className="text-sm font-semibold text-white">
+							{t("animUploadScreenshot")}
+						</p>
+						<div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
+							<motion.div
+								className="h-full rounded-full bg-primary"
+								initial={reduce ? { width: "84%" } : { width: "0%" }}
+								animate={{ width: "84%" }}
+								transition={{ delay: 0.2, duration: 1.2, ease: EASE }}
+							/>
+						</div>
+						<p className="mt-1.5 text-[11px] text-white/45">
+							{t("animReceiptProgress")}
+						</p>
+					</div>
+				</div>
+			</div>
+
+			<motion.div
+				initial={reduce ? false : { opacity: 0, y: 8 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ delay: 0.9, duration: 0.4, ease: EASE }}
+				className="mt-3 flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2.5"
+			>
+				<span className="font-mono text-[11px] text-white/55">
+					{t("animPaymentRef")}
+				</span>
+				<span className="flex size-7 items-center justify-center rounded-lg bg-primary/20 text-primary">
+					<CreditCard className="size-3.5" />
+				</span>
+			</motion.div>
+		</div>
+	);
+}
+
+function ReviewScene({
+	reduce,
+	t,
+}: {
+	reduce: boolean;
+	t: HomeT;
+}) {
+	const items = [
+		{ key: "pay", label: t("animPaymentVerified"), done: true },
+		{ key: "content", label: t("animContentCheck"), done: true },
+		{ key: "final", label: t("animFinalApproval"), done: false },
+	];
+
+	return (
+		<div className="relative w-full max-w-[300px]">
+			{!reduce && (
+				<motion.span
+					aria-hidden
+					className="absolute left-1/2 top-2 size-24 -translate-x-1/2 rounded-full border border-primary/30"
+					animate={{ scale: [1, 1.35, 1], opacity: [0.5, 0, 0.5] }}
+					transition={{
+						duration: 2.6,
+						repeat: Number.POSITIVE_INFINITY,
+						ease: "easeOut",
+					}}
+				/>
+			)}
+
+			<div className="relative overflow-hidden rounded-2xl border border-white/12 bg-black/35 p-4 shadow-2xl shadow-black/40 backdrop-blur-sm">
+				<div className="mb-4 flex items-center gap-3">
+					<span className="relative flex size-11 items-center justify-center rounded-xl border border-primary/40 bg-primary/20 text-primary">
+						{!reduce && (
+							<motion.span
+								aria-hidden
+								className="absolute inset-0 rounded-xl bg-primary/25"
+								animate={{ scale: [1, 1.15, 1], opacity: [0.5, 0, 0.5] }}
+								transition={{
+									duration: 2,
+									repeat: Number.POSITIVE_INFINITY,
+									ease: "easeInOut",
+								}}
+							/>
+						)}
+						<Shield className="relative size-5" />
+					</span>
+					<div>
+						<p className="text-[10px] font-medium uppercase tracking-wider text-white/40">
+							{t("animUnderReview")}
+						</p>
+						<p className="text-sm font-semibold text-white">
+							{t("stepsReviewTitle")}
+						</p>
+					</div>
+					{!reduce && (
+						<span className="relative ml-auto flex size-2">
+							<span className="absolute inline-flex size-full animate-ping rounded-full bg-primary/60" />
+							<span className="relative inline-flex size-2 rounded-full bg-primary" />
+						</span>
+					)}
+				</div>
+
+				<div className="space-y-2">
+					{items.map((item, i) => (
+						<motion.div
+							key={item.key}
+							initial={reduce ? false : { opacity: 0, x: -10 }}
+							animate={{ opacity: 1, x: 0 }}
+							transition={{ delay: 0.15 + i * 0.18, duration: 0.4, ease: EASE }}
+							className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5"
+						>
+							<span
+								className={cn(
+									"flex size-5 shrink-0 items-center justify-center rounded-full",
+									item.done
+										? "bg-primary text-primary-foreground"
+										: "border border-dashed border-white/30 text-white/35",
+								)}
+							>
+								{item.done ? (
+									<Check className="size-3 stroke-[3]" />
+								) : (
+									<span className="size-1.5 rounded-full bg-white/35" />
+								)}
+							</span>
+							<span
+								className={cn(
+									"text-sm",
+									item.done ? "font-medium text-white" : "text-white/45",
+								)}
+							>
+								{item.label}
+							</span>
+						</motion.div>
+					))}
+				</div>
+			</div>
+		</div>
+	);
+}
+
+function LiveScene({
+	reduce,
+	t,
+}: {
+	reduce: boolean;
+	t: HomeT;
+}) {
+	return (
+		<div className="relative w-full max-w-[320px]">
+			{!reduce &&
+				[0, 1, 2].map((i) => (
+					<motion.span
+						key={i}
+						aria-hidden
+						className="absolute left-1/2 top-8 size-1.5 rounded-full bg-amber-300"
+						animate={{
+							y: [0, 90],
+							x: [0, (i - 1) * 36],
+							opacity: [0, 1, 0],
+							scale: [0.6, 1, 0.4],
+						}}
+						transition={{
+							duration: 1.6,
+							repeat: Number.POSITIVE_INFINITY,
+							ease: "easeOut",
+							delay: 0.35 * i,
+							repeatDelay: 0.7,
+						}}
+					/>
+				))}
+
+			<motion.div
+				initial={reduce ? false : { opacity: 0, y: 12 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.45, ease: EASE }}
+				className="overflow-hidden rounded-2xl border border-white/12 bg-black/35 shadow-2xl shadow-black/40 backdrop-blur-sm"
+			>
+				<div className="flex items-center gap-2 border-b border-white/10 px-3.5 py-2.5">
+					<span className="inline-flex items-center rounded-md bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-foreground">
+						{t("animPosted")}
+					</span>
+					<span className="ml-auto flex size-5 items-center justify-center rounded-full bg-primary/20 text-primary">
+						<CheckCircle2 className="size-3.5" />
+					</span>
+				</div>
+				<div className="p-4">
+					<p className="text-sm font-semibold tracking-tight text-white">
+						{t("animJobTitleValue")}
+					</p>
+					<p className="mt-1 text-xs text-white/50">{t("animJobMeta")}</p>
+				</div>
+			</motion.div>
+
+			<motion.div
+				initial={reduce ? false : { opacity: 0, y: 16, scale: 0.96 }}
+				animate={{ opacity: 1, y: 0, scale: 1 }}
+				transition={{ delay: 0.35, duration: 0.45, ease: EASE }}
+				className="mt-3 flex items-center gap-3 rounded-2xl bg-[#229ED9] px-3.5 py-3 text-white shadow-[0_16px_36px_-14px_rgba(34,158,217,0.7)]"
+			>
+				<span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-white/15">
+					<motion.span
+						animate={reduce ? undefined : { x: [0, 3, 0] }}
+						transition={{
+							duration: 1.4,
+							repeat: Number.POSITIVE_INFINITY,
+							ease: "easeInOut",
+						}}
+					>
+						<Send className="size-4" />
+					</motion.span>
+				</span>
+				<div className="min-w-0 flex-1">
+					<p className="text-[10px] font-medium uppercase tracking-wide text-white/80">
+						{t("animSentToTelegram")}
+					</p>
+					<p className="truncate text-sm font-semibold">
+						{t("animTelegramTopic")}
+					</p>
+				</div>
+			</motion.div>
+		</div>
+	);
+}
 
 function StepVisual({
 	stepId,
@@ -87,413 +548,33 @@ function StepVisual({
 	const t = useTranslations("home");
 
 	return (
-		<div className="relative flex h-full min-h-[260px] items-center justify-center overflow-hidden p-4 sm:min-h-[340px] sm:p-6 md:min-h-[380px] md:p-8">
-			{!reduce && (
-				<>
-					<motion.span
-						aria-hidden
-						className="absolute left-[12%] top-[18%] size-28 rounded-full bg-primary/15 blur-3xl"
-						animate={{ scale: [1, 1.25, 1], opacity: [0.35, 0.6, 0.35] }}
-						transition={{ duration: 4, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-					/>
-					<motion.span
-						aria-hidden
-						className="absolute bottom-[14%] right-[10%] size-36 rounded-full bg-amber-400/10 blur-3xl"
-						animate={{ scale: [1.1, 0.9, 1.1], opacity: [0.25, 0.5, 0.25] }}
-						transition={{ duration: 5, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-					/>
-				</>
-			)}
+		<div className="relative flex h-full min-h-[280px] items-center justify-center overflow-hidden bg-brand-deep p-5 sm:min-h-[340px] sm:p-6 md:min-h-[380px]">
+			<StageGlow reduce={reduce} />
 
 			<AnimatePresence mode="wait">
-				{stepId === "account" && (
-					<motion.div
-						key="account"
-						variants={panel}
-						initial="initial"
-						animate="animate"
-						exit="exit"
-						transition={{ duration: 0.5, ease: EASE }}
-						className="relative w-full max-w-sm rounded-2xl border bg-card/95 p-4 shadow-2xl shadow-primary/10 backdrop-blur-sm sm:p-6"
-					>
-						<div className="flex items-center justify-between">
-							<p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-								{t("animSignUp")}
-							</p>
-							{!reduce && (
-								<motion.span
-									animate={{ rotate: [0, 15, -10, 0] }}
-									transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY }}
-								>
-									<Sparkles className="size-4 text-primary" />
-								</motion.span>
-							)}
-						</div>
-
-						<div className="mt-4 space-y-3">
-							{[
-								{ key: "email", label: t("animEmail"), width: "78%" },
-								{ key: "name", label: t("animFullName"), width: "62%" },
-							].map((field, i) => (
-								<motion.div
-									key={field.key}
-									initial={reduce ? false : { opacity: 0, x: -16 }}
-									animate={{ opacity: 1, x: 0 }}
-									transition={{ delay: 0.15 + i * 0.15, duration: 0.4, ease: EASE }}
-									className="overflow-hidden rounded-xl border bg-muted/40 px-3 py-2.5"
-								>
-									<p className="text-[10px] text-muted-foreground">{field.label}</p>
-									<motion.div
-										className="mt-1.5 h-2 origin-left rounded-full bg-foreground/15"
-										initial={reduce ? false : { scaleX: 0 }}
-										animate={{ scaleX: 1 }}
-										transition={{ delay: 0.3 + i * 0.15, duration: 0.55, ease: EASE }}
-										style={{ width: field.width }}
-									/>
-								</motion.div>
-							))}
-
-							<motion.button
-								type="button"
-								tabIndex={-1}
-								initial={reduce ? false : { scaleX: 0, opacity: 0 }}
-								animate={{ scaleX: 1, opacity: 1 }}
-								transition={{ delay: 0.55, duration: 0.4, ease: EASE }}
-								className="relative h-11 w-full origin-left overflow-hidden rounded-full bg-primary text-sm font-semibold text-primary-foreground"
-							>
-								{!reduce && (
-									<motion.span
-										aria-hidden
-										className="absolute inset-y-0 w-12 bg-linear-to-r from-transparent via-white/25 to-transparent"
-										animate={{ x: ["-60%", "280%"] }}
-										transition={{
-											duration: 1.6,
-											repeat: Number.POSITIVE_INFINITY,
-											repeatDelay: 1.4,
-											ease: "easeInOut",
-										}}
-									/>
-								)}
-								{t("animCreateAccount")}
-							</motion.button>
-						</div>
-
-						<motion.p
-							initial={reduce ? false : { opacity: 0, y: 8 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: 0.85 }}
-							className="mt-4 flex items-center gap-2 text-sm font-medium text-amber-600"
-						>
-							<motion.span
-								initial={reduce ? false : { scale: 0 }}
-								animate={{ scale: 1 }}
-								transition={{ delay: 0.9, type: "spring", stiffness: 320 }}
-							>
-								<CheckCircle2 className="size-4" />
-							</motion.span>
-							{t("animAccountReady")}
-						</motion.p>
-					</motion.div>
-				)}
-
-				{stepId === "details" && (
-					<motion.div
-						key="details"
-						variants={panel}
-						initial="initial"
-						animate="animate"
-						exit="exit"
-						transition={{ duration: 0.5, ease: EASE }}
-						className="relative w-full max-w-sm rounded-2xl border bg-card/95 p-4 shadow-2xl shadow-primary/10 backdrop-blur-sm sm:p-5"
-					>
-						<p className="text-xs font-semibold text-primary">{t("animNewJobPost")}</p>
-
-						{[
-							{
-								key: "title",
-								label: t("animJobTitle"),
-								value: t("animJobTitleValue"),
-								delay: 0.12,
-							},
-							{
-								key: "company",
-								label: t("animCompany"),
-								value: t("animCompanyValue"),
-								delay: 0.28,
-							},
-						].map((field) => (
-							<motion.div
-								key={field.key}
-								initial={reduce ? false : { opacity: 0, y: 12 }}
-								animate={{ opacity: 1, y: 0 }}
-								transition={{ delay: field.delay, duration: 0.4, ease: EASE }}
-								className="mt-3 overflow-hidden rounded-xl border p-3"
-							>
-								<p className="text-[10px] text-muted-foreground">{field.label}</p>
-								<motion.p
-									className="font-semibold"
-									initial={reduce ? false : { clipPath: "inset(0 100% 0 0)" }}
-									animate={{ clipPath: "inset(0 0% 0 0)" }}
-									transition={{ delay: field.delay + 0.15, duration: 0.55, ease: EASE }}
-								>
-									{field.value}
-								</motion.p>
-							</motion.div>
-						))}
-
-						<motion.div
-							initial={reduce ? false : { opacity: 0, height: 0 }}
-							animate={{ opacity: 1, height: "auto" }}
-							transition={{ delay: 0.45, duration: 0.4 }}
-							className="mt-3 space-y-2 overflow-hidden rounded-xl bg-muted/70 p-3"
-						>
-							{[88, 70, 52].map((w, i) => (
-								<motion.div
-									key={`d-${w}`}
-									className="h-1.5 origin-left rounded-full bg-foreground/12"
-									style={{ width: `${w}%` }}
-									initial={reduce ? false : { scaleX: 0 }}
-									animate={{ scaleX: 1 }}
-									transition={{ delay: 0.55 + i * 0.1, duration: 0.4, ease: EASE }}
-								/>
-							))}
-						</motion.div>
-
-						<motion.div
-							initial={reduce ? false : { scaleX: 0, opacity: 0 }}
-							animate={{ scaleX: 1, opacity: 1 }}
-							transition={{ delay: 0.85, duration: 0.35, ease: EASE }}
-							className="mt-3 h-10 origin-left rounded-xl bg-primary"
-						/>
-					</motion.div>
-				)}
-
-				{stepId === "payment" && (
-					<motion.div
-						key="payment"
-						variants={panel}
-						initial="initial"
-						animate="animate"
-						exit="exit"
-						transition={{ duration: 0.5, ease: EASE }}
-						className="relative w-full max-w-sm rounded-2xl border bg-card/95 p-4 shadow-2xl shadow-violet-500/10 backdrop-blur-sm sm:p-5"
-					>
-						<p className="text-xs font-semibold text-violet-600 dark:text-violet-400">
-							{t("animPendingPayment")}
-						</p>
-
-						<motion.div
-							initial={reduce ? false : { opacity: 0, scale: 0.88, y: 10 }}
-							animate={{ opacity: 1, scale: 1, y: 0 }}
-							transition={{ delay: 0.15, type: "spring", stiffness: 220 }}
-							className="relative mt-4 overflow-hidden rounded-xl border-2 border-dashed border-primary/35 bg-primary/5 p-6 text-center"
-						>
-							{!reduce && (
-								<motion.span
-									aria-hidden
-									className="pointer-events-none absolute inset-y-0 w-16 bg-linear-to-r from-transparent via-primary/20 to-transparent"
-									animate={{ x: ["-40%", "220%"] }}
-									transition={{
-										duration: 2,
-										repeat: Number.POSITIVE_INFINITY,
-										repeatDelay: 0.8,
-										ease: "easeInOut",
-									}}
-								/>
-							)}
-
-							<motion.span
-								className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-primary/15 text-primary"
-								animate={reduce ? undefined : { y: [0, -6, 0] }}
-								transition={{
-									duration: 1.6,
-									repeat: Number.POSITIVE_INFINITY,
-									ease: "easeInOut",
-								}}
-							>
-								<CreditCard className="size-6" />
-							</motion.span>
-							<p className="mt-3 text-sm font-medium">{t("animUploadScreenshot")}</p>
-
-							<div className="mx-auto mt-4 h-2 w-4/5 overflow-hidden rounded-full bg-muted">
-								<motion.div
-									className="h-full rounded-full bg-primary"
-									initial={reduce ? { width: "84%" } : { width: "0%" }}
-									animate={{ width: "84%" }}
-									transition={{ delay: 0.35, duration: 1.15, ease: EASE }}
-								/>
-							</div>
-							<p className="mt-2 text-[11px] text-muted-foreground">
-								{t("animReceiptProgress")}
-							</p>
-						</motion.div>
-
-						<motion.p
-							initial={reduce ? false : { opacity: 0 }}
-							animate={{ opacity: 1 }}
-							transition={{ delay: 1 }}
-							className="mt-3 text-center text-xs text-muted-foreground"
-						>
-							{t("animPaymentRef")}
-						</motion.p>
-					</motion.div>
-				)}
-
-				{stepId === "review" && (
-					<motion.div
-						key="review"
-						variants={panel}
-						initial="initial"
-						animate="animate"
-						exit="exit"
-						transition={{ duration: 0.5, ease: EASE }}
-						className="relative w-full max-w-sm rounded-2xl border bg-card/95 p-4 shadow-2xl shadow-amber-500/10 backdrop-blur-sm sm:p-5"
-					>
-						<div className="flex items-center justify-between">
-							<p className="text-xs font-semibold text-amber-600">
-								{t("animUnderReview")}
-							</p>
-							{!reduce && (
-								<motion.span
-									animate={{ rotate: 360 }}
-									transition={{
-										duration: 1.4,
-										repeat: Number.POSITIVE_INFINITY,
-										ease: "linear",
-									}}
-									className="size-5 rounded-full border-2 border-amber-400 border-t-transparent"
-								/>
-							)}
-						</div>
-
-						<div className="mt-4 space-y-2">
-							{[
-								{ key: "pay", label: t("animPaymentVerified"), done: true },
-								{ key: "content", label: t("animContentCheck"), done: true },
-								{ key: "final", label: t("animFinalApproval"), done: false },
-							].map((item, i) => (
-								<motion.div
-									key={item.key}
-									initial={reduce ? false : { opacity: 0, x: -20 }}
-									animate={{ opacity: 1, x: 0 }}
-									transition={{ delay: 0.18 + i * 0.22, duration: 0.4, ease: EASE }}
-									className="flex items-center gap-2.5 rounded-xl bg-muted/50 px-3 py-2.5 text-sm"
-								>
-									<motion.span
-										initial={reduce ? false : { scale: 0 }}
-										animate={{ scale: 1 }}
-										transition={{
-											delay: 0.32 + i * 0.22,
-											type: "spring",
-											stiffness: 360,
-										}}
-									>
-										<CheckCircle2
-											className={cn(
-												"size-4",
-												item.done ? "text-amber-500" : "text-muted-foreground/35",
-											)}
-										/>
-									</motion.span>
-									<span className={cn(!item.done && "text-muted-foreground")}>
-										{item.label}
-									</span>
-									{!item.done && !reduce && (
-										<motion.span
-											className="ml-auto size-1.5 rounded-full bg-amber-400"
-											animate={{ opacity: [0.3, 1, 0.3] }}
-											transition={{
-												duration: 1.2,
-												repeat: Number.POSITIVE_INFINITY,
-											}}
-										/>
-									)}
-								</motion.div>
-							))}
-						</div>
-					</motion.div>
-				)}
-
-				{stepId === "live" && (
-					<motion.div
-						key="live"
-						variants={panel}
-						initial="initial"
-						animate="animate"
-						exit="exit"
-						transition={{ duration: 0.5, ease: EASE }}
-						className="relative w-full max-w-sm"
-					>
-						{!reduce &&
-							[0, 1, 2].map((i) => (
-								<motion.span
-									key={`ring-${i}`}
-									aria-hidden
-									className="absolute -right-1 -top-1 size-14 rounded-full border border-amber-400/40"
-									animate={{ scale: [1, 1.8 + i * 0.2], opacity: [0.5, 0] }}
-									transition={{
-										duration: 2,
-										repeat: Number.POSITIVE_INFINITY,
-										delay: i * 0.45,
-										ease: "easeOut",
-									}}
-								/>
-							))}
-
-						<motion.div
-							initial={reduce ? false : { opacity: 0, y: 18 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: 0.1, duration: 0.45, ease: EASE }}
-							className="rounded-2xl border bg-card p-4 shadow-xl"
-						>
-							<div className="flex items-center gap-2">
-								<motion.span
-									initial={reduce ? false : { scale: 0 }}
-									animate={{ scale: 1 }}
-									transition={{ delay: 0.25, type: "spring" }}
-									className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-500/20 dark:text-amber-300"
-								>
-									{t("animPosted")}
-								</motion.span>
-								<p className="text-sm font-semibold">{t("animJobTitleValue")}</p>
-							</div>
-							<p className="mt-1 text-xs text-muted-foreground">
-								{t("animJobMeta")}
-							</p>
-						</motion.div>
-
-						<motion.div
-							initial={reduce ? false : { opacity: 0, x: 28, rotate: 4 }}
-							animate={{ opacity: 1, x: 0, rotate: 0 }}
-							transition={{ delay: 0.35, type: "spring", stiffness: 200 }}
-							className="mt-3 flex items-center gap-2 rounded-2xl bg-[#2AABEE] px-4 py-3 text-white shadow-lg shadow-[#2AABEE]/35"
-						>
-							<motion.span
-								animate={reduce ? undefined : { x: [0, 3, 0] }}
-								transition={{
-									duration: 1.2,
-									repeat: Number.POSITIVE_INFINITY,
-									ease: "easeInOut",
-								}}
-							>
-								<Send className="size-4" />
-							</motion.span>
-							<div>
-								<p className="text-[10px] opacity-90">{t("animSentToTelegram")}</p>
-								<p className="text-xs font-semibold">{t("animTelegramTopic")}</p>
-							</div>
-						</motion.div>
-
-						<motion.div
-							initial={reduce ? false : { scale: 0, rotate: -20 }}
-							animate={{ scale: 1, rotate: 0 }}
-							transition={{ delay: 0.55, type: "spring", stiffness: 280 }}
-							className="absolute -right-2 -top-2 z-10 flex size-12 items-center justify-center rounded-full bg-amber-500 text-white shadow-lg shadow-amber-500/40"
-						>
-							<CheckCircle2 className="size-6" />
-						</motion.div>
-					</motion.div>
-				)}
+				<motion.div
+					key={stepId}
+					variants={scene}
+					initial="initial"
+					animate="animate"
+					exit="exit"
+					transition={{ duration: 0.45, ease: EASE }}
+					className="relative z-10 flex w-full justify-center"
+				>
+					{stepId === "account" && (
+						<AccountScene reduce={reduce} t={t as HomeT} />
+					)}
+					{stepId === "details" && (
+						<DetailsScene reduce={reduce} t={t as HomeT} />
+					)}
+					{stepId === "payment" && (
+						<PaymentScene reduce={reduce} t={t as HomeT} />
+					)}
+					{stepId === "review" && (
+						<ReviewScene reduce={reduce} t={t as HomeT} />
+					)}
+					{stepId === "live" && <LiveScene reduce={reduce} t={t as HomeT} />}
+				</motion.div>
 			</AnimatePresence>
 		</div>
 	);
@@ -520,8 +601,10 @@ export function JobPostStepsSection() {
 	}, [isInView, reduceMotion]);
 
 	useEffect(() => {
-		// Avoid janky page jumps on small screens when the carousel advances.
-		if (typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches) {
+		if (
+			typeof window !== "undefined" &&
+			window.matchMedia("(max-width: 1023px)").matches
+		) {
 			return;
 		}
 		stepRefs.current[active]?.scrollIntoView({
@@ -544,7 +627,10 @@ export function JobPostStepsSection() {
 				className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_0%,var(--primary)/0.06,transparent_65%)]"
 			/>
 
-			<div ref={sectionRef} className="container relative mx-auto max-w-6xl px-4 sm:px-6">
+			<div
+				ref={sectionRef}
+				className="container relative mx-auto max-w-6xl px-4 sm:px-6"
+			>
 				<motion.div
 					initial={{ opacity: 0, y: 24 }}
 					whileInView={{ opacity: 1, y: 0 }}
@@ -563,38 +649,33 @@ export function JobPostStepsSection() {
 					</p>
 				</motion.div>
 
-				<div className="grid overflow-hidden rounded-2xl border bg-card shadow-xl shadow-black/5 sm:rounded-[1.75rem] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:rounded-[2rem]">
-					{/* Visual first on mobile so the hero reads as one composition */}
-					<div className="relative order-1 border-b bg-muted/30 lg:order-2 lg:border-b-0">
-						<div
-							aria-hidden
-							className={cn(
-								"pointer-events-none absolute inset-0 bg-linear-to-br opacity-15 transition-opacity duration-500",
-								step.color,
-							)}
-						/>
+				<div className="grid overflow-hidden rounded-2xl border border-border/60 bg-card shadow-xl shadow-black/5 sm:rounded-[1.75rem] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:rounded-[2rem]">
+					<div className="relative order-1 border-b lg:order-2 lg:border-b-0">
 						<div className="relative">
-							<div className="flex items-center gap-2 border-b bg-muted/30 px-3 py-2.5 sm:px-5 sm:py-3">
+							<div className="flex items-center gap-2.5 border-b border-white/10 bg-brand-deep px-3 py-2.5 sm:px-5 sm:py-3">
 								<AnimatePresence mode="wait">
 									<motion.div
 										key={step.id}
-										initial={{ opacity: 0, x: -10 }}
-										animate={{ opacity: 1, x: 0 }}
-										exit={{ opacity: 0, x: 8 }}
-										transition={{ duration: 0.3, ease: EASE }}
-										className="flex min-w-0 items-center gap-2"
+										initial={{ opacity: 0, y: 4 }}
+										animate={{ opacity: 1, y: 0 }}
+										exit={{ opacity: 0, y: -4 }}
+										transition={{ duration: 0.25, ease: EASE }}
+										className="flex min-w-0 items-center gap-2.5"
 									>
-										<span
-											className={cn(
-												"flex size-7 shrink-0 items-center justify-center rounded-lg bg-linear-to-br text-white shadow-sm sm:size-8",
-												step.color,
-											)}
-										>
+										<span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground sm:size-8">
 											<Icon className="size-3.5 sm:size-4" />
 										</span>
-										<span className="truncate text-xs font-semibold sm:text-sm">
-											{stepTitle}
-										</span>
+										<div className="min-w-0">
+											<p className="text-[10px] font-medium uppercase tracking-wider text-white/45">
+												{t("stepsOf", {
+													current: active + 1,
+													total: STEPS.length,
+												})}
+											</p>
+											<p className="truncate text-xs font-semibold text-white sm:text-sm">
+												{stepTitle}
+											</p>
+										</div>
 									</motion.div>
 								</AnimatePresence>
 							</div>
@@ -602,9 +683,8 @@ export function JobPostStepsSection() {
 						</div>
 					</div>
 
-					<div className="order-2 min-w-0 p-4 sm:p-6 md:p-8 lg:order-1 lg:max-h-[560px] lg:overflow-y-auto lg:border-r">
-						{/* Mobile: compact numbered step chips */}
-						<div className="mb-4 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden">
+					<div className="order-2 min-w-0 p-4 sm:p-5 md:p-6 lg:order-1 lg:max-h-[560px] lg:overflow-y-auto lg:border-r">
+						<div className="mb-3 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden">
 							{STEPS.map((s, i) => {
 								const isActive = i === active;
 								return (
@@ -635,7 +715,7 @@ export function JobPostStepsSection() {
 							})}
 						</div>
 
-						<div className="mb-4 flex items-center justify-between gap-3 sm:mb-6 sm:gap-4">
+						<div className="mb-3 flex items-center justify-between gap-3 sm:mb-4">
 							<p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground sm:text-xs">
 								{t("stepsOf", { current: active + 1, total: STEPS.length })}
 							</p>
@@ -655,18 +735,16 @@ export function JobPostStepsSection() {
 							</div>
 						</div>
 
-						{/* Mobile: only the active step details */}
 						<div className="lg:hidden">
-							<div className="rounded-2xl bg-primary/10 p-4 ring-1 ring-primary/20">
+							<div className="rounded-2xl bg-primary/10 p-3.5 ring-1 ring-primary/20 sm:p-4">
 								<p className="font-semibold leading-snug">{stepTitle}</p>
-								<p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+								<p className="mt-1 text-sm leading-relaxed text-muted-foreground">
 									{t(step.bodyKey)}
 								</p>
 							</div>
 						</div>
 
-						{/* Desktop: full interactive list */}
-						<ol className="hidden space-y-2 lg:block">
+						<ol className="hidden space-y-1 lg:block">
 							{STEPS.map((s, i) => {
 								const StepIcon = s.icon;
 								const isActive = i === active;
@@ -688,38 +766,30 @@ export function JobPostStepsSection() {
 											<motion.div
 												layout
 												className={cn(
-													"flex w-full items-start gap-4 rounded-2xl p-4 transition-colors",
+													"flex w-full items-start gap-3 rounded-xl px-3 py-2 transition-colors",
 													isActive
 														? "bg-primary/10 ring-1 ring-primary/20"
 														: "opacity-60 hover:opacity-90",
 												)}
 											>
-												<motion.span
-													animate={{
-														scale: isActive ? 1.06 : 1,
-													}}
-													transition={{
-														type: "spring",
-														stiffness: 320,
-														damping: 20,
-													}}
+												<span
 													className={cn(
-														"flex size-11 shrink-0 items-center justify-center rounded-xl text-sm font-bold",
+														"flex size-9 shrink-0 items-center justify-center rounded-lg text-xs font-bold",
 														isActive
 															? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
 															: "bg-muted text-muted-foreground",
 													)}
 												>
 													{isActive ? (
-														<StepIcon className="size-5" />
+														<StepIcon className="size-4" />
 													) : (
 														s.number
 													)}
-												</motion.span>
+												</span>
 												<div className="min-w-0 pt-0.5">
 													<p
 														className={cn(
-															"font-semibold",
+															"text-sm font-semibold leading-snug",
 															isActive
 																? "text-foreground"
 																: "text-muted-foreground",
@@ -734,7 +804,7 @@ export function JobPostStepsSection() {
 																animate={{ opacity: 1, height: "auto" }}
 																exit={{ opacity: 0, height: 0 }}
 																transition={{ duration: 0.35, ease: EASE }}
-																className="mt-1 overflow-hidden text-sm leading-relaxed text-muted-foreground"
+																className="mt-0.5 overflow-hidden text-xs leading-relaxed text-muted-foreground"
 															>
 																{description}
 															</motion.p>
@@ -753,7 +823,7 @@ export function JobPostStepsSection() {
 							whileInView={{ opacity: 1 }}
 							viewport={{ once: true }}
 							transition={{ delay: 0.3 }}
-							className="mt-6 flex flex-col gap-2.5 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-3"
+							className="mt-4 flex flex-col gap-2 sm:mt-5 sm:flex-row sm:flex-wrap sm:gap-2.5"
 						>
 							<Button asChild className="h-11 w-full rounded-full sm:w-auto">
 								<Link href="/post/new">
