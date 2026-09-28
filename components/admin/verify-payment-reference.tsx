@@ -103,7 +103,7 @@ export function VerifyPaymentReference({
 			className={cn(
 				"min-w-0 space-y-3 rounded-xl border p-3 transition-colors duration-300 sm:p-4",
 				verified
-					? "border-amber-500/50 bg-amber-50/80 shadow-sm shadow-amber-500/10 dark:bg-amber-950/25"
+					? "border-amber-500/50 bg-amber-50/80 dark:bg-amber-950/25"
 					: "bg-muted/20",
 			)}
 		>

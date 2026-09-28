@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 const selectClassName = cn(
-  "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm",
+  "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm",
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
 );
 

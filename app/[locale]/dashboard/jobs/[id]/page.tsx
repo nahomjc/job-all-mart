@@ -217,7 +217,7 @@ export default async function MyJobDetailPage(props: {
 
         <aside className="space-y-4">
           {needsPayment && (
-            <Card className="border-primary/25 bg-primary/5 shadow-sm">
+            <Card className="border-primary/25 bg-primary/5">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Receipt className="size-4 text-primary" />
@@ -469,7 +469,7 @@ function SnapshotTile({
     | "outline";
 }) {
   return (
-    <div className="rounded-xl border bg-card p-4 shadow-sm">
+    <div className="rounded-xl border bg-card p-4">
       <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
         {label}
       </p>
@@ -514,7 +514,7 @@ function SidebarCard({
   children: React.ReactNode;
 }) {
   return (
-    <Card className="shadow-sm">
+    <Card>
       <CardHeader className="border-b pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <span className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">

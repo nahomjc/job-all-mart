@@ -15,7 +15,7 @@ export function StatusChart({
 	rejected,
 }: StatusChartProps) {
 	return (
-		<Card className="border-border/50 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_rgba(15,23,42,0.04)]">
+		<Card className="border-border/50">
 			<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 				<div>
 					<CardTitle className="text-base font-semibold">

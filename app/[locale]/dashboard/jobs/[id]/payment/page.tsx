@@ -50,7 +50,7 @@ export default async function PaymentPage(props: {
         }
       />
 
-      <Card className="shadow-sm">
+      <Card>
         <CardHeader className="border-b bg-muted/20">
           <CardTitle className="flex items-center gap-2 text-lg">
             <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">

@@ -8,6 +8,7 @@ import {
 	ArrowRight,
 	Check,
 	CheckCircle2,
+	ChevronDown,
 	ClipboardList,
 	ExternalLink,
 	Receipt,
@@ -28,6 +29,12 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
@@ -219,6 +226,10 @@ export function AdminJobReviewWizard({
 	};
 
 	const runReject = () => {
+		if (!rejectReason.trim()) {
+			toast.error("Please add a rejection reason");
+			return;
+		}
 		const formData = new FormData();
 		formData.set("jobId", jobId);
 		formData.set("reason", rejectReason.trim());
@@ -259,7 +270,7 @@ export function AdminJobReviewWizard({
 		<div
 			className={cn(
 				"min-w-0 overflow-hidden",
-				!embedded && "rounded-xl border border-primary/15 bg-card shadow-sm",
+				!embedded && "rounded-xl border border-primary/15 bg-card",
 			)}
 		>
 			<header
@@ -310,9 +321,9 @@ export function AdminJobReviewWizard({
 										disabled={!clickable}
 										onClick={() => clickable && setStepIndex(i)}
 										className={cn(
-											"flex min-w-0 items-center gap-2 rounded-full border px-2.5 py-1 text-left text-xs font-medium transition sm:px-3 sm:text-sm",
+											"flex min-h-11 min-w-0 touch-manipulation items-center gap-2 rounded-full border px-3 py-2 text-left text-xs font-medium transition sm:text-sm",
 											active &&
-												"border-primary bg-primary/10 text-primary shadow-sm",
+												"border-primary bg-primary/10 text-primary",
 											done &&
 												!active &&
 												"border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300",
@@ -324,7 +335,7 @@ export function AdminJobReviewWizard({
 									>
 										<span
 											className={cn(
-												"flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold",
+												"flex size-7 shrink-0 items-center justify-center rounded-full text-[10px] font-bold",
 												active && "bg-primary text-primary-foreground",
 												done && !active && "bg-amber-600 text-white",
 												!active && !done && "bg-muted text-muted-foreground",
@@ -342,8 +353,15 @@ export function AdminJobReviewWizard({
 									{i < steps.length - 1 && (
 										<span
 											aria-hidden
-											className="hidden h-px w-4 bg-border sm:block"
-										/>
+											className="hidden h-0.5 w-5 shrink-0 overflow-hidden rounded-full bg-border sm:block"
+										>
+											<span
+												className={cn(
+													"block h-full w-full origin-left rounded-full bg-primary transition-transform duration-500",
+													i < stepIndex ? "scale-x-100" : "scale-x-0",
+												)}
+											/>
+										</span>
 									)}
 								</li>
 							);
@@ -564,26 +582,44 @@ export function AdminJobReviewWizard({
 							</div>
 						</div>
 						<div className="space-y-2">
-							<div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-								<Button
-									variant="success"
-									className="h-11 w-full sm:min-w-[14rem] sm:flex-1"
-									onClick={() => setApproveOpen(true)}
-									disabled={actionBusy}
+							<DropdownMenu modal={false}>
+								<DropdownMenuTrigger asChild>
+									<Button
+										variant="default"
+										className="h-11 min-h-11 w-full touch-manipulation sm:w-auto"
+										disabled={actionBusy}
+									>
+										Review decision
+										<ChevronDown className="size-4 opacity-70" />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent
+									align="start"
+									className="min-w-56 p-1.5"
+									onCloseAutoFocus={(e) => e.preventDefault()}
 								>
-									<CheckCircle2 className="size-4" />
-									Approve & publish
-								</Button>
-								<Button
-									variant="destructive"
-									className="h-11 w-full sm:min-w-[10rem] sm:flex-1"
-									onClick={() => setRejectOpen(true)}
-									disabled={actionBusy}
-								>
-									<XCircle className="size-4" />
-									Reject job
-								</Button>
-							</div>
+									<DropdownMenuItem
+										className="min-h-11 cursor-pointer gap-2.5 rounded-md px-3 py-2.5 text-sm font-medium text-amber-800 focus:bg-amber-500/10 focus:text-amber-900 dark:text-amber-300 dark:focus:text-amber-200"
+										onSelect={(e) => {
+											e.preventDefault();
+											window.setTimeout(() => setApproveOpen(true), 0);
+										}}
+									>
+										<CheckCircle2 className="size-4 shrink-0" />
+										Approve & publish
+									</DropdownMenuItem>
+									<DropdownMenuItem
+										className="min-h-11 cursor-pointer gap-2.5 rounded-md px-3 py-2.5 text-sm font-medium text-destructive focus:bg-destructive/10 focus:text-destructive"
+										onSelect={(e) => {
+											e.preventDefault();
+											window.setTimeout(() => setRejectOpen(true), 0);
+										}}
+									>
+										<XCircle className="size-4 shrink-0" />
+										Reject job
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
 						</div>
 					</div>
 				)}
@@ -656,7 +692,7 @@ export function AdminJobReviewWizard({
 			>
 				<DialogContent>
 					<DialogHeader>
-						<DialogTitle>Reject job</DialogTitle>
+						<DialogTitle>Reject job?</DialogTitle>
 						<DialogDescription>
 							Add a reason for rejecting{" "}
 							<span className="font-medium text-foreground">{jobTitle}</span>.
@@ -693,10 +729,10 @@ export function AdminJobReviewWizard({
 							variant="destructive"
 							className="h-11"
 							onClick={runReject}
-							disabled={rejectPending}
+							disabled={rejectPending || !rejectReason.trim()}
 						>
 							<XCircle className="size-4" />
-							{rejectPending ? "Rejecting…" : "Send & reject"}
+							{rejectPending ? "Rejecting…" : "Yes, reject"}
 						</Button>
 					</DialogFooter>
 				</DialogContent>

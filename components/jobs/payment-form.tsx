@@ -310,7 +310,7 @@ export function PaymentForm({
 					className={cn(
 						"transition-colors duration-300",
 						verified &&
-							"border-amber-500/50 bg-amber-50/80 shadow-sm shadow-amber-500/10 dark:bg-amber-950/25",
+							"border-amber-500/50 bg-amber-50/80 dark:bg-amber-950/25",
 					)}
 				>
 					<CardHeader className="pb-3">

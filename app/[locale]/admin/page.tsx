@@ -342,7 +342,7 @@ function QuickAction({
       href={href}
       className="flex flex-col items-center gap-2 rounded-2xl border border-border/50 bg-muted/30 px-2 py-3 text-center transition-colors hover:bg-muted/60"
     >
-      <span className="flex size-9 items-center justify-center rounded-full bg-background shadow-sm">
+      <span className="flex size-9 items-center justify-center rounded-full bg-background">
         <Icon className="size-4 text-muted-foreground" />
       </span>
       <span className="text-[11px] font-medium">{label}</span>

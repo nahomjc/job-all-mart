@@ -198,7 +198,7 @@ export function AdminJobEditContentDialog({
 								}
 								required
 								disabled={pending}
-								className="flex h-11 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:opacity-50"
+								className="flex h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:opacity-50"
 							>
 								{categories.map((c) => (
 									<option key={c.id} value={c.id}>
@@ -218,7 +218,7 @@ export function AdminJobEditContentDialog({
 									setDraft((d) => ({ ...d, employmentType: e.target.value }))
 								}
 								disabled={pending}
-								className="flex h-11 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:opacity-50"
+								className="flex h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:opacity-50"
 							>
 								{EMPLOYMENT_TYPES.map((t) => (
 									<option key={t.value} value={t.value}>
@@ -404,12 +404,17 @@ export function AdminJobEditContentDialog({
 						<Button
 							type="button"
 							variant="outline"
+							className="h-11"
 							onClick={() => setOpen(false)}
 							disabled={pending}
 						>
 							Cancel
 						</Button>
-						<Button type="submit" disabled={pending || categories.length === 0}>
+						<Button
+							type="submit"
+							className="h-11"
+							disabled={pending || categories.length === 0}
+						>
 							{pending ? "Saving…" : "Save changes"}
 						</Button>
 					</DialogFooter>

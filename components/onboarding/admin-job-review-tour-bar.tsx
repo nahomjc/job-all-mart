@@ -12,8 +12,7 @@ export function AdminJobReviewTourBar() {
 			<Button
 				type="button"
 				variant="outline"
-				size="sm"
-				className="h-10 shrink-0 gap-2 rounded-xl"
+				className="h-11 w-full shrink-0 gap-2 sm:w-auto"
 				onClick={() => startProductTour("admin-job-review")}
 			>
 				<HelpCircle className="size-4" />

@@ -19,7 +19,7 @@ export function DashPanel({
 	return (
 		<Card
 			className={cn(
-				"overflow-hidden border-border/50 bg-card shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_rgba(15,23,42,0.04)]",
+				"overflow-hidden border-border/50 bg-card",
 				className,
 			)}
 		>
@@ -77,7 +77,7 @@ export function KpiCard({
 	return (
 		<div
 			className={cn(
-				"rounded-2xl border border-border/50 bg-card p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_rgba(15,23,42,0.04)]",
+				"rounded-2xl border border-border/50 bg-card p-5",
 				className,
 			)}
 		>

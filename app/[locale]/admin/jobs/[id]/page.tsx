@@ -3,6 +3,7 @@ import { AdminJobActions } from "@/components/admin/admin-job-actions";
 import { AdminJobDetailsPanel } from "@/components/admin/admin-job-details-panel";
 import { AdminJobEditContentDialog } from "@/components/admin/admin-job-edit-content-dialog";
 import { AdminJobHeaderActions } from "@/components/admin/admin-job-header-actions";
+import { EmployerProfileDialog } from "@/components/admin/employer-profile-dialog";
 import { AdminJobReviewTourBar } from "@/components/onboarding/admin-job-review-tour-bar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import { categoryRepo } from "@/server/repositories/category";
 import { jobRepo } from "@/server/repositories/job";
 import { paymentRepo } from "@/server/repositories/payment";
 import { telegramPostRepo } from "@/server/repositories/telegramPost";
+import { userRepo } from "@/server/repositories/user";
 import type { LucideIcon } from "lucide-react";
 import {
 	ArrowLeft,
@@ -53,10 +55,11 @@ export default async function AdminJobReviewPage(props: {
 	const data = await jobRepo.byIdWithRelations(id);
 	if (!data?.job) notFound();
 	const { job, category, employer } = data;
-	const [payment, tgPosts, categories] = await Promise.all([
+	const [payment, tgPosts, categories, employerProfile] = await Promise.all([
 		paymentRepo.byJobId(id),
 		telegramPostRepo.byJobId(id),
 		categoryRepo.list(),
+		employer ? userRepo.adminProfile(employer.id) : Promise.resolve(null),
 	]);
 	const categoryOptions = categories.map((c) => ({ id: c.id, name: c.name }));
 	const editJobProps = {
@@ -79,6 +82,19 @@ export default async function AdminJobReviewPage(props: {
 	return (
 		<div className="mx-auto w-full max-w-full min-w-0 space-y-4 overflow-x-hidden sm:space-y-6 md:space-y-8">
 			<header className="flex flex-col gap-3 sm:gap-4">
+				<div className="flex flex-wrap items-center justify-between gap-2">
+					<Button
+						asChild
+						variant="outline"
+						className="h-11 w-full shrink-0 sm:w-auto"
+					>
+						<Link href="/admin/jobs">
+							<ArrowLeft className="size-4" />
+							Back to queue
+						</Link>
+					</Button>
+					<AdminJobReviewTourBar />
+				</div>
 				<div className="flex min-w-0 items-start gap-3 sm:gap-4">
 					<div className="flex size-12 shrink-0 items-center justify-center rounded-xl border bg-muted/50 sm:size-14 md:size-16">
 						{job.logoUrl ? (
@@ -114,8 +130,7 @@ export default async function AdminJobReviewPage(props: {
 						</p>
 					</div>
 				</div>
-				<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
-					<AdminJobEditContentDialog {...editJobProps} />
+				<div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-2">
 					<AdminJobHeaderActions
 						jobId={job.id}
 						jobTitle={job.title}
@@ -123,17 +138,6 @@ export default async function AdminJobReviewPage(props: {
 						hasPayment={Boolean(payment)}
 						paymentVerified={payment?.status === "verified"}
 					/>
-					<Button
-						asChild
-						variant="outline"
-						className="h-11 w-full shrink-0 sm:w-auto"
-					>
-						<Link href="/admin/jobs">
-							<ArrowLeft className="size-4" />
-							Back to queue
-						</Link>
-					</Button>
-					<AdminJobReviewTourBar />
 				</div>
 			</header>
 
@@ -185,6 +189,7 @@ export default async function AdminJobReviewPage(props: {
 						jobTitle={job.title}
 						jobCompany={job.company}
 						jobStatus={job.status}
+						editJob={<AdminJobEditContentDialog {...editJobProps} />}
 						payment={
 							payment
 								? {
@@ -240,15 +245,27 @@ export default async function AdminJobReviewPage(props: {
 										text={`@${employer.telegramUsername}`}
 									/>
 								)}
-								<Button
-									asChild
-									variant="outline"
-									className="h-11 w-full"
-								>
-									<Link href={`/admin/users/${employer.id}`}>
-										View user profile
-									</Link>
-								</Button>
+								<EmployerProfileDialog
+									user={{
+										id: employer.id,
+										displayName: employer.displayName,
+										email: employer.email,
+										avatarUrl: employer.avatarUrl,
+										telegramUsername: employer.telegramUsername,
+										telegramId: employer.telegramId,
+										telegramVerifiedMembership:
+											employer.telegramVerifiedMembership,
+										authProvider: employer.authProvider,
+										source: employer.source,
+										role: employer.role,
+										status: employer.status,
+										banReason: employer.banReason,
+										createdAt: employer.createdAt,
+									}}
+									jobCount={employerProfile?.jobCount ?? 0}
+									paymentCount={employerProfile?.payments.length ?? 0}
+									companyLogoUrl={employerProfile?.companyLogoUrl}
+								/>
 							</div>
 						) : (
 							<p className="text-sm text-muted-foreground">
@@ -411,7 +428,7 @@ function SnapshotTile({
 		| "outline";
 }) {
 	return (
-		<div className="min-w-0 rounded-xl border bg-card p-3 shadow-sm sm:p-4">
+		<div className="min-w-0 rounded-xl border bg-card p-3 sm:p-4">
 			<p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground sm:text-xs">
 				{label}
 			</p>
@@ -437,7 +454,7 @@ function SidebarCard({
 	children: React.ReactNode;
 }) {
 	return (
-		<Card className="min-w-0 overflow-hidden shadow-sm">
+		<Card className="min-w-0 overflow-hidden">
 			<CardHeader className="border-b p-3 pb-3 sm:p-4">
 				<CardTitle className="flex min-w-0 items-center gap-2 text-sm sm:text-base">
 					<span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">

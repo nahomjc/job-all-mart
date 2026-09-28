@@ -29,7 +29,7 @@ export default async function AdminLayout({
 	if (user.role !== "admin" && user.role !== "owner") {
 		return (
 			<div className="flex min-h-screen items-center justify-center shell-canvas p-4 sm:p-6">
-				<div className="w-full max-w-md rounded-2xl border bg-card p-8 text-center shadow-sm">
+				<div className="w-full max-w-md rounded-2xl border bg-card p-8 text-center">
 					<span className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
 						<AlertCircle className="size-7" />
 					</span>

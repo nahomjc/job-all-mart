@@ -104,7 +104,7 @@ export default async function MyJobsPage(props: {
         <select
           name="status"
           defaultValue={status}
-          className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-sm"
+          className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
         >
           {STATUSES.map(([value, label]) => (
             <option key={value} value={value}>
@@ -116,7 +116,7 @@ export default async function MyJobsPage(props: {
         <select
           name="sortBy"
           defaultValue={sortBy}
-          className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-sm"
+          className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
         >
           {SORT_OPTIONS.map(([value, label]) => (
             <option key={value} value={value}>
@@ -129,7 +129,7 @@ export default async function MyJobsPage(props: {
           <select
             name="sortDir"
             defaultValue={sortDir}
-            className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-sm"
+            className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
           >
             {SORT_DIR_OPTIONS.map(([value, label]) => (
               <option key={value} value={value}>
@@ -152,7 +152,7 @@ export default async function MyJobsPage(props: {
         {q ? ` · matching “${q}”` : ""}
       </p>
 
-      <Card className="shadow-sm">
+      <Card>
         <CardContent className="p-0">
           {rows.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-3 p-12 text-center">

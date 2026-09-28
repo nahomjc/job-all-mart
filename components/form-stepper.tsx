@@ -50,7 +50,7 @@ export function FormStepper({
 								className={cn(
 									"flex h-full w-full min-w-0 items-center justify-center gap-1.5 rounded-full border px-2 py-1.5 text-left text-xs font-medium transition sm:justify-start sm:px-2.5 sm:text-sm",
 									active &&
-										"border-primary bg-primary/10 text-primary shadow-sm",
+										"border-primary bg-primary/10 text-primary",
 									done &&
 										!active &&
 										"border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300",

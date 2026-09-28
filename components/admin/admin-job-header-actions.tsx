@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Send, XCircle } from "lucide-react";
+import { CheckCircle2, ChevronDown, Send, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,12 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
 	approveJobAction,
 	rejectJobAction,
@@ -44,11 +50,21 @@ export function AdminJobHeaderActions({
 	const [reason, setReason] = useState("");
 
 	const isPosted = jobStatus === "posted";
-	const canApproveReject = !isPosted && jobStatus !== "rejected" && jobStatus !== "expired";
+	const canApproveReject =
+		!isPosted && jobStatus !== "rejected" && jobStatus !== "expired";
 	const canRepost =
 		isPosted || jobStatus === "approved" || jobStatus === "scheduled";
 
 	const busy = approvePending || rejectPending || repostPending;
+
+	const openApproveConfirm = () => {
+		// Defer so the dropdown fully closes before the confirm dialog opens.
+		window.setTimeout(() => setApproveOpen(true), 0);
+	};
+
+	const openRejectConfirm = () => {
+		window.setTimeout(() => setRejectOpen(true), 0);
+	};
 
 	const runApprove = () => {
 		startApprove(async () => {
@@ -64,6 +80,10 @@ export function AdminJobHeaderActions({
 	};
 
 	const runReject = () => {
+		if (!reason.trim()) {
+			toast.error("Please add a rejection reason");
+			return;
+		}
 		const formData = new FormData();
 		formData.set("jobId", jobId);
 		formData.set("reason", reason.trim());
@@ -110,26 +130,44 @@ export function AdminJobHeaderActions({
 			) : null}
 
 			{canApproveReject ? (
-				<>
-					<Button
-						variant="success"
-						className="h-11 w-full shrink-0 sm:w-auto"
-						onClick={() => setApproveOpen(true)}
-						disabled={busy}
+				<DropdownMenu modal={false}>
+					<DropdownMenuTrigger asChild>
+						<Button
+							variant="default"
+							className="h-11 min-h-11 w-full shrink-0 touch-manipulation sm:w-auto"
+							disabled={busy}
+						>
+							Review decision
+							<ChevronDown className="size-4 opacity-70" />
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent
+						align="end"
+						className="min-w-56 p-1.5"
+						onCloseAutoFocus={(e) => e.preventDefault()}
 					>
-						<CheckCircle2 className="size-4" />
-						Approve & publish
-					</Button>
-					<Button
-						variant="destructive"
-						className="h-11 w-full shrink-0 sm:w-auto"
-						onClick={() => setRejectOpen(true)}
-						disabled={busy}
-					>
-						<XCircle className="size-4" />
-						Reject
-					</Button>
-				</>
+						<DropdownMenuItem
+							className="min-h-11 cursor-pointer gap-2.5 rounded-md px-3 py-2.5 text-sm font-medium text-amber-800 focus:bg-amber-500/10 focus:text-amber-900 dark:text-amber-300 dark:focus:text-amber-200"
+							onSelect={(e) => {
+								e.preventDefault();
+								openApproveConfirm();
+							}}
+						>
+							<CheckCircle2 className="size-4 shrink-0" />
+							Approve & publish
+						</DropdownMenuItem>
+						<DropdownMenuItem
+							className="min-h-11 cursor-pointer gap-2.5 rounded-md px-3 py-2.5 text-sm font-medium text-destructive focus:bg-destructive/10 focus:text-destructive"
+							onSelect={(e) => {
+								e.preventDefault();
+								openRejectConfirm();
+							}}
+						>
+							<XCircle className="size-4 shrink-0" />
+							Reject
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
 			) : null}
 
 			<Dialog
@@ -202,10 +240,13 @@ export function AdminJobHeaderActions({
 				</DialogContent>
 			</Dialog>
 
-			<Dialog open={rejectOpen} onOpenChange={(o) => !rejectPending && setRejectOpen(o)}>
+			<Dialog
+				open={rejectOpen}
+				onOpenChange={(o) => !rejectPending && setRejectOpen(o)}
+			>
 				<DialogContent>
 					<DialogHeader>
-						<DialogTitle>Reject job</DialogTitle>
+						<DialogTitle>Reject job?</DialogTitle>
 						<DialogDescription>
 							Add a reason for rejecting{" "}
 							<span className="font-medium text-foreground">{jobTitle}</span>.
@@ -242,10 +283,10 @@ export function AdminJobHeaderActions({
 							variant="destructive"
 							className="h-11"
 							onClick={runReject}
-							disabled={rejectPending}
+							disabled={rejectPending || !reason.trim()}
 						>
 							<XCircle className="size-4" />
-							{rejectPending ? "Rejecting…" : "Reject job"}
+							{rejectPending ? "Rejecting…" : "Yes, reject"}
 						</Button>
 					</DialogFooter>
 				</DialogContent>

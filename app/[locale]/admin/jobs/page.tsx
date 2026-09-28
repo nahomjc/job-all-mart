@@ -88,7 +88,7 @@ export default async function AdminJobsQueuePage(props: {
         <select
           name="status"
           defaultValue={status}
-          className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-sm"
+          className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
         >
           {STATUSES.map(([value, label]) => (
             <option key={value} value={value}>
@@ -99,7 +99,7 @@ export default async function AdminJobsQueuePage(props: {
         <select
           name="sortBy"
           defaultValue={sortBy}
-          className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-sm"
+          className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
         >
           {SORT_OPTIONS.map(([value, label]) => (
             <option key={value} value={value}>
@@ -111,7 +111,7 @@ export default async function AdminJobsQueuePage(props: {
           <select
             name="sortDir"
             defaultValue={sortDir}
-            className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-sm"
+            className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
           >
             {SORT_DIR_OPTIONS.map(([value, label]) => (
               <option key={value} value={value}>

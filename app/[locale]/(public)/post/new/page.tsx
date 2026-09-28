@@ -47,7 +47,7 @@ export default async function SimplePostJobPage(props: {
 				</div>
 			</div>
 
-			<div className="rounded-2xl border bg-card p-5 shadow-sm sm:p-8 lg:p-10">
+			<div className="rounded-2xl border bg-card p-5 sm:p-8 lg:p-10">
 				<JobForm
 					categories={categories.map((c) => ({ id: c.id, name: c.name }))}
 					flow="simple"

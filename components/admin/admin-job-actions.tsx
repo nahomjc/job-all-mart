@@ -58,6 +58,7 @@ interface AdminJobActionsProps {
 	jobStatus: string;
 	payment: AdminReviewPayment | null;
 	jobDetails: React.ReactNode;
+	editJob?: React.ReactNode;
 }
 
 export function AdminJobActions(props: AdminJobActionsProps) {
@@ -133,7 +134,7 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 	return (
 		<Card
 			data-tour="job-review-moderation"
-			className="min-w-0 overflow-hidden border-primary/15 shadow-sm"
+			className="min-w-0 overflow-hidden border-primary/15"
 		>
 			<CardHeader className="border-b bg-muted/30 p-3 sm:p-4 md:p-6">
 				<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -143,27 +144,30 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 							Verify payment, approve the job, or use secondary actions.
 						</CardDescription>
 					</div>
-					<Dialog>
-						<DialogTrigger asChild>
-							<Button
-								variant="outline"
-								className="h-10 w-full shrink-0 sm:w-auto"
-								data-tour="job-review-view-details"
-							>
-								<Eye className="size-4" />
-								View job details
-							</Button>
-						</DialogTrigger>
-						<DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
-							<DialogHeader>
-								<DialogTitle className="flex items-center gap-2">
-									<Briefcase className="size-4 text-primary" />
-									Job details
-								</DialogTitle>
-							</DialogHeader>
-							<div className="min-w-0">{props.jobDetails}</div>
-						</DialogContent>
-					</Dialog>
+					<div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+						{props.editJob}
+						<Dialog>
+							<DialogTrigger asChild>
+								<Button
+									variant="outline"
+									className="h-11 w-full shrink-0 sm:w-auto"
+									data-tour="job-review-view-details"
+								>
+									<Eye className="size-4" />
+									View job details
+								</Button>
+							</DialogTrigger>
+							<DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
+								<DialogHeader>
+									<DialogTitle className="flex items-center gap-2">
+										<Briefcase className="size-4 text-primary" />
+										Job details
+									</DialogTitle>
+								</DialogHeader>
+								<div className="min-w-0">{props.jobDetails}</div>
+							</DialogContent>
+						</Dialog>
+					</div>
 				</div>
 			</CardHeader>
 
@@ -173,7 +177,7 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 						<TabsTrigger
 							value="verify"
 							data-tour="job-review-tab-verify"
-							className="h-10 gap-2 px-2 text-xs sm:px-3 sm:text-sm"
+							className="h-11 gap-2 px-2 text-xs sm:px-3 sm:text-sm"
 						>
 							<ShieldCheck className="size-4 shrink-0" />
 							<span className="truncate">Verification</span>
@@ -181,7 +185,7 @@ export function AdminJobActions(props: AdminJobActionsProps) {
 						<TabsTrigger
 							value="actions"
 							data-tour="job-review-tab-actions"
-							className="h-10 gap-2 px-2 text-xs sm:px-3 sm:text-sm"
+							className="h-11 gap-2 px-2 text-xs sm:px-3 sm:text-sm"
 						>
 							<Settings2 className="size-4 shrink-0" />
 							<span className="truncate">More actions</span>
@@ -332,10 +336,10 @@ function ActionBlock({
 	return (
 		<div className={className}>
 			<div
-				className={`min-w-0 rounded-xl border p-3 shadow-sm sm:p-4 ${toneClasses}`}
+				className={`min-w-0 rounded-xl border p-3 sm:p-4 ${toneClasses}`}
 			>
 				<div className="mb-4 flex min-w-0 items-start gap-2.5">
-					<span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-background shadow-sm">
+					<span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-background">
 						<Icon className="size-4 text-muted-foreground" />
 					</span>
 					<div className="min-w-0">
