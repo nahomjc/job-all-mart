@@ -115,6 +115,20 @@ export const env = {
   get TELEGRAM_REQUIRED_CHANNEL_LABEL() {
     return optional(process.env.TELEGRAM_REQUIRED_CHANNEL_LABEL);
   },
+  /** Public landing/footer channel invite (official MAK channel). */
+  get NEXT_PUBLIC_TELEGRAM_CHANNEL_URL() {
+    return (
+      optional(process.env.NEXT_PUBLIC_TELEGRAM_CHANNEL_URL) ??
+      "https://t.me/+OQm7tPHrOO5iNjNk"
+    );
+  },
+  /** Public bot username for landing dock + footer (without @). */
+  get NEXT_PUBLIC_TELEGRAM_BOT_USERNAME() {
+    return (
+      optional(process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME) ??
+      "MAKAdvertsoffical_bot"
+    );
+  },
   get TELEGRAM_WEBHOOK_SECRET() {
     return required(
       "TELEGRAM_WEBHOOK_SECRET",

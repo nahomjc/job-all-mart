@@ -5,6 +5,9 @@ import { env } from "@/lib/env";
 export async function Footer() {
   const t = await getTranslations("footer");
   const tc = await getTranslations("common");
+  const channelUrl = env.NEXT_PUBLIC_TELEGRAM_CHANNEL_URL;
+  const botUsername = env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME.replace(/^@/, "");
+  const botUrl = `https://t.me/${botUsername}?start=start`;
 
   return (
     <footer className="mt-24 border-t bg-muted/30">
@@ -28,7 +31,26 @@ export async function Footer() {
         <div>
           <h4 className="mb-2 text-sm font-semibold">{t("telegram")}</h4>
           <ul className="space-y-1 text-sm text-muted-foreground">
-            <li>{t("telegramBot")}</li>
+            <li>
+              <a
+                href={channelUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-foreground"
+              >
+                {t("officialChannel")}
+              </a>
+            </li>
+            <li>
+              <a
+                href={botUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-foreground"
+              >
+                @{botUsername}
+              </a>
+            </li>
             <li>{t("telegramStart")}</li>
           </ul>
         </div>

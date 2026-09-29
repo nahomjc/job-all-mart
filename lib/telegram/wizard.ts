@@ -437,9 +437,17 @@ export async function ensureCanPost(
     };
   }
 
-  // 2) Internal user
-  const user = await userRepo.byTelegramId(from.id);
-  if (!user) return { ok: false, reason: "Please run /start first." };
+  // 2) Internal user — create Telegram-only account on first contact
+  let user = await userRepo.byTelegramId(from.id);
+  if (!user) {
+    const upserted = await userRepo.upsertFromTelegram({
+      telegramId: from.id,
+      username: from.username,
+      firstName: from.first_name,
+      lastName: from.last_name,
+    });
+    user = upserted.user;
+  }
   if (user.status !== "active") {
     return { ok: false, reason: "Your account is suspended." };
   }

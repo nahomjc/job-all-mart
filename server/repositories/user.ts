@@ -53,7 +53,7 @@ export const userRepo = {
 		username?: string;
 		firstName?: string;
 		lastName?: string;
-	}): Promise<User> {
+	}): Promise<{ user: User; created: boolean }> {
 		const existing = await userRepo.byTelegramId(args.telegramId);
 		if (existing) {
 			// Keep names fresh in case the user renamed.
@@ -67,7 +67,7 @@ export const userRepo = {
 				})
 				.where(eq(users.id, existing.id))
 				.returning();
-			return updated ?? existing;
+			return { user: updated ?? existing, created: false };
 		}
 
 		const insert: NewUser = {
@@ -86,7 +86,7 @@ export const userRepo = {
 		if (!created) {
 			throw new Error("Failed to create user from Telegram");
 		}
-		return created;
+		return { user: created, created: true };
 	},
 
 	async setMembershipVerified(

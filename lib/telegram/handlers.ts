@@ -97,7 +97,7 @@ export function registerHandlers(bot: Telegraf): void {
       return;
     }
 
-    await userRepo.upsertFromTelegram({
+    const { created } = await userRepo.upsertFromTelegram({
       telegramId: from.id,
       username: from.username,
       firstName: from.first_name,
@@ -160,16 +160,29 @@ export function registerHandlers(bot: Telegraf): void {
       return;
     }
 
-    await ctx.reply(
-      `Welcome to ${env.NEXT_PUBLIC_APP_NAME}! 👋
+    if (created) {
+      await ctx.reply(
+        `✅ Account created with Telegram — welcome to ${env.NEXT_PUBLIC_APP_NAME}!
+
+You can post jobs from this chat. No website signup needed.
+
+Before posting, join ${requiredChannelLabel()} using the button below.
+
+Then use the menu — Post a job, Help, or Contact.`,
+        joinRequiredChannelKeyboard(),
+      );
+    } else {
+      await ctx.reply(
+        `Welcome back to ${env.NEXT_PUBLIC_APP_NAME}! 👋
 
 I help you post jobs to our Telegram channels.
 
 Before posting, join ${requiredChannelLabel()} using the button below.
 
 Then use the menu under the text box — Post a job, Help, or Contact.`,
-      joinRequiredChannelKeyboard(),
-    );
+        joinRequiredChannelKeyboard(),
+      );
+    }
     await ctx.reply("👇 Quick actions", mainMenuKeyboard());
   });
 
@@ -228,11 +241,12 @@ Full details: ${env.NEXT_PUBLIC_APP_URL}/pricing`,
 
   bot.command("myjobs", async (ctx) => {
     if (!ctx.from) return;
-    const user = await userRepo.byTelegramId(ctx.from.id);
-    if (!user) {
-      await ctx.reply("Run /start first.");
-      return;
-    }
+    const { user } = await userRepo.upsertFromTelegram({
+      telegramId: ctx.from.id,
+      username: ctx.from.username,
+      firstName: ctx.from.first_name,
+      lastName: ctx.from.last_name,
+    });
     const rows = await jobRepo.listByUser(user.id);
     if (rows.length === 0) {
       await ctx.reply(

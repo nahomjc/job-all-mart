@@ -71,8 +71,21 @@
     "postJob": "ስራ ይለጥፉ",
     "telegramBot": "በቴሌግራም በኩል ለመለጠፍ ቦቱን ይጠቀሙ።",
     "telegramStart": "በቦቱ ውስጥ /start ብለው ይጀምሩ።",
+    "officialChannel": "ኦፊሴላዊ ቻናል",
     "terms": "የአገልግሎት ውል",
     "privacy": "የግላዊነት ፖሊሲ"
+  },
+  "telegramDock": {
+    "eyebrow": "ቴሌግራም",
+    "title": "ተገናኙ",
+    "open": "የቴሌግራም አገናኞችን ክፈት",
+    "close": "ዝጋ",
+    "channelTitle": "ኦፊሴላዊ ቻናል",
+    "channelBody": "በድሬዳዋ፣ ሀረር፣ ሶማሌ እና ኢትዮጵያ የስራ ማስታወቂያዎች።",
+    "channelCta": "ቻናሉን ይቀላቀሉ",
+    "botTitle": "ኦፊሴላዊ ቦት",
+    "botBody": "ስራ ይለጥፉ እና ሁኔታውን ከቴሌግራም ይከታተሉ።",
+    "botCta": "ቦቱን ያነጋግሩ"
   },
   "home": {
     "liveOnTelegram": "በቴሌግራም እና በድረ-ገጽ ላይ በቀጥታ",

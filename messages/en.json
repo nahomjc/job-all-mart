@@ -71,8 +71,21 @@
     "postJob": "Post a job",
     "telegramBot": "Use our bot to post from Telegram.",
     "telegramStart": "Start with /start in the bot chat.",
+    "officialChannel": "Official channel",
     "terms": "Terms",
     "privacy": "Privacy"
+  },
+  "telegramDock": {
+    "eyebrow": "Telegram",
+    "title": "Stay connected",
+    "open": "Open Telegram links",
+    "close": "Close",
+    "channelTitle": "Official channel",
+    "channelBody": "Job vacancies across Dire Dawa, Harar, Somali & Ethiopia.",
+    "channelCta": "Join channel",
+    "botTitle": "Official bot",
+    "botBody": "Post jobs and track submissions from Telegram.",
+    "botCta": "Message bot"
   },
   "home": {
     "liveOnTelegram": "Live on Telegram and the web",
