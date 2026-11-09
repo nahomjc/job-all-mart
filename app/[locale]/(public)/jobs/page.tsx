@@ -10,8 +10,16 @@ import type { Job } from "@/server/db/schema";
 export async function generateMetadata() {
 	const t = await getTranslations("jobs");
 	return {
-		title: t("browseTitle"),
-		description: t("browseSubtitle"),
+		title: t("seoTitle"),
+		description: t("seoDescription"),
+		alternates: {
+			canonical: "https://www.makadverts.com/en/jobs",
+			languages: {
+				en: "https://www.makadverts.com/en/jobs",
+				am: "https://www.makadverts.com/am/jobs",
+				"x-default": "https://www.makadverts.com/en/jobs",
+			},
+		},
 	};
 }
 
