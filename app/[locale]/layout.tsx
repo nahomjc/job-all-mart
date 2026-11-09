@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { routing } from "@/i18n/routing";
 
 const appName = resolveAppName(process.env.NEXT_PUBLIC_APP_NAME);
+const CANONICAL_HOST = "https://www.makadverts.com";
 
 type Props = {
   children: React.ReactNode;
@@ -21,16 +22,16 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "meta" });
+  const homeTitle = t("homeTitle");
+  const homeDescription = t("homeDescription");
 
   return {
-    metadataBase: new URL(
-      process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
-    ),
+    metadataBase: new URL(CANONICAL_HOST),
     title: {
-      default: appName,
+      default: homeTitle,
       template: `%s · ${appName}`,
     },
-    description: t("description"),
+    description: homeDescription,
     icons: {
       icon: [
         { url: "/favicon.ico", sizes: "any" },
@@ -40,9 +41,32 @@ export async function generateMetadata({ params }: Props) {
     },
     openGraph: {
       type: "website",
-      title: appName,
+      siteName: appName,
+      title: homeTitle,
       description: t("ogDescription"),
-      images: [{ url: "/images/photo_2026-09-27_19-36-28-Photoroom.png" }],
+      locale: locale === "am" ? "am_ET" : "en_US",
+      images: [
+        {
+          url: `${CANONICAL_HOST}/images/photo_2026-09-27_19-36-28-Photoroom.png`,
+          width: 1200,
+          height: 630,
+          alt: `${appName} - Jobs in Ethiopia`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: homeTitle,
+      description: t("ogDescription"),
+      images: [`${CANONICAL_HOST}/images/photo_2026-09-27_19-36-28-Photoroom.png`],
+    },
+    alternates: {
+      canonical: `${CANONICAL_HOST}/${locale}`,
+      languages: {
+        en: `${CANONICAL_HOST}/en`,
+        am: `${CANONICAL_HOST}/am`,
+        "x-default": `${CANONICAL_HOST}/en`,
+      },
     },
     robots: { index: true, follow: true },
   };

@@ -47,8 +47,12 @@
     "menu": "Menu"
   },
   "meta": {
-    "description": "Post jobs to Telegram and the website. Reviewed and payment-checked before going live.",
-    "ogDescription": "Job posts for Telegram channels and the web."
+    "description": "Find jobs in Ethiopia on MAK Adverts. Browse job vacancies in Dire Dawa, Harar, and the Somali region. Post once and reach job seekers on Telegram and the web.",
+    "ogDescription": "Ethiopia job board for Dire Dawa, Harar, and Somali region. Browse vacancies or post jobs to Telegram channels and the web.",
+    "seoTitle": "Jobs in Ethiopia | Dire Dawa, Harar & Somali Region Vacancies",
+    "seoTitleTemplate": "{page} | MAK Adverts Ethiopia",
+    "homeTitle": "MAK Adverts – Jobs in Ethiopia | Dire Dawa, Harar & Somali Region",
+    "homeDescription": "Ethiopia's job board for Dire Dawa, Harar, and the Somali region. Browse vacancies or post jobs to Telegram channels and the web. Payment-verified listings."
   },
   "nav": {
     "jobs": "Jobs",
@@ -226,8 +230,10 @@
   },
   "jobs": {
     "title": "Jobs",
-    "browseTitle": "Browse jobs",
-    "browseSubtitle": "Find roles posted to our board and Telegram.",
+    "browseTitle": "Browse Jobs in Ethiopia",
+    "browseSubtitle": "Find job vacancies in Dire Dawa, Harar, Somali region, and across Ethiopia. Posted to our board and Telegram.",
+    "seoTitle": "Browse Jobs in Ethiopia | Dire Dawa, Harar & Somali Vacancies",
+    "seoDescription": "Search job vacancies in Ethiopia. Find employment opportunities in Dire Dawa, Harar, Somali region, and beyond. Updated daily on MAK Adverts.",
     "viewAllJobs": "View all jobs",
     "searchPlaceholder": "Search title or company…",
     "filters": "Filters",
@@ -396,6 +402,8 @@
   "pricing": {
     "title": "Pricing",
     "subtitle": "Simple plans for posting jobs to Telegram and the web.",
+    "seoTitle": "Post Job Vacancies in Ethiopia | MAK Adverts Pricing",
+    "seoDescription": "Affordable pricing to post job vacancies in Ethiopia. Reach job seekers in Dire Dawa, Harar, and Somali region via Telegram and web.",
     "perPost": "per post",
     "free": "Free",
     "choose": "Choose plan",

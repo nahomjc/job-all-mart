@@ -11,8 +11,16 @@ import type { PricingPlan } from "@/server/db/schema";
 export async function generateMetadata() {
 	const t = await getTranslations("pricing");
 	return {
-		title: t("title"),
-		description: t("subtitle"),
+		title: t("seoTitle"),
+		description: t("seoDescription"),
+		alternates: {
+			canonical: "https://www.makadverts.com/en/pricing",
+			languages: {
+				en: "https://www.makadverts.com/en/pricing",
+				am: "https://www.makadverts.com/am/pricing",
+				"x-default": "https://www.makadverts.com/en/pricing",
+			},
+		},
 	};
 }
 
